@@ -8,6 +8,9 @@
 (add-load-path "./lib/")
 (use violet)
 
+(use dbi)
+(use dbd.pg)
+
 ;;
 ;; Application
 ;;
@@ -23,7 +26,26 @@
                         (x->string ch))))
        result))))
 
+(define (make-circle)
+  '(svg (@ (width "100") (height "100"))
+        (circle (@ (cx "50") (cy "50") (r "40")
+                   (stroke "green") (stroke-width "4") (fill "yellow")))))
+
+(define *conn* (dbi-connect "dbi:pg:postgres;host=britney.local" :username "postgres"))
+
+(define (query-data)
+  
+)
+
 (define-http-handler "/"
+  (^[req app]
+    (violet-async
+     (^[await]
+       (respond/ok req `(sxml (html (body (h1 "SVG!")
+                                          ,(make-circle)
+                                          ))))))))
+
+#;(define-http-handler "/"
   (^[req app]
     (violet-async
      (^[await]
@@ -36,3 +58,4 @@
          (respond/ok req `(sxml (html (body (h1 "Random Numbers")
                                             ,@(map (^n `(pre ,(x->string n))) nums)
                                             )))))))))
+
