@@ -30,7 +30,7 @@
     (lambda ()
       (let loop ()
         (let ((task (dequeue/wait! *task-queue*)))
-          (guard (exc [else (print exc)])
+          (guard (exc [else (report-error exc)])
                  (task))             ; task may return multiple times!
           (flush))
         (loop))))))
@@ -111,7 +111,7 @@
                 (make-thread
                  (^[]
                    (let ((result 
-                          (guard (exc [else (x->string exc)])
+                          (guard (exc [else (report-error exc)])
                                  (proc))))
                      (enqueue-task! (^[] (cont result)))))))
                (yield)))))
