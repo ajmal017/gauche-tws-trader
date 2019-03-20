@@ -1,5 +1,8 @@
 (use gauche.threads)
+(use gauche.collection)
 (use rfc.http)
+
+(use srfi-19)
 
 (add-load-path "./gauche-rheingau/lib/")
 (use rheingau)
@@ -26,24 +29,66 @@
                         (x->string ch))))
        result))))
 
-(define (make-circle)
-  '(svg (@ (width "100") (height "100"))
-        (circle (@ (cx "50") (cy "50") (r "40")
-                   (stroke "green") (stroke-width "4") (fill "yellow")))))
+(define *conn* (dbi-connect "dbi:pg:user=postgres;host=localhost"))
 
-(define *conn* (dbi-connect "dbi:pg:postgres;host=britney.local" :username "postgres"))
+(define query-data
+  (let ((query (dbi-prepare *conn* "SELECT time, open, high, low, close FROM bars WHERE time >= to_timestamp(?) - interval '1' day and time < to_timestamp(?) and size = '1 hour' order by time")))
+    (lambda (time)
+      (let* ((sec (time->seconds time))
+             (result (dbi-execute query sec sec))
+             (getter (relation-accessor result)))
+        (fold (lambda (row part)
+                (let ((highest (car part))
+                      (lowest (cadr part))
+                      (rows (caddr part))
+                      (high (string->number (getter row "high")))
+                      (low (string->number (getter row "low"))))
+                  (list
+                   (max high highest)
+                   (min low lowest)
+                   (cons (list (date->time-utc (string->date (getter row "time") "~Y-~m-~d ~H:~M:~S"))
+                               (string->number (getter row "open"))
+                               (string->number (getter row "close"))
+                               high
+                               low)
+                         rows))))
+              '(0 9999999 ()) result)))))
 
-(define (query-data)
-  
-)
+(define *hour* (seconds->time 3600))
+(define *day* (seconds->time (* 3600 24)))
+
+(define (format-data data end-time)
+  `(,(let ((highest (car data))
+           (lowest (cadr data))
+           (rows (caddr data)))
+       (let ((translate (lambda (v) (- 500 (* (- v lowest) (/ 500 (- highest lowest)))))))
+         `(svg (@ (width "500") (height "500"))
+               ,@(map (lambda (row)
+                        (let ((time  (car row))
+                              (open  (cadr row))
+                              (close (caddr row))
+                              (high  (cadddr row))
+                              (low   (car (cddddr row))))
+                          (let* ((t (time-difference time end-time))
+                                 (hour (+ 24 (/ (time->seconds t) 3600)))
+                                 (color (if (> open close) "red" "white")))
+                            `(rect (@ (x ,(* hour 20))
+                                      (y ,(translate (max open close)))
+                                      (width 10)
+                                      (height ,(abs (- (translate open) (translate close))))
+                                      (style ,#`"fill:,color;stroke:black;stroke-width:1")))
+                            )))
+                      rows))))))
 
 (define-http-handler "/"
   (^[req app]
     (violet-async
      (^[await]
-       (respond/ok req `(sxml (html (body (h1 "SVG!")
-                                          ,(make-circle)
-                                          ))))))))
+       (let* ((time (date->time-utc (make-date 0 0 0 0 1 1 2019 0)))
+              (data (await (^[] (query-data time)))))
+         (respond/ok req `(sxml (html (body (h1 ,#`"USD.EUR ,(date->string (time-utc->date time))")
+                                            ,@(format-data data time)
+                                            )))))))))
 
 #;(define-http-handler "/"
   (^[req app]
