@@ -32,10 +32,11 @@
 (define *conn* (dbi-connect "dbi:pg:user=postgres;host=britney.local"))
 
 (define query-data
-  (let ((query (dbi-prepare *conn* "SELECT time, open, high, low, close FROM bars WHERE time >= to_timestamp(?) - interval '1' day and time < to_timestamp(?) and size = '1 hour' order by time")))
-    (lambda (time)
-      (let* ((sec (time->seconds time))
-             (result (dbi-execute query sec sec))
+  (let ((query (dbi-prepare *conn* "SELECT time, open, high, low, close FROM bars WHERE time >= to_timestamp(?) and time < to_timestamp(?) and size = '1 hour' order by time")))
+    (lambda (begin-time end-time)
+      (let* ((begin-sec (time->seconds begin-time))
+             (end-sec (time->seconds end-time))
+             (result (dbi-execute query begin-sec end-sec))
              (getter (relation-accessor result)))
         (fold (lambda (row part)
                 (let ((highest (car part))
@@ -63,7 +64,8 @@
     `(,(let ((highest (car data))
              (lowest (cadr data))
              (rows (caddr data)))
-         (let ((translate (^v (- chart-height (* (- v lowest) (/ chart-height (- highest lowest)))))))
+         (let ((translate (^v (- chart-height
+                                 (* (- v lowest) (/ chart-height (- highest lowest)))))))
            `(svg (@ (width ,chart-width) (height ,chart-height))
                  ,@(map (lambda (row)
                           (let ((time  (car row))
@@ -90,10 +92,11 @@
   (^[req app]
     (violet-async
      (^[await]
-       (let* ((time (date->time-utc (make-date 0 0 0 0 1 1 2019 0)))
-              (data (await (^[] (query-data time)))))
-         (respond/ok req `(sxml (html (body (h1 ,#`"USD.EUR ,(date->string (time-utc->date time))")
-                                            ,@(format-data data time)
+       (let* ((begin-time (date->time-utc (make-date 0 0 0 0 31 12 2018 0)))
+              (end-time (date->time-utc (make-date 0 0 0 0 1 1 2019 0)))
+              (data (await (^[] (query-data begin-time end-time)))))
+         (respond/ok req `(sxml (html (body (h1 ,#`"USD.EUR ,(date->string (time-utc->date begin-time))")
+                                            ,@(format-data data end-time)
                                             )))))))))
 
 #;(define-http-handler "/"
