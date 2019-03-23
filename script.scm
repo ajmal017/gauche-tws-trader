@@ -29,7 +29,7 @@
                         (x->string ch))))
        result))))
 
-(define *conn* (dbi-connect "dbi:pg:user=postgres;host=localhost"))
+(define *conn* (dbi-connect "dbi:pg:user=postgres;host=britney.local"))
 
 (define query-data
   (let ((query (dbi-prepare *conn* "SELECT time, open, high, low, close FROM bars WHERE time >= to_timestamp(?) - interval '1' day and time < to_timestamp(?) and size = '1 hour' order by time")))
