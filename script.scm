@@ -64,7 +64,7 @@
              (lowest (cadr data))
              (rows (caddr data)))
          (let ((translate (^v (- chart-height (* (- v lowest) (/ chart-height (- highest lowest)))))))
-           `(svg (@ (width chart-width) (height chart-height))
+           `(svg (@ (width ,chart-width) (height ,chart-height))
                  ,@(map (lambda (row)
                           (let ((time  (car row))
                                 (open  (cadr row))
