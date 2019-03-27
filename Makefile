@@ -7,6 +7,9 @@ LD_LIBRARY_PATH=$(shell gauche-config --sysarchdir)
 MAKIKI=gosh-modules/makiki
 RHEINGAU=./gauche-rheingau
 
+run-docker:
+	/usr/local/bin/docker-compose up
+
 build: $(TARGET)
 
 run: $(TARGET) $(MAKIKI)
