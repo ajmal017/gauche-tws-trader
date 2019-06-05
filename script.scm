@@ -35,7 +35,7 @@
 (define *conn* (dbi-connect #`"dbi:pg:user=postgres;host=,db-host"))
 
 (define query-data
-  (let ((query (dbi-prepare *conn* "SELECT time, open, high, low, close FROM bars WHERE time >= to_timestamp(?) and time < to_timestamp(?) and size = '1 hour' order by time")))
+  (let ((query (dbi-prepare *conn* "SELECT time, open, high, low, close FROM bars WHERE time >= to_timestamp(?) and time < to_timestamp(?) and size = '4 hours' order by time")))
     (lambda (begin-time end-time)
       (let* ((begin-sec (time->seconds begin-time))
              (end-sec (time->seconds end-time))
@@ -195,13 +195,13 @@
   (^[req app]
     (violet-async
      (^[await]
-       (let* ((begin-time (date->time-utc (make-date 0 0 0 0 31 12 2018 0)))
-              (end-time (date->time-utc (make-date 0 0 0 0 1 1 2019 0)))
+       (let* ((end-time (date->time-utc (make-date 0 0 0 0 1 1 2019 0)))
+              (begin-time (subtract-duration end-time (make-time time-duration 0 (* 60 60 24 7))))
               (data (await (^[] (query-data begin-time end-time)))))
          (respond/ok req (cons "<!DOCTYPE html>"
                                (sxml:sxml->html
                                 (create-page
-                                 `(html (body (h1 ,#`"USD.EUR ,(date->string (time-utc->date begin-time))")
+                                 `(html (body (h1 ,#`"USD.EUR ,(date->string (time-utc->date end-time))")
                                               ,@(format-data data begin-time end-time)
                                               )))))))))))
 
