@@ -129,7 +129,7 @@
       (link (@ (rel "stylesheet") (href "static/starter-template.css"))))
      (body
       (nav (@ (class "navbar navbar-expand-md navbar-dark bg-dark fixed-top"))
-             (a (@ (href "#") (class "navbar-brand")) "Navbar")
+             (a (@ (href "#") (class "navbar-brand")) "Trader")
              (button
               (@
                (type "button")
@@ -170,13 +170,6 @@
                                "Search"))))
       (main
        (@ (role "main") (class "container"))
-       (div (@ (class "starter-template"))
-              (h1 "Bootstrap starter template")
-              (p
-               (@ (class "lead"))
-               "Use this document as a way to quickly start any new project."
-               (br)
-               " All you get is this text and a mostly barebones HTML document."))
        ,@children)
       (script (@
                  (src "https://code.jquery.com/jquery-3.3.1.slim.min.js")
