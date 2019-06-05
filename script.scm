@@ -12,6 +12,8 @@
 (add-load-path "./lib/")
 (use violet)
 
+(use config)
+
 (use dbi)
 (use dbd.pg)
 
@@ -30,7 +32,7 @@
                         (x->string ch))))
        result))))
 
-(define *conn* (dbi-connect "dbi:pg:user=postgres;host=britney.local"))
+(define *conn* (dbi-connect #`"dbi:pg:user=postgres;host=,db-host"))
 
 (define query-data
   (let ((query (dbi-prepare *conn* "SELECT time, open, high, low, close FROM bars WHERE time >= to_timestamp(?) and time < to_timestamp(?) and size = '1 hour' order by time")))
