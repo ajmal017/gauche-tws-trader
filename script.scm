@@ -35,29 +35,31 @@
 (define *conn* (dbi-connect #`"dbi:pg:user=postgres;host=,db-host"))
 
 (define query-data
-  (let ((query (dbi-prepare *conn* "SELECT DISTINCT time, open, high, low, close FROM bars WHERE time < to_timestamp(?) and size = ? order by time limit ?")))
+  (let ((query (dbi-prepare *conn* "SELECT DISTINCT time, open, high, low, close FROM bars WHERE time < to_timestamp(?) and size = ? order by time desc limit ?")))
     (lambda (end-time count size)
       (let* ((end-sec (time->seconds end-time))
              (result (dbi-execute query end-sec size count))
-             (getter (relation-accessor result)))
-        (fold (lambda (row part)
-                (let ((highest (car part))
-                      (lowest (cadr part))
-                      (rows (caddr part))
-                      (count (cadddr part))
-                      (high (string->number (getter row "high")))
-                      (low (string->number (getter row "low"))))
-                  (list
-                   (max high highest)
-                   (min low lowest)
-                   (cons (list (date->time-utc (string->date (getter row "time") "~Y-~m-~d ~H:~M:~S"))
-                               (string->number (getter row "open"))
-                               (string->number (getter row "close"))
-                               high
-                               low)
-                         rows)
-                   (+ 1 count))))
-              '(0 9999999 () 0) result)))))
+             (getter (relation-accessor result))
+             (dest (fold (lambda (row part)
+                           (let ((highest (car part))
+                                 (lowest (cadr part))
+                                 (rows (caddr part))
+                                 (count (cadddr part))
+                                 (high (string->number (getter row "high")))
+                                 (low (string->number (getter row "low"))))
+                             (list
+                              (max high highest)
+                              (min low lowest)
+                              (cons (list (date->time-utc (string->date (getter row "time")
+                                                                        "~Y-~m-~d ~H:~M:~S"))
+                                          (string->number (getter row "open"))
+                                          (string->number (getter row "close"))
+                                          high
+                                          low)
+                                    rows)
+                              (+ 1 count))))
+                         '(0 9999999 () 0) result)))
+        dest))))
 
 (define *hour* (seconds->time 3600))
 (define *day* (seconds->time (* 3600 24)))
@@ -204,12 +206,16 @@
     (violet-async
      (^[await]
        (let* ((end-time (date->time-utc (make-date 0 0 0 0 1 1 2019 0)))
-              (data (await (^[] (query-data end-time 30 "4 hours")))))
+              (data-long (await (^[] (query-data end-time 30 "4 hours"))))
+              (data-short (await (^[] (query-data end-time 30 "1 hour")))))
          (respond/ok req (cons "<!DOCTYPE html>"
                                (sxml:sxml->html
                                 (create-page
-                                 `(html (body (h1 ,#`"USD.EUR ,(date->string (time-utc->date end-time))")
-                                              ,@(format-data data end-time)
+                                 `(html (body (p ,#`"USD.EUR ,(date->string (time-utc->date end-time))")
+                                              (h2 "4 hours")
+                                              (div ,@(format-data data-long end-time))
+                                              (h2 "1 hour")
+                                              (div ,@(format-data data-short end-time))
                                               )))))))))))
 
 (define-http-handler #/^\/static\// (file-handler))
