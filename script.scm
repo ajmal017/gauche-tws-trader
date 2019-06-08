@@ -35,11 +35,10 @@
 (define *conn* (dbi-connect #`"dbi:pg:user=postgres;host=,db-host"))
 
 (define query-data
-  (let ((query (dbi-prepare *conn* "SELECT DISTINCT time, open, high, low, close FROM bars WHERE time >= to_timestamp(?) and time < to_timestamp(?) and size = '4 hours' order by time")))
-    (lambda (begin-time end-time)
-      (let* ((begin-sec (time->seconds begin-time))
-             (end-sec (time->seconds end-time))
-             (result (dbi-execute query begin-sec end-sec))
+  (let ((query (dbi-prepare *conn* "SELECT DISTINCT time, open, high, low, close FROM bars WHERE time < to_timestamp(?) and size = ? order by time limit ?")))
+    (lambda (end-time count size)
+      (let* ((end-sec (time->seconds end-time))
+             (result (dbi-execute query end-sec size count))
              (getter (relation-accessor result)))
         (fold (lambda (row part)
                 (let ((highest (car part))
@@ -84,7 +83,7 @@
                                  (style ,#`"fill:,color;stroke:black;stroke-width:1"))))))
         bar))))
 
-(define (format-data data begin-time end-time)
+(define (format-data data end-time)
   (let ((chart-height 500)
         (chart-width 500))
     `(,(let ((highest (car data))
@@ -205,13 +204,12 @@
     (violet-async
      (^[await]
        (let* ((end-time (date->time-utc (make-date 0 0 0 0 1 1 2019 0)))
-              (begin-time (subtract-duration end-time (make-time time-duration 0 (* 60 60 24 7))))
-              (data (await (^[] (query-data begin-time end-time)))))
+              (data (await (^[] (query-data end-time 30 "4 hours")))))
          (respond/ok req (cons "<!DOCTYPE html>"
                                (sxml:sxml->html
                                 (create-page
                                  `(html (body (h1 ,#`"USD.EUR ,(date->string (time-utc->date end-time))")
-                                              ,@(format-data data begin-time end-time)
+                                              ,@(format-data data end-time)
                                               )))))))))))
 
 (define-http-handler #/^\/static\// (file-handler))
