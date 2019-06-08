@@ -93,7 +93,7 @@
              (count (cadddr data)))
          (let ((translate (^v (- chart-height
                                  (* (- v lowest) (/ chart-height (- highest lowest)))))))
-           (let* ((step (/ chart-width #?=count))
+           (let* ((step (/ chart-width count))
                   (bar-width (x->integer (/ step 2)))
                   (half-bar-width (x->integer (/ step 4))))
              `(svg (@ (width ,chart-width) (height ,chart-height))
@@ -105,8 +105,7 @@
                            (let ((row (car rows)))
                              (let ((bar (make-bar-from-row row chart-width half-bar-width bar-width
                                                            count index translate)))
-                               (loop (cdr rows) (+ 1 index) (cons bar dest)))
-                                 ))))))))))
+                               (loop (cdr rows) (+ 1 index) (cons bar dest)))))))))))))
 
 (define (create-page . children)
   `(html
