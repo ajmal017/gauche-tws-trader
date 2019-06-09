@@ -64,6 +64,15 @@
 (define *hour* (seconds->time 3600))
 (define *day* (seconds->time (* 3600 24)))
 
+(define (extract-row row)
+  (lambda (slot)
+    (case slot
+      ((time)  (car row))
+      ((open)  (cadr row))
+      ((close) (caddr row))
+      ((high)  (cadddr row))
+      ((low)   (car (cddddr row))))))
+
 (define (make-bar-from-row row chart-width half-bar-width bar-width count index translate)
   (let ((time  (car row))
         (open  (cadr row))
@@ -85,7 +94,59 @@
                                  (style ,#`"fill:,color;stroke:black;stroke-width:1"))))))
         bar))))
 
+(define (make-line-poly x0 y0 x1 y1)
+  ;; returns polynomial in x + by + c = 0
+  (let* ((b (/ (- x0 x1) (- y0 y1)))
+         (c (- (+ x0 (* b y0)))))
+    (cons b c)))
+
+(define (distance-to-line x y poly)
+  (let ((b (car poly))
+        (c (cdr poly)))
+    (+ y (/ (+ x c) b))))
+
+(define (min-line data)
+  (let ((highest (car data))
+        (lowest (cadr data))
+        (rows (caddr data))
+        (count (cadddr data)))
+    (let loop ((rows1 rows)
+               (line #f)
+               (min-total-distance +inf.0)
+               (x0 0))
+      (if (null? rows1)
+          line
+          (let* ((first (extract-row (car rows)))
+                 (low-first (first 'low)))
+            (let loop2 ((rest (cdr rows1))
+                        (min-line-poly line)
+                        (min-total-distance min-total-distance)
+                        (x1 (+ x0 1)))
+              (if (null? rest)
+                  (loop (cdr rows1) #?=min-line-poly min-total-distance (+ x0 1))
+                  (let ((line-poly (make-line-poly x0 (first 'low)
+                                                   x1 ((extract-row (car rest)) 'low))))
+                    (let loop3 ((rows rows)
+                                (total-distance 0)
+                                (count 0))
+                      (if (null? rows)
+                          (if (> min-total-distance total-distance)
+                              (loop2 (cdr rest)
+                                     #?=line-poly
+                                     #?=total-distance
+                                     (+ x1 1))
+                              (loop2 (cdr rest) min-line-poly min-total-distance (+ x1 1)))
+                          (let ((row (extract-row (car rows))))
+                            (let ((distance (distance-to-line count (row 'low) line-poly)))
+                              (if (or (= count x0) (= count x1))
+                                  (loop3 (cdr rows) total-distance (+ count 1))
+                                  (if (< distance 0)
+                                      (loop2 (cdr rest) min-line-poly min-total-distance (+ x1 1))
+                                      (loop3 (cdr rows) (+ total-distance distance) (+ count 1)))
+                                  )))))))))))))
+
 (define (format-data data end-time)
+  #?=(min-line data)
   (let ((chart-height 500)
         (chart-width 500))
     `(,(let ((highest (car data))
@@ -206,8 +267,8 @@
     (violet-async
      (^[await]
        (let* ((end-time (date->time-utc (make-date 0 0 0 0 1 1 2019 0)))
-              (data-long (await (^[] (query-data end-time 30 "4 hours"))))
-              (data-short (await (^[] (query-data end-time 30 "1 hour")))))
+              (data-long (await (^[] (query-data end-time 3 "4 hours"))))
+              (data-short (await (^[] (query-data end-time 3 "1 hour")))))
          (respond/ok req (cons "<!DOCTYPE html>"
                                (sxml:sxml->html
                                 (create-page
@@ -233,4 +294,3 @@
          (respond/ok req `(sxml (html (body (h1 "Random Numbers")
                                             ,@(map (^n `(pre ,(x->string n))) nums)
                                             )))))))))
-
