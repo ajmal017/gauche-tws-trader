@@ -116,7 +116,7 @@
                (x0 0))
       (if (null? rows1)
           line
-          (let* ((first (extract-row (car rows)))
+          (let* ((first (extract-row (car rows1)))
                  (low-first (first 'low)))
             (let loop2 ((rest (cdr rows1))
                         (min-line-poly line)
