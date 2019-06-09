@@ -96,7 +96,7 @@
 
 (define (make-line-poly x0 y0 x1 y1)
   ;; returns polynomial in x + by + c = 0
-  (let* ((b (/ (- x0 x1) (- y0 y1)))
+  (let* ((b (- (/ (- x0 x1) (- y0 y1))))
          (c (- (+ x0 (* b y0)))))
     (cons b c)))
 
@@ -123,7 +123,7 @@
                         (min-total-distance min-total-distance)
                         (x1 (+ x0 1)))
               (if (null? rest)
-                  (loop (cdr rows1) #?=min-line-poly min-total-distance (+ x0 1))
+                  (loop (cdr rows1) min-line-poly min-total-distance (+ x0 1))
                   (let ((line-poly (make-line-poly x0 (first 'low)
                                                    x1 ((extract-row (car rest)) 'low))))
                     (let loop3 ((rows rows)
@@ -132,12 +132,13 @@
                       (if (null? rows)
                           (if (> min-total-distance total-distance)
                               (loop2 (cdr rest)
-                                     #?=line-poly
-                                     #?=total-distance
+                                     line-poly
+                                     total-distance
                                      (+ x1 1))
                               (loop2 (cdr rest) min-line-poly min-total-distance (+ x1 1)))
                           (let ((row (extract-row (car rows))))
                             (let ((distance (distance-to-line count (row 'low) line-poly)))
+                              (list count x0 x1 distance)
                               (if (or (= count x0) (= count x1))
                                   (loop3 (cdr rows) total-distance (+ count 1))
                                   (if (< distance 0)
@@ -145,8 +146,19 @@
                                       (loop3 (cdr rows) (+ total-distance distance) (+ count 1)))
                                   )))))))))))))
 
+(define (draw-min-line poly chart-width count transform half-bar-width)
+  (let ((b (car poly))
+        (c (cdr poly))
+        (x0 0)
+        (x1 (- count 1)))
+    `(line (@ (x1 ,(+ (x->integer (* chart-width (/ x0 count))) half-bar-width))
+              (y1 ,(transform (- (/ (+ x0 c) b))))
+              (x2 ,(+ (x->integer (* chart-width (/ x1 count))) half-bar-width))
+              (y2 ,(transform (- (/ (+ x1 c) b))))
+              (style ,#`"stroke:black;stroke-width:1"))
+           )))
+
 (define (format-data data end-time)
-  #?=(min-line data)
   (let ((chart-height 500)
         (chart-width 500))
     `(,(let ((highest (car data))
@@ -167,7 +179,8 @@
                            (let ((row (car rows)))
                              (let ((bar (make-bar-from-row row chart-width half-bar-width bar-width
                                                            count index translate)))
-                               (loop (cdr rows) (+ 1 index) (cons bar dest)))))))))))))
+                               (loop (cdr rows) (+ 1 index) (cons bar dest))))))
+                   ,(draw-min-line (min-line data) chart-width count translate half-bar-width))))))))
 
 (define (create-page . children)
   `(html
@@ -267,8 +280,8 @@
     (violet-async
      (^[await]
        (let* ((end-time (date->time-utc (make-date 0 0 0 0 1 1 2019 0)))
-              (data-long (await (^[] (query-data end-time 3 "4 hours"))))
-              (data-short (await (^[] (query-data end-time 3 "1 hour")))))
+              (data-long (await (^[] (query-data end-time 30 "4 hours"))))
+              (data-short (await (^[] (query-data end-time 30 "1 hour")))))
          (respond/ok req (cons "<!DOCTYPE html>"
                                (sxml:sxml->html
                                 (create-page
