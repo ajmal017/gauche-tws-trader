@@ -193,7 +193,7 @@
 
 (define (format-data data end-time)
   (let ((chart-height 500)
-        (chart-width 500))
+        (chart-width 800))
     `(,(let ((highest (car data))
              (lowest (cadr data))
              (rows (caddr data))
@@ -319,14 +319,11 @@
     (violet-async
      (^[await]
        (let* ((end-time (date->time-utc (make-date 0 0 0 0 1 1 2019 0)))
-              (data-long (await (^[] (query-data end-time 30 "4 hours"))))
-              (data-short (await (^[] (query-data end-time 30 "1 hour")))))
+              (data-short (await (^[] (query-data end-time (* 24 5) "1 hour")))))
          (respond/ok req (cons "<!DOCTYPE html>"
                                (sxml:sxml->html
                                 (create-page
                                  `(html (body (p ,#`"USD.EUR ,(date->string (time-utc->date end-time))")
-                                              (h2 "4 hours")
-                                              (div ,@(format-data data-long end-time))
                                               (h2 "1 hour")
                                               (div ,@(format-data data-short end-time))
                                               )))))))))))
