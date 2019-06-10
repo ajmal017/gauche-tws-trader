@@ -80,6 +80,7 @@
         (high  (cadddr row))
         (low   (car (cddddr row))))
     (let* ((x (x->integer (* chart-width (/ index count))))
+           (line-color (if (> open close) "red" "black"))
            (color (if (> open close) "red" "white")))
       (let ((bar (list `(line (@ (x1 ,(+ x half-bar-width))
                                  (y1 ,(transform-y high))
@@ -91,7 +92,7 @@
                                  (width ,bar-width)
                                  (height ,(abs (- (transform-y open)
                                                   (transform-y close))))
-                                 (style ,#`"fill:,color;stroke:black;stroke-width:1"))))))
+                                 (style ,#`"fill:,color;stroke:,line-color;stroke-width:1"))))))
         bar))))
 
 (define (make-line-poly x0 y0 x1 y1)
@@ -171,7 +172,7 @@
 
 (define (format-data data end-time)
   (let ((chart-height 500)
-        (chart-width 800))
+        (chart-width 1000))
     `(,(let ((highest (car data))
              (lowest (cadr data))
              (rows (caddr data))
@@ -300,7 +301,7 @@
     (violet-async
      (^[await]
        (let* ((end-time (date->time-utc (make-date 0 0 0 0 1 1 2019 0)))
-              (data-short (await (^[] (query-data end-time (* 24 5) "1 hour")))))
+              (data-short (await (^[] (query-data end-time (* 24 5 4) "1 hour")))))
          (respond/ok req (cons "<!DOCTYPE html>"
                                (sxml:sxml->html
                                 (create-page
