@@ -4,4 +4,4 @@
 
 (select-module config)
 
-(define db-host "localhost")
+(define db-host "postgres")
