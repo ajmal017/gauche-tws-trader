@@ -73,7 +73,7 @@
       ((high)  (cadddr row))
       ((low)   (car (cddddr row))))))
 
-(define (make-bar-from-row row chart-width half-bar-width bar-width count index translate)
+(define (make-bar-from-row row chart-width half-bar-width bar-width count index transform-y)
   (let ((time  (car row))
         (open  (cadr row))
         (close (caddr row))
@@ -82,15 +82,15 @@
     (let* ((x (x->integer (* chart-width (/ index count))))
            (color (if (> open close) "red" "white")))
       (let ((bar (list `(line (@ (x1 ,(+ x half-bar-width))
-                                 (y1 ,(translate high))
+                                 (y1 ,(transform-y high))
                                  (x2 ,(+ x half-bar-width))
-                                 (y2 ,(translate low))
+                                 (y2 ,(transform-y low))
                                  (style "stroke:black;stroke-width:2")))
                        `(rect (@ (x ,x)
-                                 (y ,(translate (max open close)))
+                                 (y ,(transform-y (max open close)))
                                  (width ,bar-width)
-                                 (height ,(abs (- (translate open)
-                                                  (translate close))))
+                                 (height ,(abs (- (transform-y open)
+                                                  (transform-y close))))
                                  (style ,#`"fill:,color;stroke:black;stroke-width:1"))))))
         bar))))
 
@@ -179,7 +179,7 @@
                                     (loop3 (cdr rows) (- total-distance distance) (+ count 1)))
                                 ))))))))))))
 
-(define (draw-min-line poly chart-width count transform half-bar-width)
+(define (draw-line poly chart-width count transform half-bar-width)
   (let ((b (car poly))
         (c (cdr poly))
         (x0 0)
@@ -198,8 +198,13 @@
              (lowest (cadr data))
              (rows (caddr data))
              (count (cadddr data)))
-         (let ((translate (^v (- chart-height
-                                 (* (- v lowest) (/ chart-height (- highest lowest)))))))
+         (let ((transform-y
+                (^v (- chart-height
+                       (* (- v lowest)
+                          (/ chart-height
+                             (- highest lowest))
+                          0.8)
+                       (* chart-height 0.1)))))
            (let* ((step (/ chart-width count))
                   (bar-width (x->integer (/ step 2)))
                   (half-bar-width (x->integer (/ step 4))))
@@ -211,10 +216,10 @@
                            (reverse dest)
                            (let ((row (car rows)))
                              (let ((bar (make-bar-from-row row chart-width half-bar-width bar-width
-                                                           count index translate)))
+                                                           count index transform-y)))
                                (loop (cdr rows) (+ 1 index) (cons bar dest))))))
-                   ,(draw-min-line (min-line data) chart-width count translate half-bar-width)
-                   ,(draw-min-line (max-line data) chart-width count translate half-bar-width))))))))
+                   ,(draw-line (min-line data) chart-width count transform-y half-bar-width)
+                   ,(draw-line (max-line data) chart-width count transform-y half-bar-width))))))))
 
 (define (create-page . children)
   `(html
