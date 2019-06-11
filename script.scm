@@ -73,6 +73,9 @@
       ((high)  (cadddr row))
       ((low)   (car (cddddr row))))))
 
+(define (low-of row) (car (cddddr row)))
+(define (high-of row) (cadddr row))
+
 (define (make-bar-from-row row chart-width half-bar-width bar-width count index transform-y)
   (let ((time  (car row))
         (open  (cadr row))
@@ -138,21 +141,23 @@
                               )))))))))))
 
 (define (min-line data)
-  (line-from-rows (caddr data) (^[row] ((extract-row row) 'low)) (^[distance] (< distance 0)) +))
+  (line-from-rows (caddr data) low-of (^[distance] (< distance 0)) +))
 
 (define (max-line data)
-  (line-from-rows (caddr data) (^[row] ((extract-row row) 'high)) (^[distance] (> distance 0)) -))
+  (line-from-rows (caddr data) high-of (^[distance] (> distance 0)) -))
 
 (define (min-line-recent data total-points points)
   (offset-line
    (line-from-rows (take-right (caddr data) points)
-                   (^[row] ((extract-row row) 'low)) (^[distance] (< distance 0)) +)
+                   low-of
+                   negative? +)
    (- total-points points)))
 
 (define (max-line-recent data total-points points)
   (offset-line
    (line-from-rows (take-right (caddr data) points)
-                   (^[row] ((extract-row row) 'high)) (^[distance] (> distance 0)) -)
+                   high-of
+                   positive? -)
    (- total-points points)))
 
 (define (offset-line poly offset-x)
