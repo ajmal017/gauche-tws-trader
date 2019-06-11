@@ -154,9 +154,6 @@
 (define (max-line/range data offset points)
   (offset-line (line-from-rows (splice-data data offset points) high-of positive? -) offset))
 
-(define (min-line data) (min-line/range data 0 (count-of data)))
-(define (max-line data) (max-line/range data 0 (count-of data)))
-
 (define (offset-line poly offset-x)
   (cons (car poly) (- (cdr poly) offset-x)))
 
