@@ -140,25 +140,22 @@
                                   (loop3 (cdr rows) (accum total-distance distance) (+ count 1)))
                               )))))))))))
 
-(define (min-line data)
-  (line-from-rows (caddr data) low-of (^[distance] (< distance 0)) +))
+(define (splice-data data offset length)
+  (let ((list (rows-of data))
+        (total-length (count-of data)))
+    (take (take-right list (- total-length offset)) length)))
 
-(define (max-line data)
-  (line-from-rows (caddr data) high-of (^[distance] (> distance 0)) -))
+(define rows-of caddr)
+(define count-of cadddr)
 
-(define (min-line-recent data total-points points)
-  (offset-line
-   (line-from-rows (take-right (caddr data) points)
-                   low-of
-                   negative? +)
-   (- total-points points)))
+(define (min-line/range data offset points)
+  (offset-line (line-from-rows (splice-data data offset points) low-of negative? +) offset))
 
-(define (max-line-recent data total-points points)
-  (offset-line
-   (line-from-rows (take-right (caddr data) points)
-                   high-of
-                   positive? -)
-   (- total-points points)))
+(define (max-line/range data offset points)
+  (offset-line (line-from-rows (splice-data data offset points) high-of positive? -) offset))
+
+(define (min-line data) (min-line/range data 0 (count-of data)))
+(define (max-line data) (max-line/range data 0 (count-of data)))
 
 (define (offset-line poly offset-x)
   (cons (car poly) (- (cdr poly) offset-x)))
@@ -203,9 +200,9 @@
                                                            count index transform-y)))
                                (loop (cdr rows) (+ 1 index) (cons bar dest))))))
                    ,(draw-line (min-line data) chart-width count transform-y half-bar-width)
-                   ,(draw-line (min-line-recent data count 24) chart-width count transform-y half-bar-width)
+                   ,(draw-line (min-line/range data (- count 24) 24) chart-width count transform-y half-bar-width)
                    ,(draw-line (max-line data) chart-width count transform-y half-bar-width)
-                   ,(draw-line (max-line-recent data count 24) chart-width count transform-y half-bar-width)
+                   ,(draw-line (max-line/range data (- count 24) 24) chart-width count transform-y half-bar-width)
                    )))))))
 
 (define (create-page . children)
@@ -306,7 +303,7 @@
     (violet-async
      (^[await]
        (let* ((end-time (date->time-utc (make-date 0 0 0 0 1 1 2019 0)))
-              (data-short (await (^[] (query-data end-time (* 24 5 4) "1 hour")))))
+              (data-short (await (^[] (query-data end-time (* 24 5) "1 hour")))))
          (respond/ok req (cons "<!DOCTYPE html>"
                                (sxml:sxml->html
                                 (create-page
