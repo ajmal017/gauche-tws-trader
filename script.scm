@@ -109,7 +109,14 @@
         (c (cdr poly)))
     (+ y (/ (+ x c) b))))
 
-(define (line-from-rows rows pick filter accum)
+(define (line-from-rows rows pick filter accum step)
+  (define (kdr lst)
+    (let loop ((lst lst)
+               (step step))
+      (if (or (zero? step) (null? lst))
+          lst
+          (loop (cdr lst) (- step 1)))))
+
   (let loop ((rows1 rows)
              (line #f)
              (min-total-distance +inf.0)
@@ -117,12 +124,12 @@
     (if (null? rows1)
         line
         (let* ((low-first (pick (car rows1))))
-          (let loop2 ((rest (cdr rows1))
+          (let loop2 ((rest (kdr rows1))
                       (min-line-poly line)
                       (min-total-distance min-total-distance)
-                      (x1 (+ x0 1)))
+                      (x1 (+ x0 step)))
             (if (null? rest)
-                (loop (cdr rows1) min-line-poly min-total-distance (+ x0 1))
+                (loop (kdr rows1) min-line-poly min-total-distance (+ x0 step))
                 (let ((line-poly (make-line-poly x0 low-first
                                                  x1 (pick (car rest)))))
                   (let loop3 ((rows rows)
@@ -130,14 +137,14 @@
                               (count 0))
                     (if (null? rows)
                         (if (> min-total-distance total-distance)
-                            (loop2 (cdr rest) line-poly     total-distance     (+ x1 1))
-                            (loop2 (cdr rest) min-line-poly min-total-distance (+ x1 1)))
+                            (loop2 (kdr rest) line-poly     total-distance     (+ x1 step))
+                            (loop2 (kdr rest) min-line-poly min-total-distance (+ x1 step)))
                         (let* ((distance (distance-to-line count (pick (car rows)) line-poly)))
                           (if (or (= count x0) (= count x1))
-                              (loop3 (cdr rows) total-distance (+ count 1))
+                              (loop3 (kdr rows) total-distance (+ count step))
                               (if (filter distance)
-                                  (loop2 (cdr rest) min-line-poly min-total-distance (+ x1 1))
-                                  (loop3 (cdr rows) (accum total-distance distance) (+ count 1)))
+                                  (loop2 (kdr rest) min-line-poly min-total-distance (+ x1 step))
+                                  (loop3 (kdr rows) (accum total-distance distance) (+ count step)))
                               )))))))))))
 
 (define (splice-data data offset length)
@@ -149,13 +156,19 @@
 (define count-of cadddr)
 
 (define (min-line/range data offset points)
-  (offset-line (line-from-rows (splice-data data offset points) low-of negative? +) offset))
+  (offset-line (line-from-rows (splice-data data offset points) low-of negative? + 1) offset))
 
 (define (max-line/range data offset points)
-  (offset-line (line-from-rows (splice-data data offset points) high-of positive? -) offset))
+  (offset-line (line-from-rows (splice-data data offset points) high-of positive? - 1) offset))
+
+(define (min-line/range/step data offset points step)
+  (offset-line (line-from-rows (splice-data data offset points) low-of negative? + step) offset))
+
+(define (max-line/range/step data offset points step)
+  (offset-line (line-from-rows (splice-data data offset points) high-of positive? - step) offset))
 
 (define (offset-line poly offset-x)
-  (cons (car poly) (- (cdr poly) offset-x)))
+  (cons (car #?=poly) (- (cdr poly) offset-x)))
 
 (define (draw-line poly chart-width count transform half-bar-width)
   (let ((b (car poly))
@@ -197,9 +210,9 @@
                              (let ((bar (make-bar-from-row row chart-width half-bar-width bar-width
                                                            count index transform-y)))
                                (loop (cdr rows) (+ 1 index) (cons bar dest))))))
-                   ,(draw-line* (min-line/range data 0 (- count 24)))
+                   ,(draw-line* (min-line/range/step data 0 (- count 24) 4))
                    ,(draw-line* (min-line/range data (- count 24) 24))
-                   ,(draw-line* (max-line/range data 0 (- count 24)))
+                   ,(draw-line* (max-line/range/step data 0 (- count 24) 4))
                    ,(draw-line* (max-line/range data (- count 24) 24))
                    )))))))
 
@@ -301,7 +314,7 @@
     (violet-async
      (^[await]
        (let* ((end-time (date->time-utc (make-date 0 0 0 0 1 1 2019 0)))
-              (data-short (await (^[] (query-data end-time (* 24 5) "1 hour")))))
+              (data-short (await (^[] (query-data end-time (* 24 5 2.3) "1 hour")))))
          (respond/ok req (cons "<!DOCTYPE html>"
                                (sxml:sxml->html
                                 (create-page
