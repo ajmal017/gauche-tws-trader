@@ -210,10 +210,10 @@
                              (let ((bar (make-bar-from-row row chart-width half-bar-width bar-width
                                                            count index transform-y)))
                                (loop (cdr rows) (+ 1 index) (cons bar dest))))))
-                   ,(draw-line* (min-line/range/step data 0 (- count 24) 4))
-                   ,(draw-line* (min-line/range data (- count 24) 24))
-                   ,(draw-line* (max-line/range/step data 0 (- count 24) 4))
-                   ,(draw-line* (max-line/range data (- count 24) 24))
+                   ,(draw-line* (min-line/range/step data 0 (- count 48) 4))
+                   ,(draw-line* (min-line/range data (- count 48) 24))
+                   ,(draw-line* (max-line/range/step data 0 (- count 48) 4))
+                   ,(draw-line* (max-line/range data (- count 48) 24))
                    )))))))
 
 (define (create-page . children)
