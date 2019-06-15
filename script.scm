@@ -246,7 +246,7 @@
            "  }"
            "}"
            ))
-      (link (@ (rel "stylesheet") (href "static/starter-template.css"))))
+      (link (@ (rel "stylesheet") (href "/static/starter-template.css"))))
      (body
       (nav (@ (class "navbar navbar-expand-md navbar-dark bg-dark fixed-top"))
              (a (@ (href "#") (class "navbar-brand")) "Trader")
@@ -309,19 +309,28 @@
   )
 
 
+(define-http-handler #/^\/(\d+)\/(\d+)\/(\d+)\/(\d+)\/(\d+)\/?/
+  (^[req app]
+    (let-params req ([year   "p:1" :convert x->integer]
+                     [month  "p:2" :convert x->integer]
+                     [date   "p:3" :convert x->integer]
+                     [hour   "p:4" :convert x->integer]
+                     [minute "p:5" :convert x->integer])
+      (violet-async
+       (^[await]
+         (let* ((end-time (date->time-utc (make-date 0 0 minute hour date month year 0)))
+                (data (await (^[] (query-data end-time (* 24 5 4) "1 hour")))))
+           (respond/ok req (cons "<!DOCTYPE html>"
+                                 (sxml:sxml->html
+                                  (create-page
+                                   `(html (body (p ,#`"USD.EUR ,(date->string (time-utc->date end-time))")
+                                                (h2 "1 hour")
+                                                (div ,@(format-data data end-time))
+                                                ))))))))))))
+
 (define-http-handler "/"
   (^[req app]
-    (violet-async
-     (^[await]
-       (let* ((end-time (date->time-utc (make-date 0 0 0 0 1 1 2019 0)))
-              (data-short (await (^[] (query-data end-time (* 24 5 2.3) "1 hour")))))
-         (respond/ok req (cons "<!DOCTYPE html>"
-                               (sxml:sxml->html
-                                (create-page
-                                 `(html (body (p ,#`"USD.EUR ,(date->string (time-utc->date end-time))")
-                                              (h2 "1 hour")
-                                              (div ,@(format-data data-short end-time))
-                                              )))))))))))
+    (respond/redirect req "/2019/1/1/0/0") ))
 
 (define-http-handler #/^\/static\// (file-handler))
 
