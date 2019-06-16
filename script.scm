@@ -21,17 +21,6 @@
 ;; Application
 ;;
 
-(define (get-random)
-  (call-with-input-file "/dev/random"
-    (^p
-     (let* ((ch (read-char p))
-            (result (if (char? ch)
-                        (let ((num (char->integer ch)))
-                          (thread-sleep! (/ num 1000))
-                          num)
-                        (x->string ch))))
-       result))))
-
 (define *conn* (dbi-connect #`"dbi:pg:user=postgres;host=,db-host"))
 
 (define query-data
@@ -60,18 +49,6 @@
                               (+ 1 count))))
                          '(0 9999999 () 0) result)))
         dest))))
-
-(define *hour* (seconds->time 3600))
-(define *day* (seconds->time (* 3600 24)))
-
-(define (extract-row row)
-  (lambda (slot)
-    (case slot
-      ((time)  (car row))
-      ((open)  (cadr row))
-      ((close) (caddr row))
-      ((high)  (cadddr row))
-      ((low)   (car (cddddr row))))))
 
 (define (low-of row) (car (cddddr row)))
 (define (high-of row) (cadddr row))
@@ -335,17 +312,3 @@
     (respond/redirect req "/2019/1/1/0/0") ))
 
 (define-http-handler #/^\/static\// (file-handler))
-
-#;(define-http-handler "/"
-  (^[req app]
-    (violet-async
-     (^[await]
-       (let* ((count (let ((n (await get-random))) (if (integer? n) (modulo n 10) 1)))
-              (nums (let loop ((count count) (dest ()))
-                      (if (zero? count)
-                          dest
-                          (loop (- count 1)
-                                (cons (await get-random) dest))))))
-         (respond/ok req `(sxml (html (body (h1 "Random Numbers")
-                                            ,@(map (^n `(pre ,(x->string n))) nums)
-                                            )))))))))
