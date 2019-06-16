@@ -22,13 +22,12 @@
 (define *conn* (dbi-connect #`"dbi:pg:user=postgres;host=,db-host"))
 
 (define (make-bar-from-row row chart-width half-bar-width bar-width count index transform-y)
-  (let ((time  (car row))
+  (let ((date  (car row))
         (open  (cadr row))
         (close (caddr row))
         (high  (cadddr row))
         (low   (car (cddddr row))))
-    (let* ((date (time-utc->date time))
-           (x (x->integer (* chart-width (/ index count))))
+    (let* ((x (x->integer (* chart-width (/ index count))))
            (line-color (if (> open close) "red" "black"))
            (color (if (> open close) "red" "white")))
       (let ((bar `(a (@ (href ,#`"/,(date-year date)/,(date-month date)/,(date-day date)/,(date-hour date)/,(date-minute date)"))
@@ -57,7 +56,7 @@
               (style ,#`"stroke:black;stroke-width:1"))
            )))
 
-(define (format-data data end-time)
+(define (format-data data)
   (let ((chart-height 500)
         (chart-width 1000))
     `(,(let ((highest (car data))
@@ -193,14 +192,14 @@
                      [minute "p:5" :convert x->integer])
       (violet-async
        (^[await]
-         (let* ((end-time (date->time-utc (make-date 0 0 minute hour date month year 0)))
-                (data (await (^[] (query-data *conn* end-time (* 24 5 4) "1 hour")))))
+         (let* ((end-date (make-date 0 0 minute hour date month year 0))
+                (data (await (^[] (query-data *conn* end-date (* 24 5 4) "1 hour")))))
            (respond/ok req (cons "<!DOCTYPE html>"
                                  (sxml:sxml->html
                                   (create-page
-                                   `(html (body (p ,#`"USD.EUR ,(date->string (time-utc->date end-time))")
+                                   `(html (body (p ,#`"USD.EUR ,(date->string end-date)")
                                                 (h2 "1 hour")
-                                                (div ,@(format-data data end-time))
+                                                (div ,@(format-data data))
                                                 ))))))))))))
 
 (define-http-handler "/"

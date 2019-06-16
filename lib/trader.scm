@@ -15,9 +15,9 @@
 
 (select-module trader)
 
-(define (query-data conn end-time count size)
+(define (query-data conn end-date count size)
   (let ((query (dbi-prepare conn "SELECT DISTINCT time, open, high, low, close FROM bars WHERE time <= to_timestamp(?) and size = ? order by time desc limit ?")))
-    (let* ((end-sec (time->seconds end-time))
+    (let* ((end-sec (time->seconds (date->time-utc end-date)))
            (result (dbi-execute query end-sec size count))
            (getter (relation-accessor result))
            (dest (fold (lambda (row part)
@@ -30,8 +30,8 @@
                            (list
                             (max high highest)
                             (min low lowest)
-                            (cons (list (date->time-utc (string->date (getter row "time")
-                                                                      "~Y-~m-~d ~H:~M:~S"))
+                            (cons (list (string->date (getter row "time")
+                                                      "~Y-~m-~d ~H:~M:~S")
                                         (string->number (getter row "open"))
                                         (string->number (getter row "close"))
                                         high
