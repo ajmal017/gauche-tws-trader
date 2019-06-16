@@ -1,6 +1,3 @@
-(use gauche.threads)
-(use gauche.collection)
-(use rfc.http)
 (use sxml.tools)
 
 (use srfi-19)
