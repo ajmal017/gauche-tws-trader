@@ -23,32 +23,31 @@
 
 (define *conn* (dbi-connect #`"dbi:pg:user=postgres;host=,db-host"))
 
-(define query-data
-  (let ((query (dbi-prepare *conn* "SELECT DISTINCT time, open, high, low, close FROM bars WHERE time <= to_timestamp(?) and size = ? order by time desc limit ?")))
-    (lambda (end-time count size)
-      (let* ((end-sec (time->seconds end-time))
-             (result (dbi-execute query end-sec size count))
-             (getter (relation-accessor result))
-             (dest (fold (lambda (row part)
-                           (let ((highest (car part))
-                                 (lowest (cadr part))
-                                 (rows (caddr part))
-                                 (count (cadddr part))
-                                 (high (string->number (getter row "high")))
-                                 (low (string->number (getter row "low"))))
-                             (list
-                              (max high highest)
-                              (min low lowest)
-                              (cons (list (date->time-utc (string->date (getter row "time")
-                                                                        "~Y-~m-~d ~H:~M:~S"))
-                                          (string->number (getter row "open"))
-                                          (string->number (getter row "close"))
-                                          high
-                                          low)
-                                    rows)
-                              (+ 1 count))))
-                         '(0 9999999 () 0) result)))
-        dest))))
+(define (query-data conn end-time count size)
+  (let ((query (dbi-prepare conn "SELECT DISTINCT time, open, high, low, close FROM bars WHERE time <= to_timestamp(?) and size = ? order by time desc limit ?")))
+    (let* ((end-sec (time->seconds end-time))
+           (result (dbi-execute query end-sec size count))
+           (getter (relation-accessor result))
+           (dest (fold (lambda (row part)
+                         (let ((highest (car part))
+                               (lowest (cadr part))
+                               (rows (caddr part))
+                               (count (cadddr part))
+                               (high (string->number (getter row "high")))
+                               (low (string->number (getter row "low"))))
+                           (list
+                            (max high highest)
+                            (min low lowest)
+                            (cons (list (date->time-utc (string->date (getter row "time")
+                                                                      "~Y-~m-~d ~H:~M:~S"))
+                                        (string->number (getter row "open"))
+                                        (string->number (getter row "close"))
+                                        high
+                                        low)
+                                  rows)
+                            (+ 1 count))))
+                       '(0 9999999 () 0) result)))
+      dest)))
 
 (define (low-of row) (car (cddddr row)))
 (define (high-of row) (cadddr row))
@@ -298,7 +297,7 @@
       (violet-async
        (^[await]
          (let* ((end-time (date->time-utc (make-date 0 0 minute hour date month year 0)))
-                (data (await (^[] (query-data end-time (* 24 5 4) "1 hour")))))
+                (data (await (^[] (query-data *conn* end-time (* 24 5 4) "1 hour")))))
            (respond/ok req (cons "<!DOCTYPE html>"
                                  (sxml:sxml->html
                                   (create-page
