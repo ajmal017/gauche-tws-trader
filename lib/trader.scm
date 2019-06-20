@@ -11,6 +11,8 @@
    min-line/range
    max-line/range/step
    max-line/range
+   low-of
+   high-of
    ))
 
 (select-module trader)

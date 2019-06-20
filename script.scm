@@ -183,7 +183,7 @@
   )
 
 
-(define-http-handler #/^\/(\d+)\/(\d+)\/(\d+)\/(\d+)\/(\d+)\/?/
+(define-http-handler #/^\/(\d+)\/0*(\d+)\/0*(\d+)\/0*(\d+)\/0*(\d+)\/?/
   (^[req app]
     (let-params req ([year   "p:1" :convert x->integer]
                      [month  "p:2" :convert x->integer]
