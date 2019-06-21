@@ -44,17 +44,24 @@
                               )))))
         bar))))
 
-(define (draw-line poly chart-width count transform half-bar-width)
-  (let ((b (car poly))
-        (c (cdr poly))
+(define (draw-line poly chart-width count transform half-bar-width color)
+  (let ((a (car poly))
+        (b (cadr poly))
+        (c (caddr poly))
         (x0 0)
         (x1 (- count 1)))
-    `(line (@ (x1 ,(+ (x->integer (* chart-width (/ x0 count))) half-bar-width))
-              (y1 ,(transform (- (/ (+ x0 c) b))))
-              (x2 ,(+ (x->integer (* chart-width (/ x1 count))) half-bar-width))
-              (y2 ,(transform (- (/ (+ x1 c) b))))
-              (style ,#`"stroke:black;stroke-width:1"))
-           )))
+    (if (zero? a)
+        `(line (@ (x1 0)
+                  (y1 ,(- (/ c b)))
+                  (x2 ,chart-width)
+                  (y2 ,(- (/ c b)))
+                  (style ,#`"stroke:,color;stroke-width:1")))
+        `(line (@ (x1 ,(+ (x->integer (* chart-width (/ x0 count))) half-bar-width))
+                  (y1 ,(transform (- (/ (+ (* a x0) c) b))))
+                  (x2 ,(+ (x->integer (* chart-width (/ x1 count))) half-bar-width))
+                  (y2 ,(transform (- (/ (+ (* a x1) c) b))))
+                  (style ,#`"stroke:,color;stroke-width:1"))
+               ))))
 
 (define (format-data data)
   (let ((chart-height 500)
@@ -73,8 +80,19 @@
            (let* ((step (/ chart-width count))
                   (bar-width (x->integer (/ step 2)))
                   (half-bar-width (x->integer (/ step 4)))
-                  (draw-line* (^[poly] (draw-line poly chart-width count transform-y half-bar-width))))
+                  (draw-line* (^[poly col]
+                                (draw-line poly chart-width count transform-y half-bar-width col))))
              `(svg (@ (width ,chart-width) (height ,chart-height))
+                   (rect (@ (x ,(- chart-width (* 24 step)))
+                            (y 0)
+                            (width ,(* 24 step))
+                            (height ,chart-height)
+                            (style "stroke:none;fill:azure")))
+                   (rect (@ (x ,(- chart-width (* 48 step)))
+                            (y 0)
+                            (width ,(* 24 step))
+                            (height ,chart-height)
+                            (style "stroke:none;fill:Lavender")))
                    ,@(let loop ((rows rows)
                                 (index 0)
                                 (dest ()))
@@ -84,10 +102,10 @@
                              (let ((bar (make-bar-from-row row chart-width half-bar-width bar-width
                                                            count index transform-y)))
                                (loop (cdr rows) (+ 1 index) (cons bar dest))))))
-                   ,(draw-line* (min-line/range/step data 0 (- count 48) 4))
-                   ,(draw-line* (min-line/range data (- count 48) 24))
-                   ,(draw-line* (max-line/range/step data 0 (- count 48) 4))
-                   ,(draw-line* (max-line/range data (- count 48) 24))
+                   ,(draw-line* (min-line/range/step data 0            (- count 48) 4) "black")
+                   ,(draw-line* (min-line/range      data (- count 48) 23)             "black")
+                   ,(draw-line* (max-line/range/step data 0            (- count 48) 4) "blue")
+                   ,(draw-line* (max-line/range      data (- count 48) 23)             "blue")
                    )))))))
 
 (define (create-page . children)
@@ -182,6 +200,11 @@
               "")))
   )
 
+(define (next-day date)
+  (let* ((time (date->time-utc date))
+         (a-day (make-time time-duration 0 (* 24 60 60)))
+         (next-day-time (add-duration time a-day)))
+    (time-utc->date next-day-time)))
 
 (define-http-handler #/^\/(\d+)\/0*(\d+)\/0*(\d+)\/0*(\d+)\/0*(\d+)\/?/
   (^[req app]
@@ -193,7 +216,7 @@
       (violet-async
        (^[await]
          (let* ((end-date (make-date 0 0 minute hour date month year 0))
-                (data (await (^[] (query-data *conn* end-date (* 24 5 4) "1 hour")))))
+                (data (await (^[] (query-data *conn* (next-day end-date) (* 24 5) "1 hour")))))
            (respond/ok req (cons "<!DOCTYPE html>"
                                  (sxml:sxml->html
                                   (create-page
