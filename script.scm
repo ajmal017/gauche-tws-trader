@@ -216,7 +216,7 @@
       (violet-async
        (^[await]
          (let* ((end-date (make-date 0 0 minute hour date month year 0))
-                (data (await (^[] (query-data *conn* (next-day end-date) (* 24 5) "1 hour")))))
+                (data (await (^[] (query-data *conn* (next-day end-date) (* 24 5 4) "1 hour")))))
            (respond/ok req (cons "<!DOCTYPE html>"
                                  (sxml:sxml->html
                                   (create-page
