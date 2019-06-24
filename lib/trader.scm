@@ -118,12 +118,6 @@
 (define rows-of caddr)
 (define count-of cadddr)
 
-;; (define (min-line/range data offset points)
-;;   (offset-line (line-from-rows (splice-data data offset points) low-of negative? - 1) offset))
-
-;; (define (max-line/range data offset points)
-;;   (offset-line (line-from-rows (splice-data data offset points) high-of negative? - 1) offset))
-
 (define (square-add a b)
   (let ((dest (+ a (* b b))))
     (when (nan? dest)
