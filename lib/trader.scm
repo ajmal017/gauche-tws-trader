@@ -1,5 +1,6 @@
 (define-module trader
   (use gauche.collection)
+  (use gauche.record)
   (use srfi-19)
 
   (use dbi)
@@ -49,7 +50,9 @@
 (define (low-of row) (car (cddddr row)))
 (define (high-of row) (cadddr row))
 
-(define (make-poly a b c)
+(define-record-type poly #t #t a b c)
+
+#;(define (make-poly a b c)
   (list a b c))
 
 (define (make-line-poly x0 y0 x1 y1)
@@ -137,9 +140,9 @@
 (define (max-line/range data offset points)
   (max-line/range/step data offset points 1))
 
-(define poly-a car)
-(define poly-b cadr)
-(define poly-c caddr)
+;; (define poly-a car)
+;; (define poly-b cadr)
+;; (define poly-c caddr)
 
 (define (offset-line poly offset-x)
   (let ((a (poly-a poly))
@@ -147,4 +150,4 @@
         (c (poly-c poly)))
     (if (zero? a)
         poly
-        (list a b (- c offset-x)))))
+        (make-poly a b (- c offset-x)))))

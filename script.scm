@@ -45,9 +45,9 @@
         bar))))
 
 (define (draw-line poly chart-width count transform half-bar-width color)
-  (let ((a (car poly))
-        (b (cadr poly))
-        (c (caddr poly))
+  (let ((a (poly-a poly))
+        (b (poly-b poly))
+        (c (poly-c poly))
         (x0 0)
         (x1 (- count 1)))
     (if (zero? a)
