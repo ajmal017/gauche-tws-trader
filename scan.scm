@@ -18,9 +18,12 @@
 (define (same-trend? p1 p2)
   (> (* (poly-a p1) (poly-b p1) (poly-a p2) (poly-b p2)) 0))
 
+(define (gradient poly)
+  (- (/ (poly-a poly) (poly-b poly))))
+
 (define (gradient> p1 p2)
-  (> (abs (/ (poly-a p1) (poly-b p1)))
-     (abs (/ (poly-a p2) (poly-b p2)))))
+  (> (abs (gradient p1))
+     (abs (gradient p2))))
 
 (define (last-value poly pick data)
   (let ((rows (caddr data))
@@ -40,7 +43,7 @@
             (short-trend-min (min-line/range data (- count 24) 23))
             (long-trend-max  (max-line/range/step data 0 (- count 24) 4))
             (short-trend-max (max-line/range data (- count 24) 23)))
-        (if (and (negative? (poly-b long-trend-min))
+        (if (and (positive? (gradient long-trend-min))
                  (same-trend? long-trend-min short-trend-min)
                  (gradient> short-trend-min long-trend-min))
             (let ((val (last-value short-trend-min low-of data)))
@@ -49,7 +52,7 @@
                   (print "SELL!")
                   (print "ready to sell"))
               #t)
-            (if (and (positive? (poly-b long-trend-max))
+            (if (and (negative? (gradient long-trend-max))
                      (same-trend? long-trend-max short-trend-max)
                      (gradient> short-trend-max long-trend-max))
                 (let ((val (last-value short-trend-max high-of data)))
