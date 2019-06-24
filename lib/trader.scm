@@ -13,6 +13,9 @@
    max-line/range
    low-of
    high-of
+   poly-a
+   poly-b
+   poly-c
    ))
 
 (select-module trader)
@@ -46,21 +49,24 @@
 (define (low-of row) (car (cddddr row)))
 (define (high-of row) (cadddr row))
 
+(define (make-poly a b c)
+  (list a b c))
+
 (define (make-line-poly x0 y0 x1 y1)
   ;; returns polynomial in ax + by + c = 0
   (if (= y0 y1)
-      (list 0 1 (- y0))
+      (make-poly 0 1 (- y0))
       (let* ((b (- (/ (- x0 x1) (- y0 y1))))
              (c (- (+ x0 (* b y0)))))
         (when (or (nan? b) (nan? c) (infinite? b) (infinite? c))
           #?=(list b c x0 y0 x1 y1)
           (error "invalid!"))
-        (list 1 b c))))
+        (make-poly 1 b c))))
 
 (define (distance-to-line x y poly)
-  (let ((a (car poly))
-        (b (cadr poly))
-        (c (caddr poly)))
+  (let ((a (poly-a poly))
+        (b (poly-b poly))
+        (c (poly-c poly)))
     (- y (- (/ (+ (* a x) c) b)))))
 
 (define (line-from-rows rows pick filter accum step)
@@ -137,10 +143,14 @@
 (define (max-line/range data offset points)
   (max-line/range/step data offset points 1))
 
+(define poly-a car)
+(define poly-b cadr)
+(define poly-c caddr)
+
 (define (offset-line poly offset-x)
-  (let ((a (car poly))
-        (b (cadr poly))
-        (c (caddr poly)))
+  (let ((a (poly-a poly))
+        (b (poly-b poly))
+        (c (poly-c poly)))
     (if (zero? a)
         poly
         (list a b (- c offset-x)))))

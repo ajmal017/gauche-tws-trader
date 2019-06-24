@@ -11,10 +11,6 @@
 
 (define *conn* (dbi-connect #`"dbi:pg:user=postgres;host=,db-host"))
 
-(define poly-a car)
-(define poly-b cadr)
-(define poly-c caddr)
-
 (define (same-trend? p1 p2)
   (> (* (poly-a p1) (poly-b p1) (poly-a p2) (poly-b p2)) 0))
 
