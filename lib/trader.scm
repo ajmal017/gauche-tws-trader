@@ -17,6 +17,7 @@
    poly-a
    poly-b
    poly-c
+   distance-to-line
    ))
 
 (select-module trader)
