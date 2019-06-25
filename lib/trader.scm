@@ -85,7 +85,7 @@
              (min-total-distance +inf.0)
              (x0 0))
     (if (null? rows1)
-        line
+        (values line min-total-distance)
         (let* ((low-first (pick (car rows1))))
           (let loop2 ((rest (kdr rows1))
                       (min-line-poly line)
@@ -129,16 +129,24 @@
     dest))
 
 (define (min-line/range/step data offset points step)
-  (offset-line (line-from-rows (splice-data data offset points) low-of positive? square-add step) offset))
+  (receive (line distance)
+           (line-from-rows (splice-data data offset points)
+                                low-of positive? square-add step)
+           (values (offset-line line offset) distance)))
 
 (define (max-line/range/step data offset points step)
-  (offset-line (line-from-rows (splice-data data offset points) high-of negative? square-add step) offset))
+  (receive (line distance)
+           (line-from-rows (splice-data data offset points)
+                           high-of negative? square-add step)
+           (values (offset-line line offset) distance)))
 
 (define (min-line/range data offset points)
-  (min-line/range/step data offset points 1))
+  (receive (line distance) (min-line/range/step data offset points 1)
+           (values line distance)))
 
 (define (max-line/range data offset points)
-  (max-line/range/step data offset points 1))
+  (receive (line distance) (max-line/range/step data offset points 1)
+           (values line distance)))
 
 ;; (define poly-a car)
 ;; (define poly-b cadr)

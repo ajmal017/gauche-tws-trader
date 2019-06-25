@@ -35,15 +35,15 @@
   (let ((data (query-data *conn* date (* 24 19) "1 hour")))
     (let ((rows (caddr data))
           (count (cadddr data)))
-      (let ((long-trend-min  (min-line/range/step data 0 (- count 24) 4))
-            (short-trend-min (min-line/range data (- count 24) 23))
-            (long-trend-max  (max-line/range/step data 0 (- count 24) 4))
-            (short-trend-max (max-line/range data (- count 24) 23)))
+      (let-values (((long-trend-min long-min-dist)  (min-line/range/step data 0 (- count 24) 4))
+                   ((short-trend-min short-min-dist) (min-line/range data (- count 24) 23))
+                   ((long-trend-max long-max-dist)  (max-line/range/step data 0 (- count 24) 4))
+                   ((short-trend-max short-max-dist) (max-line/range data (- count 24) 23)))
         (if (and (positive? (gradient long-trend-min))
                  (same-trend? long-trend-min short-trend-min)
                  (gradient> short-trend-min long-trend-min))
             (let ((val (last-value short-trend-min low-of data)))
-              #?=long-trend-min #?=short-trend-min
+              #?=long-trend-min #?=short-trend-min #?=long-min-dist #?=short-min-dist
               (if (< val 0)
                   (print "SELL!")
                   (print "ready to sell"))
@@ -52,7 +52,7 @@
                      (same-trend? long-trend-max short-trend-max)
                      (gradient> short-trend-max long-trend-max))
                 (let ((val (last-value short-trend-max high-of data)))
-                  #?=long-trend-max #?=short-trend-max
+                  #?=long-trend-max #?=short-trend-max #?=long-max-dist #?=short-max-dist
                   (if (> val 0)
                       (print "BUY!")
                       (print "ready to buy"))
