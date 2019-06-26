@@ -41,12 +41,10 @@
             (let* ((price (last-price low-of data))
                    (val (last-distance short-trend-min price data))
                    (earning (last-distance long-trend-min price data)))
-              (if (> earning 0)
+              (if (and (> earning 0) (< val 0))
                   (begin
                     #?=long-min-dist #?=short-min-dist
-                    (if (< val 0)
-                        (print #`"SELL @,price @,earning")
-                        (print "ready to sell"))
+                    (print #`"SELL @,price @,earning")
                     #t)
                   #f))
             (if (and (negative? (gradient long-trend-max))
@@ -55,12 +53,10 @@
                 (let* ((price (last-price high-of data))
                        (val (last-distance short-trend-max price data))
                        (earning (- (last-distance long-trend-max price data))))
-                  (if (> earning 0)
+                  (if (and (> earning 0) (> val 0))
                       (begin
                         #?=long-max-dist #?=short-max-dist
-                        (if (> val 0)
-                            (print #`"BUY @,price @,earning")
-                            (print "ready to buy"))
+                        (print #`"BUY @,price @,earning")
                         #t)
                       #f))
                 #f
