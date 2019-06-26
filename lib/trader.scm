@@ -18,6 +18,8 @@
    poly-b
    poly-c
    distance-to-line
+   count-of
+   rows-of
    ))
 
 (select-module trader)
