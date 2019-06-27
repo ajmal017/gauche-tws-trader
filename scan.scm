@@ -29,8 +29,7 @@
 
 (define (inspect date)
   (let ((data (query-data *conn* date (* 24 19) "1 hour")))
-    (let ((rows (caddr data))
-          (count (cadddr data)))
+    (let ((count (count-of data)))
       (let-values (((long-trend-min long-min-dist)  (min-line/range/step data 0 (- count 24) 4))
                    ((short-trend-min short-min-dist) (min-line/range data (- count 24) 23)))
         (if (and (positive? (gradient long-trend-min))
@@ -38,11 +37,11 @@
                  (gradient> short-trend-min long-trend-min))
             (let* ((price (last-price low-of data))
                    (val (last-distance short-trend-min price data))
-                   (earning (last-distance long-trend-min price data)))
-              (if (and (> earning 0) (< val 0))
+                   (optimal-earning (last-distance long-trend-min price data)))
+              (if (and (> optimal-earning 0) (< val 0))
                   (begin
                     #?=long-min-dist #?=short-min-dist
-                    (print #`"SELL @,price @,earning")
+                    (print #`"SELL @,price @,optimal-earning")
                     #t)
                   #f))
             (let-values (((long-trend-max long-max-dist)  (max-line/range/step data 0 (- count 24) 4))
@@ -52,11 +51,11 @@
                        (gradient> short-trend-max long-trend-max))
                   (let* ((price (last-price high-of data))
                          (val (last-distance short-trend-max price data))
-                         (earning (- (last-distance long-trend-max price data))))
-                    (if (and (> earning 0) (> val 0))
+                         (optimal-earning (- (last-distance long-trend-max price data))))
+                    (if (and (> optimal-earning 0) (> val 0))
                         (begin
                           #?=long-max-dist #?=short-max-dist
-                          (print #`"BUY @,price @,earning")
+                          (print #`"BUY @,price @,optimal-earning")
                           #t)
                         #f))
                   #f
