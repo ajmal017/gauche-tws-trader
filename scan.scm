@@ -68,7 +68,7 @@
          (t2 (time-second (date->time-utc d2)))
          (diff (- t2 t1))
          (mt (make <mersenne-twister>)))
-    (let loop ((n 10))
+    (let loop ((n 2))
       (unless (zero? n)
         (let* ((rand (mt-random-integer mt diff))
                (time (make-time time-utc 0 (+ t1 rand)))
