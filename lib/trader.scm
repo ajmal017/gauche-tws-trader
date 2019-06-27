@@ -12,8 +12,11 @@
    min-line/range
    max-line/range/step
    max-line/range
-   low-of
-   high-of
+   bar-date
+   bar-low
+   bar-high
+   bar-open
+   bar-close
    poly-a
    poly-b
    poly-c
@@ -32,6 +35,13 @@
   rows
   count)
 
+(define-record-type bar #t #t
+  date
+  open
+  close
+  high
+  low)
+
 (define (query-data conn end-date count size)
   (let ((query (dbi-prepare conn "SELECT DISTINCT time, open, high, low, close FROM bars WHERE time <= to_timestamp(?) and size = ? order by time desc limit ?")))
     (let* ((end-sec (time->seconds (date->time-utc end-date)))
@@ -47,19 +57,19 @@
                            (make-data-set
                             (max high highest)
                             (min low lowest)
-                            (cons (list (string->date (getter row "time")
-                                                      "~Y-~m-~d ~H:~M:~S")
-                                        (string->number (getter row "open"))
-                                        (string->number (getter row "close"))
-                                        high
-                                        low)
+                            (cons (make-bar
+                                   (string->date (getter row "time") "~Y-~m-~d ~H:~M:~S")
+                                   (string->number (getter row "open"))
+                                   (string->number (getter row "close"))
+                                   high
+                                   low)
                                   rows)
                             (+ 1 count))))
                        (make-data-set 0 9999999 () 0) result)))
       dest)))
 
-(define (low-of row) (car (cddddr row)))
-(define (high-of row) (cadddr row))
+;; (define (low-of row) (car (cddddr row)))
+;; (define (high-of row) (cadddr row))
 
 (define-record-type poly #t #t a b c)
 
@@ -138,14 +148,14 @@
 
 (define (min-line/range/step data offset points step)
   (receive (line distance)
-           (line-from-rows (splice-data data offset points)
-                                low-of positive? square-add step)
+      (line-from-rows (splice-data data offset points)
+                           bar-low positive? square-add step)
            (values (offset-line line offset) distance)))
 
 (define (max-line/range/step data offset points step)
   (receive (line distance)
            (line-from-rows (splice-data data offset points)
-                           high-of negative? square-add step)
+                           bar-high negative? square-add step)
            (values (offset-line line offset) distance)))
 
 (define (min-line/range data offset points)
