@@ -22,14 +22,14 @@
      (abs (gradient p2))))
 
 (define (last-price pick data)
-  (pick (last (rows-of data))))
+  (pick (last (data-set-rows data))))
 
 (define (last-distance poly price data)
-  (distance-to-line (- (count-of data) 1) price poly))
+  (distance-to-line (- (data-set-count data) 1) price poly))
 
 (define (inspect date)
   (let ((data (query-data *conn* date (* 24 19) "1 hour")))
-    (let ((count (count-of data)))
+    (let ((count (data-set-count data)))
       (let-values (((long-trend-min long-min-dist)  (min-line/range/step data 0 (- count 24) 4))
                    ((short-trend-min short-min-dist) (min-line/range data (- count 24) 23)))
         (if (and (positive? (gradient long-trend-min))

@@ -18,11 +18,19 @@
    poly-b
    poly-c
    distance-to-line
-   count-of
-   rows-of
+   data-set-highest
+   data-set-lowest
+   data-set-count
+   data-set-rows
    ))
 
 (select-module trader)
+
+(define-record-type data-set #t #t
+  highest
+  lowest
+  rows
+  count)
 
 (define (query-data conn end-date count size)
   (let ((query (dbi-prepare conn "SELECT DISTINCT time, open, high, low, close FROM bars WHERE time <= to_timestamp(?) and size = ? order by time desc limit ?")))
@@ -48,7 +56,7 @@
                                   rows)
                             (+ 1 count))))
                        '(0 9999999 () 0) result)))
-      dest)))
+      (apply make-data-set dest))))
 
 (define (low-of row) (car (cddddr row)))
 (define (high-of row) (cadddr row))
@@ -117,12 +125,9 @@
                               )))))))))))
 
 (define (splice-data data offset length)
-  (let ((list (rows-of data))
-        (total-length (count-of data)))
+  (let ((list (data-set-rows data))
+        (total-length (data-set-count data)))
     (take (take-right list (- total-length offset)) length)))
-
-(define rows-of caddr)
-(define count-of cadddr)
 
 (define (square-add a b)
   (let ((dest (+ a (* b b))))

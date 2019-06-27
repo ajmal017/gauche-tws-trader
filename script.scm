@@ -66,10 +66,10 @@
 (define (format-data data)
   (let ((chart-height 500)
         (chart-width 1000))
-    `(,(let ((highest (car data))
-             (lowest (cadr data))
-             (rows (caddr data))
-             (count (cadddr data)))
+    `(,(let ((highest (data-set-highest data))
+             (lowest (data-set-lowest data))
+             (rows (data-set-rows data))
+             (count (data-set-count data)))
          (let ((transform-y
                 (^v (- chart-height
                        (* (- v lowest)
