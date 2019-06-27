@@ -32,9 +32,7 @@
     (let ((rows (caddr data))
           (count (cadddr data)))
       (let-values (((long-trend-min long-min-dist)  (min-line/range/step data 0 (- count 24) 4))
-                   ((short-trend-min short-min-dist) (min-line/range data (- count 24) 23))
-                   ((long-trend-max long-max-dist)  (max-line/range/step data 0 (- count 24) 4))
-                   ((short-trend-max short-max-dist) (max-line/range data (- count 24) 23)))
+                   ((short-trend-min short-min-dist) (min-line/range data (- count 24) 23)))
         (if (and (positive? (gradient long-trend-min))
                  (same-trend? long-trend-min short-trend-min)
                  (gradient> short-trend-min long-trend-min))
@@ -47,20 +45,22 @@
                     (print #`"SELL @,price @,earning")
                     #t)
                   #f))
-            (if (and (negative? (gradient long-trend-max))
-                     (same-trend? long-trend-max short-trend-max)
-                     (gradient> short-trend-max long-trend-max))
-                (let* ((price (last-price high-of data))
-                       (val (last-distance short-trend-max price data))
-                       (earning (- (last-distance long-trend-max price data))))
-                  (if (and (> earning 0) (> val 0))
-                      (begin
-                        #?=long-max-dist #?=short-max-dist
-                        (print #`"BUY @,price @,earning")
-                        #t)
-                      #f))
-                #f
-                ))))))
+            (let-values (((long-trend-max long-max-dist)  (max-line/range/step data 0 (- count 24) 4))
+                         ((short-trend-max short-max-dist) (max-line/range data (- count 24) 23)))
+              (if (and (negative? (gradient long-trend-max))
+                       (same-trend? long-trend-max short-trend-max)
+                       (gradient> short-trend-max long-trend-max))
+                  (let* ((price (last-price high-of data))
+                         (val (last-distance short-trend-max price data))
+                         (earning (- (last-distance long-trend-max price data))))
+                    (if (and (> earning 0) (> val 0))
+                        (begin
+                          #?=long-max-dist #?=short-max-dist
+                          (print #`"BUY @,price @,earning")
+                          #t)
+                        #f))
+                  #f
+                  )))))))
 
 (define (main . args)
   (let* ((d1 (make-date 0 0 0 1 1 4 2018 0))
