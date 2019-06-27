@@ -68,13 +68,7 @@
                        (make-data-set 0 9999999 () 0) result)))
       dest)))
 
-;; (define (low-of row) (car (cddddr row)))
-;; (define (high-of row) (cadddr row))
-
 (define-record-type poly #t #t a b c)
-
-#;(define (make-poly a b c)
-  (list a b c))
 
 (define (make-line-poly x0 y0 x1 y1)
   ;; returns polynomial in ax + by + c = 0
@@ -149,26 +143,22 @@
 (define (min-line/range/step data offset points step)
   (receive (line distance)
       (line-from-rows (splice-data data offset points)
-                           bar-low positive? square-add step)
-           (values (offset-line line offset) distance)))
+                      bar-low positive? square-add step)
+    (values (offset-line line offset) distance)))
 
 (define (max-line/range/step data offset points step)
   (receive (line distance)
-           (line-from-rows (splice-data data offset points)
-                           bar-high negative? square-add step)
-           (values (offset-line line offset) distance)))
+      (line-from-rows (splice-data data offset points)
+                      bar-high negative? square-add step)
+    (values (offset-line line offset) distance)))
 
 (define (min-line/range data offset points)
   (receive (line distance) (min-line/range/step data offset points 1)
-           (values line distance)))
+    (values line distance)))
 
 (define (max-line/range data offset points)
   (receive (line distance) (max-line/range/step data offset points 1)
-           (values line distance)))
-
-;; (define poly-a car)
-;; (define poly-b cadr)
-;; (define poly-c caddr)
+    (values line distance)))
 
 (define (offset-line poly offset-x)
   (let ((a (poly-a poly))
