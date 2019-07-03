@@ -1,4 +1,6 @@
 (use srfi-19)
+(use gauche.record)
+
 (use math.mt-random)
 
 (use dbi)
@@ -27,6 +29,23 @@
 (define (last-distance poly price data)
   (distance-to-line (- (data-set-count data) 1) price poly))
 
+(define-record-type position #t #t
+  date
+  action
+  price
+  upper-limit
+  lower-limit
+  info)
+
+(define-record-type position-info #t #t
+  long-trend-error
+  short-trend-error)
+
+(define-record-type result #t #t
+  closed-at
+  position
+  gain)
+
 (define (inspect date)
   (let ((data (query-data *conn* date (* 24 19) "1 hour")))
     (let ((count (data-set-count data)))
@@ -39,10 +58,8 @@
                    (val (last-distance short-trend-min price data))
                    (optimal-earning (last-distance long-trend-min price data)))
               (if (and (> optimal-earning 0) (< val 0))
-                  (begin
-                    #?=long-min-dist #?=short-min-dist
-                    (print #`"SELL @,price @,optimal-earning")
-                    #t)
+                  (make-position date 'sell price (+ price 0.0003) long-trend-min
+                                 (make-position-info long-min-dist short-min-dist))
                   #f))
             (let-values (((long-trend-max long-max-dist)  (max-line/range/step data 0 (- count 24) 4))
                          ((short-trend-max short-max-dist) (max-line/range data (- count 24) 23)))
@@ -53,29 +70,24 @@
                          (val (last-distance short-trend-max price data))
                          (optimal-earning (- (last-distance long-trend-max price data))))
                     (if (and (> optimal-earning 0) (> val 0))
-                        (begin
-                          #?=long-max-dist #?=short-max-dist
-                          (print #`"BUY @,price @,optimal-earning")
-                          #t)
+                        (make-position date 'buy price long-trend-max (- price 0.0003)
+                                       (make-position-info long-max-dist short-min-dist))
                         #f))
                   #f
                   )))))))
 
+(define one-hour (make-time time-duration 0 (* 60 60)))
+
 (define (main . args)
   (let* ((d1 (make-date 0 0 0 1 1 4 2018 0))
-         (t1 (time-second (date->time-utc d1)))
-         (d2 (make-date 0 0 0 1 1 2 2019 0))
-         (t2 (time-second (date->time-utc d2)))
-         (diff (- t2 t1))
-         (mt (make <mersenne-twister>)))
-    (let loop ((n 2))
-      (unless (zero? n)
-        (let* ((rand (mt-random-integer mt diff))
-               (time (make-time time-utc 0 (+ t1 rand)))
-               (date (time-utc->date time)))
-          (if (inspect date)
-              (begin
+         (t1 (date->time-utc d1))
+         (d2 (make-date 0 0 0 1 5 4 2018 0))
+         (t2 (date->time-utc d2)))
+    (let loop ((t t1))
+      (when (time<? t t2)
+        (let ((date (time-utc->date t)))
+          (when (inspect date)
                 (print (date->string date "http://localhost:2222/~Y/~m/~d/~H/00"))
-                (loop (- n 1)))
-              (loop n)
-              ))))))
+                )
+              (loop (add-duration t one-hour))
+              )))))
