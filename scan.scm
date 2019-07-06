@@ -105,15 +105,20 @@
                                                 short-trend short-err))))))))
 
 (define (inspect date)
-  (let ((data (query-data *conn* date (* 24 19) "1 hour")))
-    (or (inspect-for-sell data) (inspect-for-buy data))))
+  (let* ((data (query-data *conn* date (* 24 19) "1 hour"))
+         (actual-date (last-date data)))
+    (and (<= (time-second (time-difference (date->time-utc actual-date) (date->time-utc date)))
+             (* 15 60))
+         (or (inspect-for-sell data) (inspect-for-buy data)))))
 
 (define one-hour (make-time time-duration 0 (* 60 60)))
 
+;; Function: make-date nanosecond second minute hour day month year zone-offset
+
 (define (main . args)
-  (let* ((d1 (make-date 0 0 0 1 1 8 2018 0))
+  (let* ((d1 (make-date 0 0 15 1 1 8 2018 0))
          (t1 (date->time-utc d1))
-         (d2 (make-date 0 0 0 1 10 8 2018 0))
+         (d2 (make-date 0 0 15 1 10 8 2018 0))
          (t2 (date->time-utc d2)))
     (let loop ((t t1))
       (when (time<? t t2)
