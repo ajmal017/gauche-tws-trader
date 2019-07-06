@@ -2,6 +2,7 @@
 (use gauche.record)
 
 (use math.mt-random)
+(use text.tree)
 
 (use dbi)
 (use dbd.pg)
@@ -37,7 +38,22 @@
   lower-limit
   info)
 
-(define-record-type position-info #t #t
+(define (position->string pos)
+  (tree->string
+   (intersperse
+    " "
+    (list "Pos"
+          (position-date pos)
+          (position-action pos)
+          (position-price pos)
+          (position-upper-limit pos)
+          (position-lower-limit pos)
+          (pos-info->string (position-info pos))))))
+
+(define (pos-info->string info)
+  #`"Info ,(pos-info-long-trend-error info) ,(pos-info-short-trend-error info)")
+
+(define-record-type pos-info #t #t
   long-trend-error
   short-trend-error)
 
@@ -59,7 +75,7 @@
                    (optimal-earning (last-distance long-trend-min price data)))
               (if (and (> optimal-earning 0) (< val 0))
                   (make-position date 'sell price (+ price 0.0003) long-trend-min
-                                 (make-position-info long-min-dist short-min-dist))
+                                 (make-pos-info long-min-dist short-min-dist))
                   #f))
             (let-values (((long-trend-max long-max-dist)  (max-line/range/step data 0 (- count 24) 4))
                          ((short-trend-max short-max-dist) (max-line/range data (- count 24) 23)))
@@ -71,7 +87,7 @@
                          (optimal-earning (- (last-distance long-trend-max price data))))
                     (if (and (> optimal-earning 0) (> val 0))
                         (make-position date 'buy price long-trend-max (- price 0.0003)
-                                       (make-position-info long-max-dist short-min-dist))
+                                       (make-pos-info long-max-dist short-min-dist))
                         #f))
                   #f
                   )))))))
@@ -85,9 +101,10 @@
          (t2 (date->time-utc d2)))
     (let loop ((t t1))
       (when (time<? t t2)
-        (let ((date (time-utc->date t)))
-          (when (inspect date)
-                (print (date->string date "http://localhost:2222/~Y/~m/~d/~H/00"))
-                )
-              (loop (add-duration t one-hour))
-              )))))
+        (let* ((date (time-utc->date t))
+               (pos (inspect date)))
+          (when pos
+            (print (date->string date "http://localhost:2222/~Y/~m/~d/~H/00"))
+            (print (position->string pos)))
+          (loop (add-duration t one-hour))
+          )))))
