@@ -24,11 +24,14 @@
   (> (abs (gradient p1))
      (abs (gradient p2))))
 
+(define (last-bar data)
+  (last (data-set-rows data)))
+
 (define (last-date data)
-  (bar-date (last (data-set-rows data))))
+  (bar-date (last-bar data)))
 
 (define (last-price pick data)
-  (pick (last (data-set-rows data))))
+  (pick (last-bar data)))
 
 (define (last-distance poly price data)
   (distance-to-line (- (data-set-count data) 1) price poly))
@@ -104,12 +107,18 @@
                                  (make-pos-info long-trend long-err
                                                 short-trend short-err))))))))
 
-(define (inspect date)
+(define (update-position positions bar)
+  positions)
+
+(define (inspect date positions)
   (let* ((data (query-data *conn* date (* 24 19) "1 hour"))
          (actual-date (last-date data)))
-    (and (<= (time-second (time-difference (date->time-utc actual-date) (date->time-utc date)))
-             (* 15 60))
-         (or (inspect-for-sell data) (inspect-for-buy data)))))
+    (if (> (time-second (time-difference (date->time-utc actual-date) (date->time-utc date)))
+           (* 15 60))
+        (values #f positions)
+        (let ((bar (last-bar data)))
+          (let ((new-positions (update-position positions bar)))
+            (values (or (inspect-for-sell data) (inspect-for-buy data)) new-positions))))))
 
 (define one-hour (make-time time-duration 0 (* 60 60)))
 
@@ -120,12 +129,15 @@
          (t1 (date->time-utc d1))
          (d2 (make-date 0 0 15 1 10 8 2018 0))
          (t2 (date->time-utc d2)))
-    (let loop ((t t1))
+    (let loop ((t t1)
+               (positions ()))
       (when (time<? t t2)
-        (let* ((date (time-utc->date t))
-               (pos (inspect date)))
-          (when pos
-            (print (date->string date "http://localhost:2222/~Y/~m/~d/~H/00"))
-            (print (position->string pos)))
-          (loop (add-duration t one-hour))
-          )))))
+        (let ((date (time-utc->date t)))
+          (let-values (((pos poss) (inspect date positions)))
+            (when pos
+                  (print (date->string (position-date pos) "http://localhost:2222/~Y/~m/~d/~H/~M"))
+                  (print (position->string pos)))
+            (if pos
+                (loop (add-duration t one-hour) (cons pos positions))
+                (loop (add-duration t one-hour) positions))
+            ))))))
