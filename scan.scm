@@ -46,18 +46,23 @@
    (intersperse
     " "
     (list "Pos"
-          (position-date pos)
+          (date->string (position-date pos))
           (position-action pos)
           (position-price pos)
           (position-upper-limit pos)
           (position-lower-limit pos)
           (pos-info->string (position-info pos))))))
 
+(define (poly->string poly)
+  #`"Poly (,(poly-a poly) ,(poly-b poly) ,(poly-c poly))")
+
 (define (pos-info->string info)
-  #`"Info ,(pos-info-long-trend-error info) ,(pos-info-short-trend-error info)")
+  #`"Info ,(poly->string (pos-info-long-trend-poly info)) ,(pos-info-long-trend-error info) ,(poly->string (pos-info-short-trend-poly info)) ,(pos-info-short-trend-error info)")
 
 (define-record-type pos-info #t #t
+  long-trend-poly
   long-trend-error
+  short-trend-poly
   short-trend-error)
 
 (define-record-type result #t #t
@@ -78,7 +83,8 @@
                  (optimal-earning (last-distance long-trend-min price data)))
             (if (and (> optimal-earning 0) (< val 0))
                 (make-position date 'sell price (+ price 0.0003) long-trend-min
-                               (make-pos-info long-min-dist short-min-dist))
+                               (make-pos-info long-trend-min long-min-dist
+                                              short-trend-min short-min-dist))
                 #f))
           #f))))
 
@@ -95,7 +101,8 @@
                  (optimal-earning (- (last-distance long-trend-max price data))))
             (if (and (> optimal-earning 0) (> val 0))
                 (make-position date 'buy price long-trend-max (- price 0.0003)
-                               (make-pos-info long-max-dist short-max-dist))
+                               (make-pos-info long-trend-max long-max-dist
+                                              short-trend-max short-max-dist))
                 #f))
           #f))))
 
