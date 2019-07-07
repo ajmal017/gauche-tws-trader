@@ -126,7 +126,9 @@
                   (begin
                     (print #`"close ,(position-index pos) ,(bar-low bar) loss ,(- (position-price pos) (bar-low bar))")
                     (loop (cdr src) dest))
-                  (if (< (distance-to-line (adjusted-index pos) (bar-low bar) (position-lower-limit pos)) 0)
+                  (if (and (< (distance-to-line (adjusted-index pos) (bar-low bar)
+                                                (position-lower-limit pos)) 0)
+                           (> (position-price pos) (bar-high bar)))
                       (begin
                         (print #`"close ,(position-index pos) ,(bar-high bar) gain ,(- (position-price pos) (bar-high bar))")
                         (loop (cdr src) dest))
@@ -137,7 +139,9 @@
                   (begin
                     (print #`"close ,(position-index pos) ,(bar-high bar) loss ,(- (bar-high bar) (position-price pos))")
                     (loop (cdr src) dest))
-                  (if (> (distance-to-line (adjusted-index pos) (bar-high bar) (position-upper-limit pos)) 0)
+                  (if (and (> (distance-to-line (adjusted-index pos) (bar-high bar)
+                                                (position-upper-limit pos)) 0)
+                           (> (bar-low bar) (position-price pos)))
                       (begin
                         (print #`"close ,(position-index pos) ,(bar-low bar) gain ,(- (bar-low bar) (position-price pos))")
                         (loop (cdr src) dest))
@@ -160,7 +164,7 @@
 (define (main . args)
   (let* ((d1 (make-date 0 0 15 1 1 8 2018 0))
          (t1 (date->time-utc d1))
-         (d2 (make-date 0 0 15 1 10 8 2018 0))
+         (d2 (make-date 0 0 15 1 1 10 2018 0))
          (t2 (date->time-utc d2)))
     (let loop ((index 0)
                (t t1)
