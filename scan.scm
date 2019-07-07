@@ -37,6 +37,7 @@
   (distance-to-line (- (data-set-count data) 1) price poly))
 
 (define-record-type position #t #t
+  index
   date
   action
   price
@@ -49,20 +50,22 @@
    (intersperse
     " "
     (list "Pos"
-          (date->string (position-date pos))
+          (position-index pos)
+          (date->string (position-date pos) "~4")
           (position-action pos)
           (position-price pos)
-          (position-upper-limit pos)
-          (position-lower-limit pos)
+          ;; (position-upper-limit pos)
+          ;; (position-lower-limit pos)
           (pos-info->string (position-info pos))))))
 
 (define (poly->string poly)
   #`"Poly (,(poly-a poly) ,(poly-b poly) ,(poly-c poly))")
 
 (define (pos-info->string info)
-  #`"Info ,(poly->string (pos-info-long-trend-poly info)) ,(pos-info-long-trend-error info) ,(poly->string (pos-info-short-trend-poly info)) ,(pos-info-short-trend-error info)")
+  #`"Info ,(pos-info-gain info) ,(pos-info-long-trend-error info) ,(pos-info-short-trend-error info)")
 
 (define-record-type pos-info #t #t
+  gain
   long-trend-poly
   long-trend-error
   short-trend-poly
@@ -77,7 +80,7 @@
   (and (same-trend? p1 p2)
        (gradient> p1 p2)))
 
-(define (inspect-for-sell data)
+(define (inspect-for-sell data index)
   (let ((count (data-set-count data))
         (date (last-date data)))
     (let-values (((long-trend long-err)  (min-line/range/step data 0 (- count 24) 4))
@@ -86,13 +89,14 @@
            (bigger-gradient? short-trend long-trend)
            (let* ((price (last-price bar-low data))
                   (val (last-distance short-trend price data))
-                  (optimal-earning (last-distance long-trend price data)))
-             (and (> optimal-earning 0) (< val 0)
-                  (make-position date 'sell price (+ price 0.0003) long-trend
-                                 (make-pos-info long-trend long-err
+                  (gain (last-distance long-trend price data)))
+             (and (> gain 0) (< val 0)
+                  (make-position index date 'sell price (+ price 0.0003) long-trend
+                                 (make-pos-info gain
+                                                long-trend long-err
                                                 short-trend short-err))))))))
 
-(define (inspect-for-buy data)
+(define (inspect-for-buy data index)
   (let ((count (data-set-count data))
         (date (last-date data)))
     (let-values (((long-trend long-err)  (max-line/range/step data 0 (- count 24) 4))
@@ -101,24 +105,53 @@
            (bigger-gradient? short-trend long-trend)
            (let* ((price (last-price bar-high data))
                   (val (last-distance short-trend price data))
-                  (optimal-earning (- (last-distance long-trend price data))))
-             (and (> optimal-earning 0) (> val 0)
-                  (make-position date 'buy price long-trend (- price 0.0003)
-                                 (make-pos-info long-trend long-err
+                  (gain (- (last-distance long-trend price data))))
+             (and (> gain 0) (> val 0)
+                  (make-position index date 'buy price long-trend (- price 0.0003)
+                                 (make-pos-info gain
+                                                long-trend long-err
                                                 short-trend short-err))))))))
 
-(define (update-position positions bar)
-  positions)
+(define *data-count* (* 24 19))
 
-(define (inspect date positions)
-  (let* ((data (query-data *conn* date (* 24 19) "1 hour"))
+(define (update-position positions bar index)
+  (define (adjusted-index pos)
+    (+ *data-count* (- index (position-index pos))))
+  (let loop ((src positions) (dest ()))
+    (if (null? src)
+        dest
+        (let ((pos (car src)))
+          (if (eq? (position-action pos) 'sell)
+              (if (> (bar-low bar) (position-upper-limit pos))
+                  (begin
+                    (print #`"close ,(position-index pos) ,(bar-low bar) loss ,(- (position-price pos) (bar-low bar))")
+                    (loop (cdr src) dest))
+                  (if (< (distance-to-line (adjusted-index pos) (bar-low bar) (position-lower-limit pos)) 0)
+                      (begin
+                        (print #`"close ,(position-index pos) ,(bar-high bar) gain ,(- (position-price pos) (bar-high bar))")
+                        (loop (cdr src) dest))
+                      (loop (cdr src) (cons pos dest))))
+
+                                        ; buy
+              (if (< (bar-high bar) (position-lower-limit pos))
+                  (begin
+                    (print #`"close ,(position-index pos) ,(bar-high bar) loss ,(- (bar-high bar) (position-price pos))")
+                    (loop (cdr src) dest))
+                  (if (> (distance-to-line (adjusted-index pos) (bar-high bar) (position-upper-limit pos)) 0)
+                      (begin
+                        (print #`"close ,(position-index pos) ,(bar-low bar) gain ,(- (bar-low bar) (position-price pos))")
+                        (loop (cdr src) dest))
+                      (loop (cdr src) (cons pos dest)))))))))
+
+(define (inspect date positions index)
+  (let* ((data (query-data *conn* date *data-count* "1 hour"))
          (actual-date (last-date data)))
     (if (> (time-second (time-difference (date->time-utc actual-date) (date->time-utc date)))
            (* 15 60))
         (values #f positions)
         (let ((bar (last-bar data)))
-          (let ((new-positions (update-position positions bar)))
-            (values (or (inspect-for-sell data) (inspect-for-buy data)) new-positions))))))
+          (let ((new-positions (update-position positions bar index)))
+            (values (or (inspect-for-sell data index) (inspect-for-buy data index)) new-positions))))))
 
 (define one-hour (make-time time-duration 0 (* 60 60)))
 
@@ -129,15 +162,17 @@
          (t1 (date->time-utc d1))
          (d2 (make-date 0 0 15 1 10 8 2018 0))
          (t2 (date->time-utc d2)))
-    (let loop ((t t1)
+    (let loop ((index 0)
+               (t t1)
                (positions ()))
-      (when (time<? t t2)
-        (let ((date (time-utc->date t)))
-          (let-values (((pos poss) (inspect date positions)))
-            (when pos
-                  (print (date->string (position-date pos) "http://localhost:2222/~Y/~m/~d/~H/~M"))
-                  (print (position->string pos)))
-            (if pos
-                (loop (add-duration t one-hour) (cons pos positions))
-                (loop (add-duration t one-hour) positions))
-            ))))))
+      (if (time<? t t2)
+          (let ((date (time-utc->date t)))
+            (let-values (((pos poss) (inspect date positions index)))
+              (when pos
+                (print (date->string (position-date pos) "http://localhost:2222/~Y/~m/~d/~H/~M"))
+                (print (position->string pos)))
+              (if pos
+                  (loop (+ index 1) (add-duration t one-hour) (cons pos poss))
+                  (loop (+ index 1) (add-duration t one-hour) poss))
+              ))
+          (print (map position-index positions))))))
