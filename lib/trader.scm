@@ -17,14 +17,31 @@
    bar-high
    bar-open
    bar-close
+   poly?
    poly-a
    poly-b
    poly-c
+   poly->string
    distance-to-line
    data-set-highest
    data-set-lowest
    data-set-count
    data-set-rows
+   make-position
+   position-index
+   position-date
+   position-action
+   position-price
+   position-upper-limit
+   position-lower-limit
+   position->string
+   position-info
+   make-pos-info
+   pos-info-gain
+   pos-info-long-trend-poly
+   pos-info-long-trend-error
+   pos-info-short-trend-poly
+   pos-info-short-trend-error
    ))
 
 (select-module trader)
@@ -70,6 +87,9 @@
 
 (define-record-type poly #t #t a b c)
 
+(define (poly->string poly)
+  (list 'poly (poly-a poly) (poly-b poly) (poly-c poly)))
+
 (define (make-line-poly x0 y0 x1 y1)
   ;; returns polynomial in ax + by + c = 0
   (if (= y0 y1)
@@ -100,7 +120,14 @@
              (min-total-distance +inf.0)
              (x0 0))
     (if (null? rows1)
-        (values line min-total-distance)
+        (begin
+          (when (not line)
+            #?=step
+            (print (map pick rows))
+            (print (bar-date (last rows)))
+            #?=min-total-distance)
+          (values line min-total-distance)
+          )
         (let* ((low-first (pick (car rows1))))
           (let loop2 ((rest (kdr rows1))
                       (min-line-poly line)
@@ -115,17 +142,19 @@
                               (count 0))
                     (if (null? rows)
                         (begin
-                          (list x0 x1 total-distance min-total-distance)
-                        (if (> min-total-distance total-distance)
-                            (loop2 (kdr rest) line-poly     total-distance     (+ x1 step))
-                            (loop2 (kdr rest) min-line-poly min-total-distance (+ x1 step)))
+                          (if (> min-total-distance total-distance)
+                              (loop2 (kdr rest) line-poly     total-distance     (+ x1 step))
+                              (loop2 (kdr rest) min-line-poly min-total-distance (+ x1 step)))
                         )
                         (let* ((distance (distance-to-line count (pick (car rows)) line-poly)))
                           (if (or (= count x0) (= count x1))
                               (loop3 (kdr rows) total-distance (+ count step))
                               (if (filter distance)
                                   (loop3 (kdr rows) (accum total-distance distance) (+ count step))
-                                  (loop2 (kdr rest) min-line-poly min-total-distance (+ x1 step)))
+                                  (begin
+                                    #;(print (list 'skipping x0 x1 count distance))
+                                    (loop2 (kdr rest) min-line-poly min-total-distance (+ x1 step)))
+                                  )
                               )))))))))))
 
 (define (splice-data data offset length)
@@ -143,13 +172,13 @@
 (define (min-line/range/step data offset points step)
   (receive (line distance)
       (line-from-rows (splice-data data offset points)
-                      bar-low positive? square-add step)
+                      bar-low (^x (not (negative? x))) square-add step)
     (values (offset-line line offset) distance)))
 
 (define (max-line/range/step data offset points step)
   (receive (line distance)
       (line-from-rows (splice-data data offset points)
-                      bar-high negative? square-add step)
+                      bar-high (^x (not (positive? x))) square-add step)
     (values (offset-line line offset) distance)))
 
 (define (min-line/range data offset points)
@@ -167,3 +196,47 @@
     (if (zero? a)
         poly
         (make-poly a b (- c offset-x)))))
+
+(define-record-type position #t #t
+  index
+  date
+  action
+  price
+  upper-limit
+  lower-limit
+  info)
+
+(define (position->string pos)
+  (define (serialize-limit lim)
+    (if (poly? lim)
+        (poly->string lim)
+        lim))
+
+  (list 'position
+        (position-index pos)
+        (date->string (position-date pos) "~4")
+        (position-action pos)
+        (position-price pos)
+        (serialize-limit (position-upper-limit pos))
+        (serialize-limit (position-lower-limit pos))
+        (pos-info->string (position-info pos))))
+
+(define (pos-info->string info)
+  (list 'pos-info
+        (pos-info-gain info)
+        (poly->string (pos-info-long-trend-poly info))
+        (pos-info-long-trend-error info)
+        (poly->string (pos-info-short-trend-poly info))
+        (pos-info-short-trend-error info)))
+
+(define-record-type pos-info #t #t
+  gain
+  long-trend-poly
+  long-trend-error
+  short-trend-poly
+  short-trend-error)
+
+(define-record-type result #t #t
+  closed-at
+  position
+  gain)

@@ -36,46 +36,6 @@
 (define (last-distance poly price data)
   (distance-to-line (- (data-set-count data) 1) price poly))
 
-(define-record-type position #t #t
-  index
-  date
-  action
-  price
-  upper-limit
-  lower-limit
-  info)
-
-(define (position->string pos)
-  (tree->string
-   (intersperse
-    " "
-    (list "Pos"
-          (position-index pos)
-          (date->string (position-date pos) "~4")
-          (position-action pos)
-          (position-price pos)
-          ;; (position-upper-limit pos)
-          ;; (position-lower-limit pos)
-          (pos-info->string (position-info pos))))))
-
-(define (poly->string poly)
-  #`"Poly (,(poly-a poly) ,(poly-b poly) ,(poly-c poly))")
-
-(define (pos-info->string info)
-  #`"Info ,(pos-info-gain info) ,(pos-info-long-trend-error info) ,(pos-info-short-trend-error info)")
-
-(define-record-type pos-info #t #t
-  gain
-  long-trend-poly
-  long-trend-error
-  short-trend-poly
-  short-trend-error)
-
-(define-record-type result #t #t
-  closed-at
-  position
-  gain)
-
 (define (bigger-gradient? p1 p2)
   (and (same-trend? p1 p2)
        (gradient> p1 p2)))
@@ -114,6 +74,9 @@
 
 (define *data-count* (* 24 19))
 
+(define (close-position pos-idx price result gain)
+  (list 'close pos-idx price result gain))
+
 (define (update-position positions bar index)
   (define (adjusted-index pos)
     (+ *data-count* (- index (position-index pos))))
@@ -124,26 +87,30 @@
           (if (eq? (position-action pos) 'sell)
               (if (> (bar-low bar) (position-upper-limit pos))
                   (begin
-                    (print #`"close ,(position-index pos) ,(bar-low bar) loss ,(- (position-price pos) (bar-low bar))")
+                    (print (close-position (position-index pos) (position-upper-limit pos)
+                                           'loss (- (position-price pos) (position-upper-limit pos))))
                     (loop (cdr src) dest))
                   (if (and (< (distance-to-line (adjusted-index pos) (bar-low bar)
                                                 (position-lower-limit pos)) 0)
                            (> (position-price pos) (bar-high bar)))
                       (begin
-                        (print #`"close ,(position-index pos) ,(bar-high bar) gain ,(- (position-price pos) (bar-high bar))")
+                        (print (close-position (position-index pos) (bar-high bar)
+                                               'gain (- (position-price pos) (bar-high bar))))
                         (loop (cdr src) dest))
                       (loop (cdr src) (cons pos dest))))
 
                                         ; buy
               (if (< (bar-high bar) (position-lower-limit pos))
                   (begin
-                    (print #`"close ,(position-index pos) ,(bar-high bar) loss ,(- (bar-high bar) (position-price pos))")
+                    (print (close-position (position-index pos) (position-lower-limit pos)
+                                           'loss (- (position-lower-limit pos) (position-price pos))))
                     (loop (cdr src) dest))
                   (if (and (> (distance-to-line (adjusted-index pos) (bar-high bar)
                                                 (position-upper-limit pos)) 0)
                            (> (bar-low bar) (position-price pos)))
                       (begin
-                        (print #`"close ,(position-index pos) ,(bar-low bar) gain ,(- (bar-low bar) (position-price pos))")
+                        (print (close-position (position-index pos) (bar-low bar)
+                                               'gain (- (bar-low bar) (position-price pos))))
                         (loop (cdr src) dest))
                       (loop (cdr src) (cons pos dest)))))))))
 
@@ -162,9 +129,10 @@
 ;; Function: make-date nanosecond second minute hour day month year zone-offset
 
 (define (main . args)
-  (let* ((d1 (make-date 0 0 15 1 1 8 2018 0))
+  (let* ((d1 (make-date 0 0 15 0 1 4 2018 0))
          (t1 (date->time-utc d1))
-         (d2 (make-date 0 0 15 1 1 10 2018 0))
+         (d2 (make-date 0 0 15 0 1 4 2019 0))
+         #;(d2 (make-date 0 0 15 0 5 4 2018 0))
          (t2 (date->time-utc d2)))
     (let loop ((index 0)
                (t t1)
