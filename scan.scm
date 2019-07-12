@@ -9,6 +9,7 @@
 
 (add-load-path "./lib/")
 (use trader)
+(use query)
 
 (use config)
 

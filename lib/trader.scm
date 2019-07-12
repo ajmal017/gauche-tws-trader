@@ -3,9 +3,6 @@
   (use gauche.record)
   (use srfi-19)
 
-  (use dbi)
-  (use dbd.pg)
-
   (export
    query-data
    min-line/range/step
@@ -23,10 +20,12 @@
    poly-c
    poly->string
    distance-to-line
+   make-data-set
    data-set-highest
    data-set-lowest
    data-set-count
    data-set-rows
+   make-bar
    make-position
    position-index
    position-date
@@ -58,32 +57,6 @@
   close
   high
   low)
-
-(define (query-data conn end-date count size)
-  (let ((query (dbi-prepare conn "SELECT DISTINCT time, open, high, low, close FROM bars WHERE time <= to_timestamp(?) and size = ? order by time desc limit ?")))
-    (let* ((end-sec (time->seconds (date->time-utc end-date)))
-           (result (dbi-execute query end-sec size count))
-           (getter (relation-accessor result))
-           (dest (fold (lambda (row part)
-                         (let ((highest (data-set-highest part))
-                               (lowest (data-set-lowest part))
-                               (rows (data-set-rows part))
-                               (count (data-set-count part))
-                               (high (string->number (getter row "high")))
-                               (low (string->number (getter row "low"))))
-                           (make-data-set
-                            (max high highest)
-                            (min low lowest)
-                            (cons (make-bar
-                                   (string->date (getter row "time") "~Y-~m-~d ~H:~M:~S")
-                                   (string->number (getter row "open"))
-                                   (string->number (getter row "close"))
-                                   high
-                                   low)
-                                  rows)
-                            (+ 1 count))))
-                       (make-data-set 0 9999999 () 0) result)))
-      dest)))
 
 (define-record-type poly #t #t a b c)
 
@@ -214,7 +187,7 @@
 
   (list 'position
         (position-index pos)
-        (date->string (position-date pos) "~4")
+        (date->string (position-date pos) "\"~4\"")
         (position-action pos)
         (position-price pos)
         (serialize-limit (position-upper-limit pos))

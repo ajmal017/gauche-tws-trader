@@ -9,6 +9,7 @@
 (add-load-path "./lib/")
 (use violet)
 (use trader)
+(use query)
 
 (use config)
 
