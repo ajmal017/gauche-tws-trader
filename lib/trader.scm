@@ -4,7 +4,6 @@
   (use srfi-19)
 
   (export
-   query-data
    min-line/range/step
    min-line/range
    max-line/range/step
