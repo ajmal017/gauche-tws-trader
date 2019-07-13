@@ -144,13 +144,13 @@
 (define (min-line/range/step data offset points step)
   (receive (line distance)
       (line-from-rows (splice-data data offset points)
-                      bar-low (^x (not (negative? x))) square-add step)
+                      bar-low (^x (not (negative? x))) + step)
     (values (offset-line line offset) distance)))
 
 (define (max-line/range/step data offset points step)
   (receive (line distance)
       (line-from-rows (splice-data data offset points)
-                      bar-high (^x (not (positive? x))) square-add step)
+                      bar-high (^x (not (positive? x))) - step)
     (values (offset-line line offset) distance)))
 
 (define (min-line/range data offset points)
