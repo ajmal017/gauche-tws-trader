@@ -19,9 +19,9 @@ run: $(TARGET) $(MAKIKI)
 	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH) nodemon -e scm --ignore gosh-modules/ --ignore gauche-rheingau/ --exec ./$(TARGET)
 
 # run on host
-sum: gain-long-error.dat
+sum: gain-error.dat
 
-gain-long-error.dat: sum.scm result.tmp.txt
+gain-error.dat: sum.scm result.tmp.txt
 	docker run -i -w /code -v $(shell pwd):/code --rm practicalscheme/gauche gosh $< < $(SCANRESULT) > $@
 
 scan: $(SCANRESULT)
@@ -42,5 +42,8 @@ $(MAKIKI): $(RHEINGAU)
 $(RHEINGAU):
 	git clone https://github.com/torus/gauche-rheingau.git $(RHEINGAU)
 
-clean:
-	rm -rf *~ *.o $(TARGET) gosh-modules $(RHEINGAU) $(TARGET).dSYM *.tmp.* *.dat
+clean: data-clean
+	rm -rf *~ *.o $(TARGET) gosh-modules $(RHEINGAU) $(TARGET).dSYM
+
+data-clean:
+	rm -rf *.tmp.* *.dat
