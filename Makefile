@@ -17,11 +17,13 @@ SCANRESULT=result.tmp.txt
 run-docker:
 	/usr/local/bin/docker-compose up
 
+SCRIPT=script.scm
+
 build: $(TARGET)
 
 run: $(TARGET) $(MAKIKI)
-#	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH) ./$(TARGET)
-	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH) nodemon -e scm --ignore gosh-modules/ --ignore gauche-rheingau/ --exec ./$(TARGET)
+#	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH) ./$(TARGET) $(SCRIPT)
+	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH) nodemon -e scm --ignore gosh-modules/ --ignore gauche-rheingau/ --exec ./$(TARGET) $(SCRIPT)
 
 # run on host
 sum: gain-error.dat
