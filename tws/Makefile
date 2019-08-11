@@ -1,5 +1,8 @@
 
 
+hist:
+	docker run -ti --network=host -v $(shell pwd):/code -w /code tws python3 /code/history.py
+
 run:
 	docker run -ti --network=host -v $(shell pwd):/code -w /code tws python3 /code/order.py
 
