@@ -84,6 +84,8 @@ class TestApp(wrapper.EWrapper, EClient):
         if orderId == self.orderId and remaining == 0 and self.stopOrderId == 0:
             self.stopOrderId = self.nextOrderId()
             price = avgFillPrice - 0.0003
+            # to avoid the error "The price does not conform to the minimum price variation
+            # for this contract" round the price in 0.5 pip
             price = math.floor(price / 0.00005) * 0.00005
             print("price", price)
             quantity = 100000
