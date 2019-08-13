@@ -34,7 +34,7 @@ int main(int argc, char** argv)
 		++attempt;
 		printf( "Attempt %u of %u\n", attempt, MAX_ATTEMPTS);
 
-		TestCppClient client;
+		EmptyClient client;
 
 		// Run time error will occur (here) if TestCppClient.exe is compiled in debug mode but TwsSocketClient.dll is compiled in Release mode
 		// TwsSocketClient.dll (in Release Mode) is copied by API installer into SysWOW64 folder within Windows directory 

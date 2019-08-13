@@ -106,13 +106,13 @@ enum State {
 };
 
 //! [ewrapperimpl]
-class TestCppClient : public EWrapper
+class EmptyClient : public EWrapper
 {
 //! [ewrapperimpl]
 public:
 
-	TestCppClient();
-	~TestCppClient();
+	EmptyClient();
+	~EmptyClient();
 
 	void setConnectOptions(const std::string&);
 	void processMessages();
