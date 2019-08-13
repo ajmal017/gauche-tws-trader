@@ -1,4 +1,4 @@
-TARGET=empty
+TARGET=gauchetest
 
 LFLAGS=-pthread -Wall -Wno-switch -Wpedantic -std=c++11
 ROOT_DIR=../tws/twsapi/IBJts/source/cppclient
@@ -10,7 +10,7 @@ SOURCES=GaucheAdapter.cpp Main.cpp Utils.cpp \
 OBJECTS=$(subst .cpp,.o,$(SOURCES))
 
 $(TARGET): $(OBJECTS)
-	$(CXX) $(LFLAGS) $(OBJECTS) -o$(TARGET)
+	$(CXX) $(LFLAGS) $(OBJECTS) -o $(TARGET)
 
 %.o: %.cpp
 	$(CXX) -c $(CFLAGS) $< -o $@
