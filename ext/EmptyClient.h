@@ -195,3 +195,7 @@ private:
 
 #endif
 
+// Local Variables:
+// mode: c++
+// tab-width: 4
+// End:

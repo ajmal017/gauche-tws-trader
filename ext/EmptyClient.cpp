@@ -1086,3 +1086,8 @@ void EmptyClient::completedOrdersEnd() {
 	printf( "CompletedOrdersEnd\n");
 }
 //! [completedordersend]
+
+// Local Variables:
+// mode: c++
+// tab-width: 4
+// End:
