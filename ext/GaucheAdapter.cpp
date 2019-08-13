@@ -3,7 +3,7 @@
 
 #include "StdAfx.h"
 
-#include "EmptyClient.h"
+#include "GaucheAdapter.h"
 
 #include "EClientSocket.h"
 #include "EPosixClientSocketPlatform.h"
@@ -29,7 +29,7 @@ const int SLEEP_BETWEEN_PINGS = 30; // seconds
 ///////////////////////////////////////////////////////////
 // member funcs
 //! [socket_init]
-EmptyClient::EmptyClient() :
+GaucheAdapter::GaucheAdapter() :
       m_osSignal(2000)//2-seconds timeout
     , m_pClient(new EClientSocket(this, &m_osSignal))
 	, m_state(ST_CONNECT)
@@ -40,7 +40,7 @@ EmptyClient::EmptyClient() :
 {
 }
 //! [socket_init]
-EmptyClient::~EmptyClient()
+GaucheAdapter::~GaucheAdapter()
 {
     if (m_pReader)
         delete m_pReader;
@@ -48,7 +48,7 @@ EmptyClient::~EmptyClient()
     delete m_pClient;
 }
 
-bool EmptyClient::connect(const char *host, int port, int clientId)
+bool GaucheAdapter::connect(const char *host, int port, int clientId)
 {
 	// trying to connect
 	printf( "Connecting to %s:%d clientId:%d\n", !( host && *host) ? "127.0.0.1" : host, port, clientId);
@@ -70,24 +70,24 @@ bool EmptyClient::connect(const char *host, int port, int clientId)
 	return bRes;
 }
 
-void EmptyClient::disconnect() const
+void GaucheAdapter::disconnect() const
 {
 	m_pClient->eDisconnect();
 
 	printf ( "Disconnected\n");
 }
 
-bool EmptyClient::isConnected() const
+bool GaucheAdapter::isConnected() const
 {
 	return m_pClient->isConnected();
 }
 
-void EmptyClient::setConnectOptions(const std::string& connectOptions)
+void GaucheAdapter::setConnectOptions(const std::string& connectOptions)
 {
 	m_pClient->setConnectOptions(connectOptions);
 }
 
-void EmptyClient::processMessages()
+void GaucheAdapter::processMessages()
 {
 	time_t now = time(NULL);
 
@@ -315,98 +315,98 @@ void EmptyClient::processMessages()
 //////////////////////////////////////////////////////////////////
 // methods
 //! [connectack]
-void EmptyClient::connectAck() {
+void GaucheAdapter::connectAck() {
 	if (!m_extraAuth && m_pClient->asyncEConnect())
         m_pClient->startApi();
 }
 //! [connectack]
 
-void EmptyClient::reqCurrentTime() {}
+void GaucheAdapter::reqCurrentTime() {}
 
-void EmptyClient::pnlOperation() {}
+void GaucheAdapter::pnlOperation() {}
 
-void EmptyClient::pnlSingleOperation() {}
+void GaucheAdapter::pnlSingleOperation() {}
 
-void EmptyClient::tickDataOperation() {}
+void GaucheAdapter::tickDataOperation() {}
 
-void EmptyClient::tickOptionComputationOperation() {}
+void GaucheAdapter::tickOptionComputationOperation() {}
 
-void EmptyClient::delayedTickDataOperation() {}
+void GaucheAdapter::delayedTickDataOperation() {}
 
-void EmptyClient::marketDepthOperations() {}
+void GaucheAdapter::marketDepthOperations() {}
 
-void EmptyClient::realTimeBars() {}
+void GaucheAdapter::realTimeBars() {}
 
-void EmptyClient::marketDataType() {}
+void GaucheAdapter::marketDataType() {}
 
-void EmptyClient::historicalDataRequests() {}
+void GaucheAdapter::historicalDataRequests() {}
 
-void EmptyClient::optionsOperations() {}
+void GaucheAdapter::optionsOperations() {}
 
-void EmptyClient::contractOperations() {}
+void GaucheAdapter::contractOperations() {}
 
-void EmptyClient::marketScanners() {}
+void GaucheAdapter::marketScanners() {}
 
-void EmptyClient::fundamentals() {}
+void GaucheAdapter::fundamentals() {}
 
-void EmptyClient::bulletins() {}
+void GaucheAdapter::bulletins() {}
 
-void EmptyClient::accountOperations() {}
+void GaucheAdapter::accountOperations() {}
 
-void EmptyClient::orderOperations() {}
+void GaucheAdapter::orderOperations() {}
 
-void EmptyClient::ocaSamples() {}
+void GaucheAdapter::ocaSamples() {}
 
-void EmptyClient::conditionSamples() {}
+void GaucheAdapter::conditionSamples() {}
 
-void EmptyClient::bracketSample() {}
+void GaucheAdapter::bracketSample() {}
 
-void EmptyClient::hedgeSample() {}
+void GaucheAdapter::hedgeSample() {}
 
-void EmptyClient::testAlgoSamples() {}
+void GaucheAdapter::testAlgoSamples() {}
 
-void EmptyClient::financialAdvisorOrderSamples() {}
+void GaucheAdapter::financialAdvisorOrderSamples() {}
 
-void EmptyClient::financialAdvisorOperations() {}
+void GaucheAdapter::financialAdvisorOperations() {}
 
-void EmptyClient::testDisplayGroups() {}
+void GaucheAdapter::testDisplayGroups() {}
 
-void EmptyClient::miscelaneous() {}
+void GaucheAdapter::miscelaneous() {}
 
-void EmptyClient::reqFamilyCodes() {}
+void GaucheAdapter::reqFamilyCodes() {}
 
-void EmptyClient::reqMatchingSymbols() {}
+void GaucheAdapter::reqMatchingSymbols() {}
 
-void EmptyClient::reqMktDepthExchanges() {}
+void GaucheAdapter::reqMktDepthExchanges() {}
 
-void EmptyClient::reqNewsTicks() {}
+void GaucheAdapter::reqNewsTicks() {}
 
-void EmptyClient::reqSmartComponents() {}
+void GaucheAdapter::reqSmartComponents() {}
 
-void EmptyClient::reqNewsProviders() {}
+void GaucheAdapter::reqNewsProviders() {}
 
-void EmptyClient::reqNewsArticle() {}
+void GaucheAdapter::reqNewsArticle() {}
 
-void EmptyClient::reqHistoricalNews() {}
+void GaucheAdapter::reqHistoricalNews() {}
 
-void EmptyClient::reqHeadTimestamp() {}
+void GaucheAdapter::reqHeadTimestamp() {}
 
-void EmptyClient::reqHistogramData() {}
+void GaucheAdapter::reqHistogramData() {}
 
-void EmptyClient::rerouteCFDOperations() {}
+void GaucheAdapter::rerouteCFDOperations() {}
 
-void EmptyClient::marketRuleOperations() {}
+void GaucheAdapter::marketRuleOperations() {}
 
-void EmptyClient::continuousFuturesOperations() {}
+void GaucheAdapter::continuousFuturesOperations() {}
 
-void EmptyClient::reqHistoricalTicks()  {}
+void GaucheAdapter::reqHistoricalTicks()  {}
 
-void EmptyClient::reqTickByTickData() {}
+void GaucheAdapter::reqTickByTickData() {}
 
-void EmptyClient::whatIfSamples() {}
+void GaucheAdapter::whatIfSamples() {}
 
 //! [nextvalidid]
-void EmptyClient::nextValidId( OrderId orderId)
+void GaucheAdapter::nextValidId( OrderId orderId)
 {
 	printf("Next Valid Id: %ld\n", orderId);
 	m_orderId = orderId;
@@ -414,29 +414,29 @@ void EmptyClient::nextValidId( OrderId orderId)
 }
 
 
-void EmptyClient::currentTime( long time) {}
+void GaucheAdapter::currentTime( long time) {}
 
 //! [error]
-void EmptyClient::error(int id, int errorCode, const std::string& errorString)
+void GaucheAdapter::error(int id, int errorCode, const std::string& errorString)
 {
 	printf( "Error. Id: %d, Code: %d, Msg: %s\n", id, errorCode, errorString.c_str());
 }
 //! [error]
 
 //! [tickprice]
-void EmptyClient::tickPrice( TickerId tickerId, TickType field, double price, const TickAttrib& attribs) {
+void GaucheAdapter::tickPrice( TickerId tickerId, TickType field, double price, const TickAttrib& attribs) {
 	printf( "Tick Price. Ticker Id: %ld, Field: %d, Price: %g, CanAutoExecute: %d, PastLimit: %d, PreOpen: %d\n", tickerId, (int)field, price, attribs.canAutoExecute, attribs.pastLimit, attribs.preOpen);
 }
 //! [tickprice]
 
 //! [ticksize]
-void EmptyClient::tickSize( TickerId tickerId, TickType field, int size) {
+void GaucheAdapter::tickSize( TickerId tickerId, TickType field, int size) {
 	printf( "Tick Size. Ticker Id: %ld, Field: %d, Size: %d\n", tickerId, (int)field, size);
 }
 //! [ticksize]
 
 //! [tickoptioncomputation]
-void EmptyClient::tickOptionComputation( TickerId tickerId, TickType tickType, double impliedVol, double delta,
+void GaucheAdapter::tickOptionComputation( TickerId tickerId, TickType tickType, double impliedVol, double delta,
                                           double optPrice, double pvDividend,
                                           double gamma, double vega, double theta, double undPrice) {
 	printf( "TickOptionComputation. Ticker Id: %ld, Type: %d, ImpliedVolatility: %g, Delta: %g, OptionPrice: %g, pvDividend: %g, Gamma: %g, Vega: %g, Theta: %g, Underlying Price: %g\n", tickerId, (int)tickType, impliedVol, delta, optPrice, pvDividend, gamma, vega, theta, undPrice);
@@ -444,24 +444,24 @@ void EmptyClient::tickOptionComputation( TickerId tickerId, TickType tickType, d
 //! [tickoptioncomputation]
 
 //! [tickgeneric]
-void EmptyClient::tickGeneric(TickerId tickerId, TickType tickType, double value) {
+void GaucheAdapter::tickGeneric(TickerId tickerId, TickType tickType, double value) {
 	printf( "Tick Generic. Ticker Id: %ld, Type: %d, Value: %g\n", tickerId, (int)tickType, value);
 }
 //! [tickgeneric]
 
 //! [tickstring]
-void EmptyClient::tickString(TickerId tickerId, TickType tickType, const std::string& value) {
+void GaucheAdapter::tickString(TickerId tickerId, TickType tickType, const std::string& value) {
 	printf( "Tick String. Ticker Id: %ld, Type: %d, Value: %s\n", tickerId, (int)tickType, value.c_str());
 }
 //! [tickstring]
 
-void EmptyClient::tickEFP(TickerId tickerId, TickType tickType, double basisPoints, const std::string& formattedBasisPoints,
+void GaucheAdapter::tickEFP(TickerId tickerId, TickType tickType, double basisPoints, const std::string& formattedBasisPoints,
                             double totalDividends, int holdDays, const std::string& futureLastTradeDate, double dividendImpact, double dividendsToLastTradeDate) {
 	printf( "TickEFP. %ld, Type: %d, BasisPoints: %g, FormattedBasisPoints: %s, Total Dividends: %g, HoldDays: %d, Future Last Trade Date: %s, Dividend Impact: %g, Dividends To Last Trade Date: %g\n", tickerId, (int)tickType, basisPoints, formattedBasisPoints.c_str(), totalDividends, holdDays, futureLastTradeDate.c_str(), dividendImpact, dividendsToLastTradeDate);
 }
 
 //! [orderstatus]
-void EmptyClient::orderStatus(OrderId orderId, const std::string& status, double filled,
+void GaucheAdapter::orderStatus(OrderId orderId, const std::string& status, double filled,
 		double remaining, double avgFillPrice, int permId, int parentId,
 		double lastFillPrice, int clientId, const std::string& whyHeld, double mktCapPrice){
 	printf("OrderStatus. Id: %ld, Status: %s, Filled: %g, Remaining: %g, AvgFillPrice: %g, PermId: %d, LastFillPrice: %g, ClientId: %d, WhyHeld: %s, MktCapPrice: %g\n", orderId, status.c_str(), filled, remaining, avgFillPrice, permId, lastFillPrice, clientId, whyHeld.c_str(), mktCapPrice);
@@ -469,7 +469,7 @@ void EmptyClient::orderStatus(OrderId orderId, const std::string& status, double
 //! [orderstatus]
 
 //! [openorder]
-void EmptyClient::openOrder( OrderId orderId, const Contract& contract, const Order& order, const OrderState& orderState) {
+void GaucheAdapter::openOrder( OrderId orderId, const Contract& contract, const Order& order, const OrderState& orderState) {
 	printf( "OpenOrder. PermId: %ld, ClientId: %ld, OrderId: %ld, Account: %s, Symbol: %s, SecType: %s, Exchange: %s:, Action: %s, OrderType:%s, TotalQty: %g, CashQty: %g, "
 	"LmtPrice: %g, AuxPrice: %g, Status: %s\n", 
 		order.permId, order.clientId, orderId, order.account.c_str(), contract.symbol.c_str(), contract.secType.c_str(), contract.exchange.c_str(), 
@@ -478,25 +478,25 @@ void EmptyClient::openOrder( OrderId orderId, const Contract& contract, const Or
 //! [openorder]
 
 //! [openorderend]
-void EmptyClient::openOrderEnd() {
+void GaucheAdapter::openOrderEnd() {
 	printf( "OpenOrderEnd\n");
 }
 //! [openorderend]
 
-void EmptyClient::winError( const std::string& str, int lastError) {}
-void EmptyClient::connectionClosed() {
+void GaucheAdapter::winError( const std::string& str, int lastError) {}
+void GaucheAdapter::connectionClosed() {
 	printf( "Connection Closed\n");
 }
 
 //! [updateaccountvalue]
-void EmptyClient::updateAccountValue(const std::string& key, const std::string& val,
+void GaucheAdapter::updateAccountValue(const std::string& key, const std::string& val,
                                        const std::string& currency, const std::string& accountName) {
 	printf("UpdateAccountValue. Key: %s, Value: %s, Currency: %s, Account Name: %s\n", key.c_str(), val.c_str(), currency.c_str(), accountName.c_str());
 }
 //! [updateaccountvalue]
 
 //! [updateportfolio]
-void EmptyClient::updatePortfolio(const Contract& contract, double position,
+void GaucheAdapter::updatePortfolio(const Contract& contract, double position,
                                     double marketPrice, double marketValue, double averageCost,
                                     double unrealizedPNL, double realizedPNL, const std::string& accountName){
 	printf("UpdatePortfolio. %s, %s @ %s: Position: %g, MarketPrice: %g, MarketValue: %g, AverageCost: %g, UnrealizedPNL: %g, RealizedPNL: %g, AccountName: %s\n", (contract.symbol).c_str(), (contract.secType).c_str(), (contract.primaryExchange).c_str(), position, marketPrice, marketValue, averageCost, unrealizedPNL, realizedPNL, accountName.c_str());
@@ -504,19 +504,19 @@ void EmptyClient::updatePortfolio(const Contract& contract, double position,
 //! [updateportfolio]
 
 //! [updateaccounttime]
-void EmptyClient::updateAccountTime(const std::string& timeStamp) {
+void GaucheAdapter::updateAccountTime(const std::string& timeStamp) {
 	printf( "UpdateAccountTime. Time: %s\n", timeStamp.c_str());
 }
 //! [updateaccounttime]
 
 //! [accountdownloadend]
-void EmptyClient::accountDownloadEnd(const std::string& accountName) {
+void GaucheAdapter::accountDownloadEnd(const std::string& accountName) {
 	printf( "Account download finished: %s\n", accountName.c_str());
 }
 //! [accountdownloadend]
 
 //! [contractdetails]
-void EmptyClient::contractDetails( int reqId, const ContractDetails& contractDetails) {
+void GaucheAdapter::contractDetails( int reqId, const ContractDetails& contractDetails) {
 	printf( "ContractDetails begin. ReqId: %d\n", reqId);
 	printContractMsg(contractDetails.contract);
 	printContractDetailsMsg(contractDetails);
@@ -525,14 +525,14 @@ void EmptyClient::contractDetails( int reqId, const ContractDetails& contractDet
 //! [contractdetails]
 
 //! [bondcontractdetails]
-void EmptyClient::bondContractDetails( int reqId, const ContractDetails& contractDetails) {
+void GaucheAdapter::bondContractDetails( int reqId, const ContractDetails& contractDetails) {
 	printf( "BondContractDetails begin. ReqId: %d\n", reqId);
 	printBondContractDetailsMsg(contractDetails);
 	printf( "BondContractDetails end. ReqId: %d\n", reqId);
 }
 //! [bondcontractdetails]
 
-void EmptyClient::printContractMsg(const Contract& contract) {
+void GaucheAdapter::printContractMsg(const Contract& contract) {
 	printf("\tConId: %ld\n", contract.conId);
 	printf("\tSymbol: %s\n", contract.symbol.c_str());
 	printf("\tSecType: %s\n", contract.secType.c_str());
@@ -547,7 +547,7 @@ void EmptyClient::printContractMsg(const Contract& contract) {
 	printf("\tTradingClass: %s\n", contract.tradingClass.c_str());
 }
 
-void EmptyClient::printContractDetailsMsg(const ContractDetails& contractDetails) {
+void GaucheAdapter::printContractDetailsMsg(const ContractDetails& contractDetails) {
 	printf("\tMarketName: %s\n", contractDetails.marketName.c_str());
 	printf("\tMinTick: %g\n", contractDetails.minTick);
 	printf("\tPriceMagnifier: %ld\n", contractDetails.priceMagnifier);
@@ -574,7 +574,7 @@ void EmptyClient::printContractDetailsMsg(const ContractDetails& contractDetails
 	printContractDetailsSecIdList(contractDetails.secIdList);
 }
 
-void EmptyClient::printContractDetailsSecIdList(const TagValueListSPtr &secIdList) {
+void GaucheAdapter::printContractDetailsSecIdList(const TagValueListSPtr &secIdList) {
 	const int secIdListCount = secIdList.get() ? secIdList->size() : 0;
 	if (secIdListCount > 0) {
 		printf("\tSecIdList: {");
@@ -586,7 +586,7 @@ void EmptyClient::printContractDetailsSecIdList(const TagValueListSPtr &secIdLis
 	}
 }
 
-void EmptyClient::printBondContractDetailsMsg(const ContractDetails& contractDetails) {
+void GaucheAdapter::printBondContractDetailsMsg(const ContractDetails& contractDetails) {
 	printf("\tSymbol: %s\n", contractDetails.contract.symbol.c_str());
 	printf("\tSecType: %s\n", contractDetails.contract.secType.c_str());
 	printf("\tCusip: %s\n", contractDetails.cusip.c_str());
@@ -624,63 +624,63 @@ void EmptyClient::printBondContractDetailsMsg(const ContractDetails& contractDet
 }
 
 //! [contractdetailsend]
-void EmptyClient::contractDetailsEnd( int reqId) {
+void GaucheAdapter::contractDetailsEnd( int reqId) {
 	printf( "ContractDetailsEnd. %d\n", reqId);
 }
 //! [contractdetailsend]
 
 //! [execdetails]
-void EmptyClient::execDetails( int reqId, const Contract& contract, const Execution& execution) {
+void GaucheAdapter::execDetails( int reqId, const Contract& contract, const Execution& execution) {
 	printf( "ExecDetails. ReqId: %d - %s, %s, %s - %s, %ld, %g, %d\n", reqId, contract.symbol.c_str(), contract.secType.c_str(), contract.currency.c_str(), execution.execId.c_str(), execution.orderId, execution.shares, execution.lastLiquidity);
 }
 //! [execdetails]
 
 //! [execdetailsend]
-void EmptyClient::execDetailsEnd( int reqId) {
+void GaucheAdapter::execDetailsEnd( int reqId) {
 	printf( "ExecDetailsEnd. %d\n", reqId);
 }
 //! [execdetailsend]
 
 //! [updatemktdepth]
-void EmptyClient::updateMktDepth(TickerId id, int position, int operation, int side,
+void GaucheAdapter::updateMktDepth(TickerId id, int position, int operation, int side,
                                    double price, int size) {
 	printf( "UpdateMarketDepth. %ld - Position: %d, Operation: %d, Side: %d, Price: %g, Size: %d\n", id, position, operation, side, price, size);
 }
 //! [updatemktdepth]
 
 //! [updatemktdepthl2]
-void EmptyClient::updateMktDepthL2(TickerId id, int position, const std::string& marketMaker, int operation,
+void GaucheAdapter::updateMktDepthL2(TickerId id, int position, const std::string& marketMaker, int operation,
                                      int side, double price, int size, bool isSmartDepth) {
 	printf( "UpdateMarketDepthL2. %ld - Position: %d, Operation: %d, Side: %d, Price: %g, Size: %d, isSmartDepth: %d\n", id, position, operation, side, price, size, isSmartDepth);
 }
 //! [updatemktdepthl2]
 
 //! [updatenewsbulletin]
-void EmptyClient::updateNewsBulletin(int msgId, int msgType, const std::string& newsMessage, const std::string& originExch) {
+void GaucheAdapter::updateNewsBulletin(int msgId, int msgType, const std::string& newsMessage, const std::string& originExch) {
 	printf( "News Bulletins. %d - Type: %d, Message: %s, Exchange of Origin: %s\n", msgId, msgType, newsMessage.c_str(), originExch.c_str());
 }
 //! [updatenewsbulletin]
 
 //! [managedaccounts]
-void EmptyClient::managedAccounts( const std::string& accountsList) {
+void GaucheAdapter::managedAccounts( const std::string& accountsList) {
 	printf( "Account List: %s\n", accountsList.c_str());
 }
 //! [managedaccounts]
 
 //! [receivefa]
-void EmptyClient::receiveFA(faDataType pFaDataType, const std::string& cxml) {
+void GaucheAdapter::receiveFA(faDataType pFaDataType, const std::string& cxml) {
 	std::cout << "Receiving FA: " << (int)pFaDataType << std::endl << cxml << std::endl;
 }
 //! [receivefa]
 
 //! [historicaldata]
-void EmptyClient::historicalData(TickerId reqId, const Bar& bar) {
+void GaucheAdapter::historicalData(TickerId reqId, const Bar& bar) {
 	printf( "HistoricalData. ReqId: %ld - Date: %s, Open: %g, High: %g, Low: %g, Close: %g, Volume: %lld, Count: %d, WAP: %g\n", reqId, bar.time.c_str(), bar.open, bar.high, bar.low, bar.close, bar.volume, bar.count, bar.wap);
 }
 //! [historicaldata]
 
 //! [historicaldataend]
-void EmptyClient::historicalDataEnd(int reqId, const std::string& startDateStr, const std::string& endDateStr) {
+void GaucheAdapter::historicalDataEnd(int reqId, const std::string& startDateStr, const std::string& endDateStr) {
 	std::cout << "HistoricalDataEnd. ReqId: " << reqId << " - Start Date: " << startDateStr << ", End Date: " << endDateStr << std::endl;
 
     disconnect();
@@ -688,13 +688,13 @@ void EmptyClient::historicalDataEnd(int reqId, const std::string& startDateStr, 
 //! [historicaldataend]
 
 //! [scannerparameters]
-void EmptyClient::scannerParameters(const std::string& xml) {
+void GaucheAdapter::scannerParameters(const std::string& xml) {
 	printf( "ScannerParameters. %s\n", xml.c_str());
 }
 //! [scannerparameters]
 
 //! [scannerdata]
-void EmptyClient::scannerData(int reqId, int rank, const ContractDetails& contractDetails,
+void GaucheAdapter::scannerData(int reqId, int rank, const ContractDetails& contractDetails,
                                 const std::string& distance, const std::string& benchmark, const std::string& projection,
                                 const std::string& legsStr) {
 	printf( "ScannerData. %d - Rank: %d, Symbol: %s, SecType: %s, Currency: %s, Distance: %s, Benchmark: %s, Projection: %s, Legs String: %s\n", reqId, rank, contractDetails.contract.symbol.c_str(), contractDetails.contract.secType.c_str(), contractDetails.contract.currency.c_str(), distance.c_str(), benchmark.c_str(), projection.c_str(), legsStr.c_str());
@@ -702,139 +702,139 @@ void EmptyClient::scannerData(int reqId, int rank, const ContractDetails& contra
 //! [scannerdata]
 
 //! [scannerdataend]
-void EmptyClient::scannerDataEnd(int reqId) {
+void GaucheAdapter::scannerDataEnd(int reqId) {
 	printf( "ScannerDataEnd. %d\n", reqId);
 }
 //! [scannerdataend]
 
 //! [realtimebar]
-void EmptyClient::realtimeBar(TickerId reqId, long time, double open, double high, double low, double close,
+void GaucheAdapter::realtimeBar(TickerId reqId, long time, double open, double high, double low, double close,
                                 long volume, double wap, int count) {
 	printf( "RealTimeBars. %ld - Time: %ld, Open: %g, High: %g, Low: %g, Close: %g, Volume: %ld, Count: %d, WAP: %g\n", reqId, time, open, high, low, close, volume, count, wap);
 }
 //! [realtimebar]
 
 //! [fundamentaldata]
-void EmptyClient::fundamentalData(TickerId reqId, const std::string& data) {
+void GaucheAdapter::fundamentalData(TickerId reqId, const std::string& data) {
 	printf( "FundamentalData. ReqId: %ld, %s\n", reqId, data.c_str());
 }
 //! [fundamentaldata]
 
-void EmptyClient::deltaNeutralValidation(int reqId, const DeltaNeutralContract& deltaNeutralContract) {
+void GaucheAdapter::deltaNeutralValidation(int reqId, const DeltaNeutralContract& deltaNeutralContract) {
 	printf( "DeltaNeutralValidation. %d, ConId: %ld, Delta: %g, Price: %g\n", reqId, deltaNeutralContract.conId, deltaNeutralContract.delta, deltaNeutralContract.price);
 }
 
 //! [ticksnapshotend]
-void EmptyClient::tickSnapshotEnd(int reqId) {
+void GaucheAdapter::tickSnapshotEnd(int reqId) {
 	printf( "TickSnapshotEnd: %d\n", reqId);
 }
 //! [ticksnapshotend]
 
 //! [marketdatatype]
-void EmptyClient::marketDataType(TickerId reqId, int marketDataType) {
+void GaucheAdapter::marketDataType(TickerId reqId, int marketDataType) {
 	printf( "MarketDataType. ReqId: %ld, Type: %d\n", reqId, marketDataType);
 }
 //! [marketdatatype]
 
 //! [commissionreport]
-void EmptyClient::commissionReport( const CommissionReport& commissionReport) {
+void GaucheAdapter::commissionReport( const CommissionReport& commissionReport) {
 	printf( "CommissionReport. %s - %g %s RPNL %g\n", commissionReport.execId.c_str(), commissionReport.commission, commissionReport.currency.c_str(), commissionReport.realizedPNL);
 }
 //! [commissionreport]
 
 //! [position]
-void EmptyClient::position( const std::string& account, const Contract& contract, double position, double avgCost) {
+void GaucheAdapter::position( const std::string& account, const Contract& contract, double position, double avgCost) {
 	printf( "Position. %s - Symbol: %s, SecType: %s, Currency: %s, Position: %g, Avg Cost: %g\n", account.c_str(), contract.symbol.c_str(), contract.secType.c_str(), contract.currency.c_str(), position, avgCost);
 }
 //! [position]
 
 //! [positionend]
-void EmptyClient::positionEnd() {
+void GaucheAdapter::positionEnd() {
 	printf( "PositionEnd\n");
 }
 //! [positionend]
 
 //! [accountsummary]
-void EmptyClient::accountSummary( int reqId, const std::string& account, const std::string& tag, const std::string& value, const std::string& currency) {
+void GaucheAdapter::accountSummary( int reqId, const std::string& account, const std::string& tag, const std::string& value, const std::string& currency) {
 	printf( "Acct Summary. ReqId: %d, Account: %s, Tag: %s, Value: %s, Currency: %s\n", reqId, account.c_str(), tag.c_str(), value.c_str(), currency.c_str());
 }
 //! [accountsummary]
 
 //! [accountsummaryend]
-void EmptyClient::accountSummaryEnd( int reqId) {
+void GaucheAdapter::accountSummaryEnd( int reqId) {
 	printf( "AccountSummaryEnd. Req Id: %d\n", reqId);
 }
 //! [accountsummaryend]
 
-void EmptyClient::verifyMessageAPI( const std::string& apiData) {
+void GaucheAdapter::verifyMessageAPI( const std::string& apiData) {
 	printf("verifyMessageAPI: %s\b", apiData.c_str());
 }
 
-void EmptyClient::verifyCompleted( bool isSuccessful, const std::string& errorText) {
+void GaucheAdapter::verifyCompleted( bool isSuccessful, const std::string& errorText) {
 	printf("verifyCompleted. IsSuccessfule: %d - Error: %s\n", isSuccessful, errorText.c_str());
 }
 
-void EmptyClient::verifyAndAuthMessageAPI( const std::string& apiDatai, const std::string& xyzChallenge) {
+void GaucheAdapter::verifyAndAuthMessageAPI( const std::string& apiDatai, const std::string& xyzChallenge) {
 	printf("verifyAndAuthMessageAPI: %s %s\n", apiDatai.c_str(), xyzChallenge.c_str());
 }
 
-void EmptyClient::verifyAndAuthCompleted( bool isSuccessful, const std::string& errorText) {
+void GaucheAdapter::verifyAndAuthCompleted( bool isSuccessful, const std::string& errorText) {
 	printf("verifyAndAuthCompleted. IsSuccessful: %d - Error: %s\n", isSuccessful, errorText.c_str());
     if (isSuccessful)
         m_pClient->startApi();
 }
 
 //! [displaygrouplist]
-void EmptyClient::displayGroupList( int reqId, const std::string& groups) {
+void GaucheAdapter::displayGroupList( int reqId, const std::string& groups) {
 	printf("Display Group List. ReqId: %d, Groups: %s\n", reqId, groups.c_str());
 }
 //! [displaygrouplist]
 
 //! [displaygroupupdated]
-void EmptyClient::displayGroupUpdated( int reqId, const std::string& contractInfo) {
+void GaucheAdapter::displayGroupUpdated( int reqId, const std::string& contractInfo) {
 	std::cout << "Display Group Updated. ReqId: " << reqId << ", Contract Info: " << contractInfo << std::endl;
 }
 //! [displaygroupupdated]
 
 //! [positionmulti]
-void EmptyClient::positionMulti( int reqId, const std::string& account,const std::string& modelCode, const Contract& contract, double pos, double avgCost) {
+void GaucheAdapter::positionMulti( int reqId, const std::string& account,const std::string& modelCode, const Contract& contract, double pos, double avgCost) {
 	printf("Position Multi. Request: %d, Account: %s, ModelCode: %s, Symbol: %s, SecType: %s, Currency: %s, Position: %g, Avg Cost: %g\n", reqId, account.c_str(), modelCode.c_str(), contract.symbol.c_str(), contract.secType.c_str(), contract.currency.c_str(), pos, avgCost);
 }
 //! [positionmulti]
 
 //! [positionmultiend]
-void EmptyClient::positionMultiEnd( int reqId) {
+void GaucheAdapter::positionMultiEnd( int reqId) {
 	printf("Position Multi End. Request: %d\n", reqId);
 }
 //! [positionmultiend]
 
 //! [accountupdatemulti]
-void EmptyClient::accountUpdateMulti( int reqId, const std::string& account, const std::string& modelCode, const std::string& key, const std::string& value, const std::string& currency) {
+void GaucheAdapter::accountUpdateMulti( int reqId, const std::string& account, const std::string& modelCode, const std::string& key, const std::string& value, const std::string& currency) {
 	printf("AccountUpdate Multi. Request: %d, Account: %s, ModelCode: %s, Key, %s, Value: %s, Currency: %s\n", reqId, account.c_str(), modelCode.c_str(), key.c_str(), value.c_str(), currency.c_str());
 }
 //! [accountupdatemulti]
 
 //! [accountupdatemultiend]
-void EmptyClient::accountUpdateMultiEnd( int reqId) {
+void GaucheAdapter::accountUpdateMultiEnd( int reqId) {
 	printf("Account Update Multi End. Request: %d\n", reqId);
 }
 //! [accountupdatemultiend]
 
 //! [securityDefinitionOptionParameter]
-void EmptyClient::securityDefinitionOptionalParameter(int reqId, const std::string& exchange, int underlyingConId, const std::string& tradingClass,
+void GaucheAdapter::securityDefinitionOptionalParameter(int reqId, const std::string& exchange, int underlyingConId, const std::string& tradingClass,
                                                         const std::string& multiplier, const std::set<std::string>& expirations, const std::set<double>& strikes) {
 	printf("Security Definition Optional Parameter. Request: %d, Trading Class: %s, Multiplier: %s\n", reqId, tradingClass.c_str(), multiplier.c_str());
 }
 //! [securityDefinitionOptionParameter]
 
 //! [securityDefinitionOptionParameterEnd]
-void EmptyClient::securityDefinitionOptionalParameterEnd(int reqId) {
+void GaucheAdapter::securityDefinitionOptionalParameterEnd(int reqId) {
 	printf("Security Definition Optional Parameter End. Request: %d\n", reqId);
 }
 //! [securityDefinitionOptionParameterEnd]
 
 //! [softDollarTiers]
-void EmptyClient::softDollarTiers(int reqId, const std::vector<SoftDollarTier> &tiers) {
+void GaucheAdapter::softDollarTiers(int reqId, const std::vector<SoftDollarTier> &tiers) {
 	printf("Soft dollar tiers (%lu):", tiers.size());
 
 	for (unsigned int i = 0; i < tiers.size(); i++) {
@@ -844,7 +844,7 @@ void EmptyClient::softDollarTiers(int reqId, const std::vector<SoftDollarTier> &
 //! [softDollarTiers]
 
 //! [familyCodes]
-void EmptyClient::familyCodes(const std::vector<FamilyCode> &familyCodes) {
+void GaucheAdapter::familyCodes(const std::vector<FamilyCode> &familyCodes) {
 	printf("Family codes (%lu):\n", familyCodes.size());
 
 	for (unsigned int i = 0; i < familyCodes.size(); i++) {
@@ -854,7 +854,7 @@ void EmptyClient::familyCodes(const std::vector<FamilyCode> &familyCodes) {
 //! [familyCodes]
 
 //! [symbolSamples]
-void EmptyClient::symbolSamples(int reqId, const std::vector<ContractDescription> &contractDescriptions) {
+void GaucheAdapter::symbolSamples(int reqId, const std::vector<ContractDescription> &contractDescriptions) {
 	printf("Symbol Samples (total=%lu) reqId: %d\n", contractDescriptions.size(), reqId);
 
 	for (unsigned int i = 0; i < contractDescriptions.size(); i++) {
@@ -871,7 +871,7 @@ void EmptyClient::symbolSamples(int reqId, const std::vector<ContractDescription
 //! [symbolSamples]
 
 //! [mktDepthExchanges]
-void EmptyClient::mktDepthExchanges(const std::vector<DepthMktDataDescription> &depthMktDataDescriptions) {
+void GaucheAdapter::mktDepthExchanges(const std::vector<DepthMktDataDescription> &depthMktDataDescriptions) {
 	printf("Mkt Depth Exchanges (%lu):\n", depthMktDataDescriptions.size());
 
 	for (unsigned int i = 0; i < depthMktDataDescriptions.size(); i++) {
@@ -886,13 +886,13 @@ void EmptyClient::mktDepthExchanges(const std::vector<DepthMktDataDescription> &
 //! [mktDepthExchanges]
 
 //! [tickNews]
-void EmptyClient::tickNews(int tickerId, time_t timeStamp, const std::string& providerCode, const std::string& articleId, const std::string& headline, const std::string& extraData) {
+void GaucheAdapter::tickNews(int tickerId, time_t timeStamp, const std::string& providerCode, const std::string& articleId, const std::string& headline, const std::string& extraData) {
 	printf("News Tick. TickerId: %d, TimeStamp: %s, ProviderCode: %s, ArticleId: %s, Headline: %s, ExtraData: %s\n", tickerId, ctime(&(timeStamp /= 1000)), providerCode.c_str(), articleId.c_str(), headline.c_str(), extraData.c_str());
 }
 //! [tickNews]
 
 //! [smartcomponents]]
-void EmptyClient::smartComponents(int reqId, const SmartComponentsMap& theMap) {
+void GaucheAdapter::smartComponents(int reqId, const SmartComponentsMap& theMap) {
 	printf("Smart components: (%lu):\n", theMap.size());
 
 	for (SmartComponentsMap::const_iterator i = theMap.begin(); i != theMap.end(); i++) {
@@ -902,7 +902,7 @@ void EmptyClient::smartComponents(int reqId, const SmartComponentsMap& theMap) {
 //! [smartcomponents]
 
 //! [tickReqParams]
-void EmptyClient::tickReqParams(int tickerId, double minTick, const std::string& bboExchange, int snapshotPermissions) {
+void GaucheAdapter::tickReqParams(int tickerId, double minTick, const std::string& bboExchange, int snapshotPermissions) {
 	printf("tickerId: %d, minTick: %g, bboExchange: %s, snapshotPermissions: %u", tickerId, minTick, bboExchange.c_str(), snapshotPermissions);
 
 	m_bboExchange = bboExchange;
@@ -910,7 +910,7 @@ void EmptyClient::tickReqParams(int tickerId, double minTick, const std::string&
 //! [tickReqParams]
 
 //! [newsProviders]
-void EmptyClient::newsProviders(const std::vector<NewsProvider> &newsProviders) {
+void GaucheAdapter::newsProviders(const std::vector<NewsProvider> &newsProviders) {
 	printf("News providers (%lu):\n", newsProviders.size());
 
 	for (unsigned int i = 0; i < newsProviders.size(); i++) {
@@ -920,7 +920,7 @@ void EmptyClient::newsProviders(const std::vector<NewsProvider> &newsProviders) 
 //! [newsProviders]
 
 //! [newsArticle]
-void EmptyClient::newsArticle(int requestId, int articleType, const std::string& articleText) {
+void GaucheAdapter::newsArticle(int requestId, int articleType, const std::string& articleText) {
 	printf("News Article. Request Id: %d, Article Type: %d\n", requestId, articleType);
 	if (articleType == 0) {
 		printf("News Article Text (text or html): %s\n", articleText.c_str());
@@ -947,26 +947,26 @@ void EmptyClient::newsArticle(int requestId, int articleType, const std::string&
 //! [newsArticle]
 
 //! [historicalNews]
-void EmptyClient::historicalNews(int requestId, const std::string& time, const std::string& providerCode, const std::string& articleId, const std::string& headline) {
+void GaucheAdapter::historicalNews(int requestId, const std::string& time, const std::string& providerCode, const std::string& articleId, const std::string& headline) {
 	printf("Historical News. RequestId: %d, Time: %s, ProviderCode: %s, ArticleId: %s, Headline: %s\n", requestId, time.c_str(), providerCode.c_str(), articleId.c_str(), headline.c_str());
 }
 //! [historicalNews]
 
 //! [historicalNewsEnd]
-void EmptyClient::historicalNewsEnd(int requestId, bool hasMore) {
+void GaucheAdapter::historicalNewsEnd(int requestId, bool hasMore) {
 	printf("Historical News End. RequestId: %d, HasMore: %s\n", requestId, (hasMore ? "true" : " false"));
 }
 //! [historicalNewsEnd]
 
 //! [headTimestamp]
-void EmptyClient::headTimestamp(int reqId, const std::string& headTimestamp) {
+void GaucheAdapter::headTimestamp(int reqId, const std::string& headTimestamp) {
 	printf( "Head time stamp. ReqId: %d - Head time stamp: %s,\n", reqId, headTimestamp.c_str());
 
 }
 //! [headTimestamp]
 
 //! [histogramData]
-void EmptyClient::histogramData(int reqId, const HistogramDataVector& data) {
+void GaucheAdapter::histogramData(int reqId, const HistogramDataVector& data) {
 	printf("Histogram. ReqId: %d, data length: %lu\n", reqId, data.size());
 
 	for (auto item : data) {
@@ -976,25 +976,25 @@ void EmptyClient::histogramData(int reqId, const HistogramDataVector& data) {
 //! [histogramData]
 
 //! [historicalDataUpdate]
-void EmptyClient::historicalDataUpdate(TickerId reqId, const Bar& bar) {
+void GaucheAdapter::historicalDataUpdate(TickerId reqId, const Bar& bar) {
 	printf( "HistoricalDataUpdate. ReqId: %ld - Date: %s, Open: %g, High: %g, Low: %g, Close: %g, Volume: %lld, Count: %d, WAP: %g\n", reqId, bar.time.c_str(), bar.open, bar.high, bar.low, bar.close, bar.volume, bar.count, bar.wap);
 }
 //! [historicalDataUpdate]
 
 //! [rerouteMktDataReq]
-void EmptyClient::rerouteMktDataReq(int reqId, int conid, const std::string& exchange) {
+void GaucheAdapter::rerouteMktDataReq(int reqId, int conid, const std::string& exchange) {
 	printf( "Re-route market data request. ReqId: %d, ConId: %d, Exchange: %s\n", reqId, conid, exchange.c_str());
 }
 //! [rerouteMktDataReq]
 
 //! [rerouteMktDepthReq]
-void EmptyClient::rerouteMktDepthReq(int reqId, int conid, const std::string& exchange) {
+void GaucheAdapter::rerouteMktDepthReq(int reqId, int conid, const std::string& exchange) {
 	printf( "Re-route market depth request. ReqId: %d, ConId: %d, Exchange: %s\n", reqId, conid, exchange.c_str());
 }
 //! [rerouteMktDepthReq]
 
 //! [marketRule]
-void EmptyClient::marketRule(int marketRuleId, const std::vector<PriceIncrement> &priceIncrements) {
+void GaucheAdapter::marketRule(int marketRuleId, const std::vector<PriceIncrement> &priceIncrements) {
 	printf("Market Rule Id: %d\n", marketRuleId);
 	for (unsigned int i = 0; i < priceIncrements.size(); i++) {
 		printf("Low Edge: %g, Increment: %g\n", priceIncrements[i].lowEdge, priceIncrements[i].increment);
@@ -1003,19 +1003,19 @@ void EmptyClient::marketRule(int marketRuleId, const std::vector<PriceIncrement>
 //! [marketRule]
 
 //! [pnl]
-void EmptyClient::pnl(int reqId, double dailyPnL, double unrealizedPnL, double realizedPnL) {
+void GaucheAdapter::pnl(int reqId, double dailyPnL, double unrealizedPnL, double realizedPnL) {
 	printf("PnL. ReqId: %d, daily PnL: %g, unrealized PnL: %g, realized PnL: %g\n", reqId, dailyPnL, unrealizedPnL, realizedPnL);
 }
 //! [pnl]
 
 //! [pnlsingle]
-void EmptyClient::pnlSingle(int reqId, int pos, double dailyPnL, double unrealizedPnL, double realizedPnL, double value) {
+void GaucheAdapter::pnlSingle(int reqId, int pos, double dailyPnL, double unrealizedPnL, double realizedPnL, double value) {
 	printf("PnL Single. ReqId: %d, pos: %d, daily PnL: %g, unrealized PnL: %g, realized PnL: %g, value: %g\n", reqId, pos, dailyPnL, unrealizedPnL, realizedPnL, value);
 }
 //! [pnlsingle]
 
 //! [historicalticks]
-void EmptyClient::historicalTicks(int reqId, const std::vector<HistoricalTick>& ticks, bool done) {
+void GaucheAdapter::historicalTicks(int reqId, const std::vector<HistoricalTick>& ticks, bool done) {
     for (HistoricalTick tick : ticks) {
 	std::time_t t = tick.time;
         std::cout << "Historical tick. ReqId: " << reqId << ", time: " << ctime(&t) << ", price: "<< tick.price << ", size: " << tick.size << std::endl;
@@ -1024,7 +1024,7 @@ void EmptyClient::historicalTicks(int reqId, const std::vector<HistoricalTick>& 
 //! [historicalticks]
 
 //! [historicalticksbidask]
-void EmptyClient::historicalTicksBidAsk(int reqId, const std::vector<HistoricalTickBidAsk>& ticks, bool done) {
+void GaucheAdapter::historicalTicksBidAsk(int reqId, const std::vector<HistoricalTickBidAsk>& ticks, bool done) {
     for (HistoricalTickBidAsk tick : ticks) {
 	std::time_t t = tick.time;
         std::cout << "Historical tick bid/ask. ReqId: " << reqId << ", time: " << ctime(&t) << ", price bid: "<< tick.priceBid <<
@@ -1035,7 +1035,7 @@ void EmptyClient::historicalTicksBidAsk(int reqId, const std::vector<HistoricalT
 //! [historicalticksbidask]
 
 //! [historicaltickslast]
-void EmptyClient::historicalTicksLast(int reqId, const std::vector<HistoricalTickLast>& ticks, bool done) {
+void GaucheAdapter::historicalTicksLast(int reqId, const std::vector<HistoricalTickLast>& ticks, bool done) {
     for (HistoricalTickLast tick : ticks) {
 	std::time_t t = tick.time;
         std::cout << "Historical tick last. ReqId: " << reqId << ", time: " << ctime(&t) << ", price: "<< tick.price <<
@@ -1046,33 +1046,33 @@ void EmptyClient::historicalTicksLast(int reqId, const std::vector<HistoricalTic
 //! [historicaltickslast]
 
 //! [tickbytickalllast]
-void EmptyClient::tickByTickAllLast(int reqId, int tickType, time_t time, double price, int size, const TickAttribLast& tickAttribLast, const std::string& exchange, const std::string& specialConditions) {
+void GaucheAdapter::tickByTickAllLast(int reqId, int tickType, time_t time, double price, int size, const TickAttribLast& tickAttribLast, const std::string& exchange, const std::string& specialConditions) {
     printf("Tick-By-Tick. ReqId: %d, TickType: %s, Time: %s, Price: %g, Size: %d, PastLimit: %d, Unreported: %d, Exchange: %s, SpecialConditions:%s\n", 
         reqId, (tickType == 1 ? "Last" : "AllLast"), ctime(&time), price, size, tickAttribLast.pastLimit, tickAttribLast.unreported, exchange.c_str(), specialConditions.c_str());
 }
 //! [tickbytickalllast]
 
 //! [tickbytickbidask]
-void EmptyClient::tickByTickBidAsk(int reqId, time_t time, double bidPrice, double askPrice, int bidSize, int askSize, const TickAttribBidAsk& tickAttribBidAsk) {
+void GaucheAdapter::tickByTickBidAsk(int reqId, time_t time, double bidPrice, double askPrice, int bidSize, int askSize, const TickAttribBidAsk& tickAttribBidAsk) {
     printf("Tick-By-Tick. ReqId: %d, TickType: BidAsk, Time: %s, BidPrice: %g, AskPrice: %g, BidSize: %d, AskSize: %d, BidPastLow: %d, AskPastHigh: %d\n", 
         reqId, ctime(&time), bidPrice, askPrice, bidSize, askSize, tickAttribBidAsk.bidPastLow, tickAttribBidAsk.askPastHigh);
 }
 //! [tickbytickbidask]
 
 //! [tickbytickmidpoint]
-void EmptyClient::tickByTickMidPoint(int reqId, time_t time, double midPoint) {
+void GaucheAdapter::tickByTickMidPoint(int reqId, time_t time, double midPoint) {
     printf("Tick-By-Tick. ReqId: %d, TickType: MidPoint, Time: %s, MidPoint: %g\n", reqId, ctime(&time), midPoint);
 }
 //! [tickbytickmidpoint]
 
 //! [orderbound]
-void EmptyClient::orderBound(long long orderId, int apiClientId, int apiOrderId) {
+void GaucheAdapter::orderBound(long long orderId, int apiClientId, int apiOrderId) {
     printf("Order bound. OrderId: %lld, ApiClientId: %d, ApiOrderId: %d\n", orderId, apiClientId, apiOrderId);
 }
 //! [orderbound]
 
 //! [completedorder]
-void EmptyClient::completedOrder(const Contract& contract, const Order& order, const OrderState& orderState) {
+void GaucheAdapter::completedOrder(const Contract& contract, const Order& order, const OrderState& orderState) {
 	printf( "CompletedOrder. PermId: %ld, ParentPermId: %lld, Account: %s, Symbol: %s, SecType: %s, Exchange: %s:, Action: %s, OrderType: %s, TotalQty: %g, CashQty: %g, FilledQty: %g, "
 		"LmtPrice: %g, AuxPrice: %g, Status: %s, CompletedTime: %s, CompletedStatus: %s\n", 
 		order.permId, order.parentPermId == UNSET_LONG ? 0 : order.parentPermId, order.account.c_str(), contract.symbol.c_str(), contract.secType.c_str(), contract.exchange.c_str(), 
@@ -1082,7 +1082,7 @@ void EmptyClient::completedOrder(const Contract& contract, const Order& order, c
 //! [completedorder]
 
 //! [completedordersend]
-void EmptyClient::completedOrdersEnd() {
+void GaucheAdapter::completedOrdersEnd() {
 	printf( "CompletedOrdersEnd\n");
 }
 //! [completedordersend]

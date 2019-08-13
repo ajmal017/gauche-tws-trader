@@ -106,13 +106,13 @@ enum State {
 };
 
 //! [ewrapperimpl]
-class EmptyClient : public EWrapper
+class GaucheAdapter : public EWrapper
 {
 //! [ewrapperimpl]
 public:
 
-	EmptyClient();
-	~EmptyClient();
+	GaucheAdapter();
+	~GaucheAdapter();
 
 	void setConnectOptions(const std::string&);
 	void processMessages();
