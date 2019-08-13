@@ -34,7 +34,7 @@ debug: $(TARGET) $(MAKIKI)
 	gdb -ex run $(TARGET)
 
 $(TARGET): main.c
-	$(CC) -g -I/usr/local/include -o $(TARGET) main.c $(CFLAGS) $(LFLAGS)
+	$(CXX) -g -I/usr/local/include -o $(TARGET) main.c $(CFLAGS) $(LFLAGS)
 
 $(MAKIKI): $(RHEINGAU)
 	$(RHEINGAU)/rh1 install
