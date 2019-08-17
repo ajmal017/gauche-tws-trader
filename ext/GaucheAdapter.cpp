@@ -23,6 +23,9 @@
 #include <fstream>
 #include <cstdint>
 
+#include <gauche.h>
+#include <gauche/static.h>
+
 const int PING_DEADLINE = 2; // seconds
 const int SLEEP_BETWEEN_PINGS = 30; // seconds
 

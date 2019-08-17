@@ -5,6 +5,8 @@ TWS_LFLAGS=-pthread -Wall -Wno-switch -Wpedantic -std=c++11
 LFLAGS=-luv $(LIBPATH) -lgauche-0.97
 LD_LIBRARY_PATH=$(shell gauche-config --sysarchdir)
 
+.PHONY: adapter
+
 MAKIKI=gosh-modules/makiki
 RHEINGAU=./gauche-rheingau
 
@@ -36,7 +38,7 @@ $(SCANRESULT): scan.scm
 debug: $(TARGET) $(MAKIKI)
 	gdb -ex run $(TARGET)
 
-$(TARGET): main.c $(TWS_ADAPTER)
+$(TARGET): main.c adapter
 	$(CXX) -g -I/usr/local/include -o $(TARGET) main.c $(TWS_ADAPTER) $(CFLAGS) $(LFLAGS) $(TWS_LFLAGS)
 
 $(MAKIKI): $(RHEINGAU)
@@ -45,8 +47,10 @@ $(MAKIKI): $(RHEINGAU)
 $(RHEINGAU):
 	git clone https://github.com/torus/gauche-rheingau.git $(RHEINGAU)
 
-$(TWS_ADAPTER):
+adapter:
 	make -C ext
+
+$(TWS_ADAPTER): adapter
 
 clean: data-clean
 	rm -rf *~ *.o $(TARGET) gosh-modules $(RHEINGAU) $(TARGET).dSYM
