@@ -1,11 +1,14 @@
 TARGET=violet
 CFLAGS=$(shell gauche-config -I)
 LIBPATH=$(shell gauche-config -L)
+TWS_LFLAGS=-pthread -Wall -Wno-switch -Wpedantic -std=c++11
 LFLAGS=-luv $(LIBPATH) -lgauche-0.97
 LD_LIBRARY_PATH=$(shell gauche-config --sysarchdir)
 
 MAKIKI=gosh-modules/makiki
 RHEINGAU=./gauche-rheingau
+
+TWS_ADAPTER=./ext/gaucheadapter.a
 
 SCANRESULT=result.tmp.txt
 
@@ -33,8 +36,8 @@ $(SCANRESULT): scan.scm
 debug: $(TARGET) $(MAKIKI)
 	gdb -ex run $(TARGET)
 
-$(TARGET): main.c
-	$(CXX) -g -I/usr/local/include -o $(TARGET) main.c $(CFLAGS) $(LFLAGS)
+$(TARGET): main.c $(TWS_ADAPTER)
+	$(CXX) -g -I/usr/local/include -o $(TARGET) main.c $(TWS_ADAPTER) $(CFLAGS) $(LFLAGS) $(TWS_LFLAGS)
 
 $(MAKIKI): $(RHEINGAU)
 	$(RHEINGAU)/rh1 install
@@ -42,8 +45,12 @@ $(MAKIKI): $(RHEINGAU)
 $(RHEINGAU):
 	git clone https://github.com/torus/gauche-rheingau.git $(RHEINGAU)
 
+$(TWS_ADAPTER):
+	make -C ext
+
 clean: data-clean
 	rm -rf *~ *.o $(TARGET) gosh-modules $(RHEINGAU) $(TARGET).dSYM
+	make -C ext clean
 
 data-clean:
 	rm -rf *.tmp.* *.dat

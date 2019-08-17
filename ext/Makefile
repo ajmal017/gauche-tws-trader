@@ -1,4 +1,5 @@
-TARGET=gauchetest
+TARGET=gaucheadapter
+TARGET_STATIC_LIB=$(TARGET).a
 
 LFLAGS=-pthread -Wall -Wno-switch -Wpedantic -std=c++11
 ROOT_DIR=../tws/twsapi/IBJts/source/cppclient
@@ -9,8 +10,11 @@ SOURCES=GaucheAdapter.cpp Main.cpp Utils.cpp \
 	$(wildcard $(BASE_SRC_DIR)/*.cpp)
 OBJECTS=$(subst .cpp,.o,$(SOURCES))
 
+$(TARGET_STATIC_LIB): $(OBJECTS)
+	$(AR) r $@ $(OBJECTS)
+
 $(TARGET): $(OBJECTS)
-	$(CXX) $(LFLAGS) $(OBJECTS) -o $(TARGET)
+	$(CXX) $(LFLAGS) $(OBJECTS) -o $@
 
 %.o: %.cpp
 	$(CXX) -c $(CFLAGS) $< -o $@
