@@ -325,87 +325,46 @@ void GaucheAdapter::connectAck() {
 //! [connectack]
 
 void GaucheAdapter::reqCurrentTime() {}
-
 void GaucheAdapter::pnlOperation() {}
-
 void GaucheAdapter::pnlSingleOperation() {}
-
 void GaucheAdapter::tickDataOperation() {}
-
 void GaucheAdapter::tickOptionComputationOperation() {}
-
 void GaucheAdapter::delayedTickDataOperation() {}
-
 void GaucheAdapter::marketDepthOperations() {}
-
 void GaucheAdapter::realTimeBars() {}
-
 void GaucheAdapter::marketDataType() {}
-
 void GaucheAdapter::historicalDataRequests() {}
-
 void GaucheAdapter::optionsOperations() {}
-
 void GaucheAdapter::contractOperations() {}
-
 void GaucheAdapter::marketScanners() {}
-
 void GaucheAdapter::fundamentals() {}
-
 void GaucheAdapter::bulletins() {}
-
 void GaucheAdapter::accountOperations() {}
-
 void GaucheAdapter::orderOperations() {}
-
 void GaucheAdapter::ocaSamples() {}
-
 void GaucheAdapter::conditionSamples() {}
-
 void GaucheAdapter::bracketSample() {}
-
 void GaucheAdapter::hedgeSample() {}
-
 void GaucheAdapter::testAlgoSamples() {}
-
 void GaucheAdapter::financialAdvisorOrderSamples() {}
-
 void GaucheAdapter::financialAdvisorOperations() {}
-
 void GaucheAdapter::testDisplayGroups() {}
-
 void GaucheAdapter::miscelaneous() {}
-
 void GaucheAdapter::reqFamilyCodes() {}
-
 void GaucheAdapter::reqMatchingSymbols() {}
-
 void GaucheAdapter::reqMktDepthExchanges() {}
-
 void GaucheAdapter::reqNewsTicks() {}
-
 void GaucheAdapter::reqSmartComponents() {}
-
 void GaucheAdapter::reqNewsProviders() {}
-
 void GaucheAdapter::reqNewsArticle() {}
-
 void GaucheAdapter::reqHistoricalNews() {}
-
 void GaucheAdapter::reqHeadTimestamp() {}
-
 void GaucheAdapter::reqHistogramData() {}
-
 void GaucheAdapter::rerouteCFDOperations() {}
-
 void GaucheAdapter::marketRuleOperations() {}
-
 void GaucheAdapter::continuousFuturesOperations() {}
-
 void GaucheAdapter::reqHistoricalTicks()  {}
-
 void GaucheAdapter::reqTickByTickData() {}
-
 void GaucheAdapter::whatIfSamples() {}
 
 //! [nextvalidid]

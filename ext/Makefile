@@ -20,4 +20,4 @@ $(TARGET): $(OBJECTS)
 	$(CXX) -c $(CFLAGS) $< -o $@
 
 clean:
-	rm -rf $(OBJECTS) $(TARGET)
+	rm -rf $(OBJECTS) $(TARGET) $(TARGET_STATIC_LIB)
