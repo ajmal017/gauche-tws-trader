@@ -11,6 +11,8 @@
 #include <gauche.h>
 #include <gauche/static.h>
 
+#include "ext/GaucheAdapter.h"
+
 #define DEFAULT_PORT 2222
 #define DEFAULT_BACKLOG 10
 
@@ -177,8 +179,11 @@ int main(int argc, char **argv) {
 
     // Main loop
     uv_idle_t idler;
+    GaucheAdapter client;
 
     uv_idle_init(uv_default_loop(), &idler);
+    idler.data = &client;
+
     uv_idle_start(&idler, handle_response);
 
     uv_tcp_t server;
