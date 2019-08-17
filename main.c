@@ -137,6 +137,10 @@ void handle_response(uv_idle_t* handle) {
                 Scm_Printf(SCM_CURERR, "handle_response: unknown tag %s\n", tag);
                 abort();
             }
+
+            GaucheAdapter *client = (GaucheAdapter*)handle->data;
+            if (client->isConnected())
+                client->processMessages();
         } else {
             usleep(1000);
             return;
@@ -198,5 +202,11 @@ int main(int argc, char **argv) {
         return 1;
     }
     Scm_Printf(SCM_CURERR, "%s: starting server on port %d\n", __FUNCTION__, DEFAULT_PORT);
+
+    const char *host = "localhost";
+    int port = 7497;
+    int clientId = 0;
+    client.connect( host, port, clientId);
+
     return uv_run(loop, UV_RUN_DEFAULT);
 }
