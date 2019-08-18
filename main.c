@@ -138,15 +138,17 @@ void handle_response(uv_idle_t* handle) {
                 abort();
             }
 
-            GaucheAdapter *client = (GaucheAdapter*)handle->data;
-            if (client->isConnected())
-                client->processMessages();
+            /* GaucheAdapter *client = (GaucheAdapter*)handle->data; */
+            /* if (client->isConnected()) */
+            /*     client->processMessages(); */
         } else {
             usleep(1000);
             return;
         }
     }
 }
+
+extern "C" void Scm_Init_tws_client();
 
 int main(int argc, char **argv) {
     loop = uv_default_loop();
@@ -158,6 +160,8 @@ int main(int argc, char **argv) {
         Scm_Printf(SCM_CURERR, "usage: %s infile\n", argv[0]);
         Scm_Exit(1);
     }
+
+    Scm_Init_tws_client();
 
     Scm_AddLoadPath(".", 0);
     const char *infile = argv[1];
@@ -183,10 +187,10 @@ int main(int argc, char **argv) {
 
     // Main loop
     uv_idle_t idler;
-    GaucheAdapter client;
+    /* GaucheAdapter client; */
 
     uv_idle_init(uv_default_loop(), &idler);
-    idler.data = &client;
+    /* idler.data = &client; */
 
     uv_idle_start(&idler, handle_response);
 
@@ -203,10 +207,12 @@ int main(int argc, char **argv) {
     }
     Scm_Printf(SCM_CURERR, "%s: starting server on port %d\n", __FUNCTION__, DEFAULT_PORT);
 
-    const char *host = "localhost";
-    int port = 7497;
-    int clientId = 0;
-    client.connect( host, port, clientId);
+    /* const char *host = "localhost"; */
+    /* int port = 7497; */
+    /* int clientId = 0; */
+    /* client.connect( host, port, clientId); */
+
+    /* client.historicalDataRequests(); */
 
     return uv_run(loop, UV_RUN_DEFAULT);
 }

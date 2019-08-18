@@ -5,6 +5,7 @@
 (add-load-path "./gauche-rheingau/lib/")
 (use rheingau)
 (rheingau-use makiki)
+(use ext.tws-client)
 
 (add-load-path "./lib/")
 (use violet)
@@ -231,3 +232,10 @@
     (respond/redirect req "/2019/1/1/0/0") ))
 
 (define-http-handler #/^\/static\// (file-handler))
+
+;;;;;;;;;;;;;;
+
+(define tws (make-tws-client))
+
+(tws-client-connect tws "localhost" 7497 0)
+(tws-client-historical-data-request tws)
