@@ -1,0 +1,29 @@
+"
+#include \"GaucheAdapter_glue.h\"
+"
+
+(define-type <tws-client> "GaucheAdapter*" "tws-client"
+  "TWS_CLIENT_P" "TWS_CLIENT_UNBOX" "TWS_CLIENT_BOX")
+
+(define-cproc make-tws-client () ::<tws-client>
+  (expr "new GaucheAdapter()"))
+
+(define-cproc tws-client-connect (cl::<tws-client> host::<const-cstring> port::<int> id::<int>)
+  ::<boolean>
+  (expr "cl->connect(host, port, id)"))
+
+(define-cproc tws-client-connected? (cl::<tws-client>)
+  ::<boolean>
+  (expr "cl->isConnected()"))
+
+(define-cproc tws-client-process-messages (cl::<tws-client>)
+  ::<void>
+  "cl->processMessages();")
+
+(define-cproc tws-client-historical-data-request (cl::<tws-client>)
+  ::<void>
+  "cl->historicalDataRequests();")
+
+;; Local Variables:
+;; mode: scheme
+;; End:

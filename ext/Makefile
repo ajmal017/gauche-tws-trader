@@ -6,9 +6,9 @@ ROOT_DIR=../tws/twsapi/IBJts/source/cppclient
 BASE_SRC_DIR=${ROOT_DIR}/client
 CFLAGS=-I${BASE_SRC_DIR} -I${ROOT_DIR} $(shell gauche-config -I)
 
-SOURCES=GaucheAdapter.cpp Main.cpp Utils.cpp \
+SOURCES=$(wildcard *.cpp) \
 	$(wildcard $(BASE_SRC_DIR)/*.cpp)
-OBJECTS=$(subst .cpp,.o,$(SOURCES))
+OBJECTS=$(subst .cpp,.o,$(SOURCES)) tws_client_lib.o
 
 $(TARGET_STATIC_LIB): $(OBJECTS)
 	$(AR) r $@ $(OBJECTS)
@@ -16,8 +16,12 @@ $(TARGET_STATIC_LIB): $(OBJECTS)
 $(TARGET): $(OBJECTS)
 	$(CXX) $(LFLAGS) $(OBJECTS) -o $@
 
+tws_client_lib.o: tws_client_lib.stub
+	gosh genstub $<
+	$(CXX) -c $(CFLAGS) $(subst .stub,.c,$<) -o $@
+
 %.o: %.cpp
 	$(CXX) -c $(CFLAGS) $< -o $@
 
 clean:
-	rm -rf $(OBJECTS) $(TARGET) $(TARGET_STATIC_LIB)
+	rm -rf $(OBJECTS) $(TARGET) $(TARGET_STATIC_LIB) tws_client_lib.c

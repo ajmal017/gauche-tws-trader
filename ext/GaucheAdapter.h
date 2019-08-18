@@ -123,7 +123,7 @@ public:
 	void disconnect() const;
 	bool isConnected() const;
 
-private:
+public:
     void pnlOperation();
     void pnlSingleOperation();
 	void tickDataOperation();
