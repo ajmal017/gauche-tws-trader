@@ -13,7 +13,8 @@
   (rheingau-use makiki)
 
   (export init on-read on-new-connection dequeue-response! enqueue-task!
-          violet-async)
+          violet-async
+          set-update-proc!)
 )
 
 (select-module violet)
@@ -37,9 +38,13 @@
 
 (define *response-queue* (make-queue))
 
+(define *update-proc* #f)
+(define (set-update-proc! thunk)
+  (set! *update-proc* thunk))
+
 (define (dequeue-response!)
-  (dequeue! *response-queue* #f)
-  )
+  (when *update-proc* (*update-proc*))
+  (dequeue! *response-queue* #f))
 
 (define (on-new-connection)
   )

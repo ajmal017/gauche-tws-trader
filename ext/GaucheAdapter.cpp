@@ -387,12 +387,29 @@ void GaucheAdapter::reqHistoricalTicks()  {}
 void GaucheAdapter::reqTickByTickData() {}
 void GaucheAdapter::whatIfSamples() {}
 
+static void scm_error(ScmObj c) {
+    ScmObj m = Scm_ConditionMessage(c);
+    if (SCM_FALSEP(m)) {
+        Scm_Printf(SCM_CURERR, "gosh: Thrown unknown condition: %S\n", c);
+    } else {
+        Scm_ReportError(c, SCM_TRUE);
+    }
+}
+
 //! [nextvalidid]
 void GaucheAdapter::nextValidId( OrderId orderId)
 {
 	Scm_Printf(SCM_CURERR, "Next Valid Id: %ld\n", orderId);
 	m_orderId = orderId;
 	//! [nextvalidid]
+
+    ScmObj proc = SCM_UNDEFINED;
+    SCM_BIND_PROC(proc, "on-next-valid-id", Scm_CurrentModule());
+    ScmEvalPacket epak;
+    ScmObj arglist = SCM_LIST1(Scm_MakeInteger(orderId));
+    if (Scm_Apply(proc, arglist, &epak) < 0) {
+        scm_error(epak.exception);
+    }
 }
 
 
@@ -658,6 +675,24 @@ void GaucheAdapter::receiveFA(faDataType pFaDataType, const std::string& cxml) {
 //! [historicaldata]
 void GaucheAdapter::historicalData(TickerId reqId, const Bar& bar) {
 	Scm_Printf(SCM_CURERR, "HistoricalData. ReqId: %ld - Date: %s, Open: %g, High: %g, Low: %g, Close: %g, Volume: %lld, Count: %d, WAP: %g\n", reqId, bar.time.c_str(), bar.open, bar.high, bar.low, bar.close, bar.volume, bar.count, bar.wap);
+
+    ScmObj proc = SCM_UNDEFINED;
+    SCM_BIND_PROC(proc, "on-historical-data", Scm_CurrentModule());
+    ScmEvalPacket epak;
+    ScmObj arglist =
+        Scm_Cons(Scm_MakeInteger(reqId),
+                 Scm_Cons(SCM_MAKE_STR(bar.time.c_str()),
+                          Scm_Cons(Scm_MakeFlonum(bar.open),
+                                   Scm_Cons(Scm_MakeFlonum(bar.high),
+                                            SCM_LIST5(Scm_MakeFlonum(bar.low),
+                                                      Scm_MakeFlonum(bar.close),
+                                                      Scm_MakeInteger(bar.volume),
+                                                      Scm_MakeInteger(bar.count),
+                                                      Scm_MakeFlonum(bar.wap)
+                                                      )))));
+    if (Scm_Apply(proc, arglist, &epak) < 0) {
+        scm_error(epak.exception);
+    }
 }
 //! [historicaldata]
 

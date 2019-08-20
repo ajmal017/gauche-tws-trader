@@ -238,4 +238,12 @@
 (define tws (make-tws-client))
 
 (tws-client-connect tws "localhost" 7497 0)
-(tws-client-historical-data-request tws)
+(define (on-next-valid-id id)
+  #?=id
+  (tws-client-historical-data-request tws))
+
+(define (on-historical-data req-id time open high low close volume count wap)
+  #?=#`"historical data: ,req-id ,time ,open ,high ,low ,close ,volume ,count ,wap"
+)
+
+(set-update-proc! (lambda () (tws-client-process-messages tws)))

@@ -42,7 +42,7 @@ $(SCANRESULT): scan.scm
 
 ## docker run --rm -p 2222:2222 -v$PWD:/code -w /code -t -i gauche-violet_gosh make debug
 debug: $(TARGET) $(MAKIKI)
-	gdb -ex run $(TARGET)
+	gdb -ex "run script.scm" $(TARGET)
 
 $(TARGET): main.c adapter
 	$(CXX) -g -I/usr/local/include $(TWS_CFLAGS) -o $(TARGET) main.c $(TWS_ADAPTER) $(CFLAGS) $(LFLAGS) $(TWS_LFLAGS)
