@@ -50,7 +50,7 @@ void echo_write(uv_write_t *req, int status) {
         Scm_Printf(SCM_CURERR, "Write error %s\n", uv_strerror(status));
     }
 
-    write_req_t *wr = (write_req_t*)req;
+    /* write_req_t *wr = (write_req_t*)req; */
     free_write_req(req);
 }
 
@@ -114,7 +114,7 @@ void handle_response(uv_idle_t* handle) {
         if (SCM_PAIRP(result)) {
             // (id 'res client "response")
             // (id 'close client)
-            long id = SCM_INT_VALUE(SCM_CAR(result));
+            /* long id = SCM_INT_VALUE(SCM_CAR(result)); */
             const char *tag =
                 SCM_STRING_BODY_START(SCM_STRING_BODY(SCM_SYMBOL_NAME(SCM_CADR(result))));
             ScmObj body = SCM_CDDR(result);
@@ -137,10 +137,6 @@ void handle_response(uv_idle_t* handle) {
                 Scm_Printf(SCM_CURERR, "handle_response: unknown tag %s\n", tag);
                 abort();
             }
-
-            /* GaucheAdapter *client = (GaucheAdapter*)handle->data; */
-            /* if (client->isConnected()) */
-            /*     client->processMessages(); */
         } else {
             usleep(1000);
             return;
