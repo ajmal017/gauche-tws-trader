@@ -333,25 +333,21 @@ void GaucheAdapter::delayedTickDataOperation() {}
 void GaucheAdapter::marketDepthOperations() {}
 void GaucheAdapter::realTimeBars() {}
 void GaucheAdapter::marketDataType() {}
-void GaucheAdapter::historicalDataRequests() {
+void GaucheAdapter::historicalDataRequests(TickerId reqId, const char* symbol,
+                                           const char* secType, const char* currency,
+                                           const char* exchange, const char* queryTime,
+                                           const char* duration, const char* barSize,
+                                           const char* whatToShow) {
 	Contract contract;
-	contract.symbol = "EUR";
-	contract.secType = "CASH";
-	contract.currency = "GBP";
-	contract.exchange = "IDEALPRO";
-
-	std::time_t rawtime;
-    std::tm* timeinfo;
-    char queryTime [80];
-
-	std::time(&rawtime);
-    timeinfo = std::localtime(&rawtime);
-	std::strftime(queryTime, 80, "%Y%m%d %H:%M:%S", timeinfo);
+	contract.symbol = symbol;
+	contract.secType = secType;
+	contract.currency = currency;
+	contract.exchange = exchange;
 
     Scm_Printf(SCM_CURERR, "Historical Data requested\n");
 
-	m_pClient->reqHistoricalData(4001, contract,
-                                 queryTime, "1 M", "1 day", "MIDPOINT", 1, 1, false,
+	m_pClient->reqHistoricalData(reqId, contract,
+                                 queryTime, duration, barSize, whatToShow, 1, 1, false,
                                  TagValueListSPtr());
 }
 void GaucheAdapter::optionsOperations() {}

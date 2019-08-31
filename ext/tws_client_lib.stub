@@ -20,9 +20,18 @@
   ::<void>
   "cl->processMessages();")
 
-(define-cproc tws-client-historical-data-request (cl::<tws-client>)
+(define-cproc tws-client-historical-data-request (cl::<tws-client>
+                                                  reqId::<int>
+                                                  symbol::<const-cstring>
+                                                  secType::<const-cstring>
+                                                  currency::<const-cstring>
+                                                  exchange::<const-cstring>
+                                                  queryTime::<const-cstring>
+                                                  duration::<const-cstring>
+                                                  barSize::<const-cstring>
+                                                  whatToShow::<const-cstring>)
   ::<void>
-  "cl->historicalDataRequests();")
+  "cl->historicalDataRequests(reqId, symbol, secType, currency, exchange, queryTime, duration, barSize, whatToShow);")
 
 ;; Local Variables:
 ;; mode: scheme

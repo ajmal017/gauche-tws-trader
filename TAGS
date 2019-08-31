@@ -1,0 +1,1203 @@
+
+tws/twsapi/IBJts/samples/Cpp/TestCppClient/OrderSamples.h,86
+#define TWS_API_SAMPLES_TESTCPPCLIENT_ORDERSAMPLES_H6,279
+class OrderSamples 13,389
+
+tws/twsapi/IBJts/samples/Cpp/TestCppClient/FAMethodSamples.h,256
+#define TWS_API_SAMPLES_TESTCPPCLIENT_FAMETHODSAMPLES_H6,282
+class FAMethodSamples 10,358
+	static std::string FAOneGroup(12,390
+	static std::string FATwoGroups(30,834
+	static std::string FAOneProfile(56,1509
+	static std::string FATwoProfiles(80,2141
+
+tws/twsapi/IBJts/samples/Cpp/TestCppClient/AvailableAlgoParams.h,100
+#define TWS_API_SAMPLES_TESTCPPCLIENT_AVAILABLEALGOPARAMS_H6,286
+class AvailableAlgoParams 12,381
+
+tws/twsapi/IBJts/samples/Cpp/TestCppClient/StdAfx.h,96
+#define TEST_CPP_CLIENT_STDAFX_H6,259
+#define TWSAPIDLLEXP 16,433
+#define TWSAPIDLLEXP18,482
+
+tws/twsapi/IBJts/samples/Cpp/TestCppClient/Utils.h,72
+#define TWS_API_SAMPLES_TESTCPPCLIENT_UTILS_H5,271
+class Utils 11,374
+
+tws/twsapi/IBJts/samples/Cpp/TestCppClient/AccountSummaryTags.h,1501
+#define TWS_API_SAMPLES_TESTCPPCLIENT_ACCOUNTSUMMARYTAGS_H6,285
+class AccountSummaryTags{AccountSummaryTags10,364
+	static std::string AccountType;12,398
+    static std::string NetLiquidation;13,431
+    static std::string TotalCashValue;14,470
+    static std::string SettledCash;15,509
+    static std::string AccruedCash;16,545
+    static std::string BuyingPower;17,581
+    static std::string EquityWithLoanValue;18,617
+    static std::string PreviousEquityWithLoanValue;19,661
+    static std::string GrossPositionValue;20,713
+    static std::string ReqTEquity;21,756
+    static std::string ReqTMargin;22,791
+    static std::string SMA;23,826
+    static std::string InitMarginReq;24,854
+    static std::string MaintMarginReq;25,892
+    static std::string AvailableFunds;26,931
+    static std::string ExcessLiquidity;27,970
+    static std::string Cushion;28,1010
+    static std::string FullInitMarginReq;29,1042
+    static std::string FullMaintMarginReq;30,1084
+    static std::string FullAvailableFunds;31,1127
+    static std::string FullExcessLiquidity;32,1170
+    static std::string LookAheadNextChange;33,1214
+    static std::string LookAheadInitMarginReq;34,1258
+    static std::string LookAheadMaintMarginReq;35,1305
+    static std::string LookAheadAvailableFunds;36,1353
+    static std::string LookAheadExcessLiquidity;37,1401
+    static std::string HighestSeverity;38,1450
+    static std::string DayTradesRemaining;39,1490
+    static std::string Leverage;40,1533
+
+tws/twsapi/IBJts/samples/Cpp/TestCppClient/ContractSamples.h,91
+#define TWS_API_SAMPLES_TESTCPPCLIENT_CONTRACTSAMPLES_H5,281
+class ContractSamples 9,356
+
+tws/twsapi/IBJts/samples/Cpp/TestCppClient/ScannerSubscriptionSamples.h,114
+#define TWS_API_SAMPLES_TESTCPPCLIENT_SCANNERSUBSCRIPTIONSAMPLES_H6,293
+class ScannerSubscriptionSamples 12,409
+
+tws/twsapi/IBJts/samples/Cpp/TestCppClient/TestCppClient.h,3036
+#define TWS_API_SAMPLES_TESTCPPCLIENT_TESTCPPCLIENT_H6,280
+enum State 17,467
+	ST_CONNECT,18,480
+	ST_TICKDATAOPERATION,19,493
+	ST_TICKDATAOPERATION_ACK,20,516
+	ST_TICKOPTIONCOMPUTATIONOPERATION,21,543
+	ST_TICKOPTIONCOMPUTATIONOPERATION_ACK,22,579
+	ST_DELAYEDTICKDATAOPERATION,23,619
+	ST_DELAYEDTICKDATAOPERATION_ACK,24,649
+	ST_MARKETDEPTHOPERATION,25,683
+	ST_MARKETDEPTHOPERATION_ACK,26,709
+	ST_REALTIMEBARS,27,739
+	ST_REALTIMEBARS_ACK,28,757
+	ST_MARKETDATATYPE,29,779
+	ST_MARKETDATATYPE_ACK,30,799
+	ST_HISTORICALDATAREQUESTS,31,823
+	ST_HISTORICALDATAREQUESTS_ACK,32,851
+	ST_OPTIONSOPERATIONS,33,883
+	ST_OPTIONSOPERATIONS_ACK,34,906
+	ST_CONTRACTOPERATION,35,933
+	ST_CONTRACTOPERATION_ACK,36,956
+	ST_MARKETSCANNERS,37,983
+	ST_MARKETSCANNERS_ACK,38,1003
+	ST_FUNDAMENTALS,39,1027
+	ST_FUNDAMENTALS_ACK,40,1045
+	ST_BULLETINS,41,1067
+	ST_BULLETINS_ACK,42,1082
+	ST_ACCOUNTOPERATIONS,43,1101
+	ST_ACCOUNTOPERATIONS_ACK,44,1124
+	ST_ORDEROPERATIONS,45,1151
+	ST_ORDEROPERATIONS_ACK,46,1172
+	ST_OCASAMPLES,47,1197
+	ST_OCASAMPLES_ACK,48,1213
+	ST_CONDITIONSAMPLES,49,1233
+	ST_CONDITIONSAMPLES_ACK,50,1255
+	ST_BRACKETSAMPLES,51,1281
+	ST_BRACKETSAMPLES_ACK,52,1301
+	ST_HEDGESAMPLES,53,1325
+	ST_HEDGESAMPLES_ACK,54,1343
+	ST_TESTALGOSAMPLES,55,1365
+	ST_TESTALGOSAMPLES_ACK,56,1386
+	ST_FAORDERSAMPLES,57,1411
+	ST_FAORDERSAMPLES_ACK,58,1431
+	ST_FAOPERATIONS,59,1455
+	ST_FAOPERATIONS_ACK,60,1473
+	ST_DISPLAYGROUPS,61,1495
+	ST_DISPLAYGROUPS_ACK,62,1514
+	ST_MISCELANEOUS,63,1537
+	ST_MISCELANEOUS_ACK,64,1555
+	ST_CANCELORDER,65,1577
+	ST_CANCELORDER_ACK,66,1594
+	ST_FAMILYCODES,67,1615
+	ST_FAMILYCODES_ACK,68,1632
+	ST_SYMBOLSAMPLES,69,1653
+	ST_SYMBOLSAMPLES_ACK,70,1672
+	ST_REQMKTDEPTHEXCHANGES,71,1695
+	ST_REQMKTDEPTHEXCHANGES_ACK,72,1721
+	ST_REQNEWSTICKS,73,1751
+	ST_REQNEWSTICKS_ACK,74,1769
+	ST_REQSMARTCOMPONENTS,75,1791
+	ST_REQSMARTCOMPONENTS_ACK,76,1815
+	ST_NEWSPROVIDERS,77,1843
+	ST_NEWSPROVIDERS_ACK,78,1862
+	ST_REQNEWSARTICLE,79,1885
+	ST_REQNEWSARTICLE_ACK,80,1905
+	ST_REQHISTORICALNEWS,81,1929
+	ST_REQHISTORICALNEWS_ACK,82,1952
+	ST_REQHEADTIMESTAMP,83,1979
+	ST_REQHEADTIMESTAMP_ACK,84,2001
+	ST_REQHISTOGRAMDATA,85,2027
+	ST_REQHISTOGRAMDATA_ACK,86,2049
+	ST_REROUTECFD,87,2075
+	ST_REROUTECFD_ACK,88,2091
+	ST_MARKETRULE,89,2111
+	ST_MARKETRULE_ACK,90,2127
+    ST_PNL,91,2147
+    ST_PNL_ACK,92,2159
+    ST_PNLSINGLE,93,2175
+    ST_PNLSINGLE_ACK,94,2193
+    ST_CONTFUT,95,2215
+    ST_CONTFUT_ACK,96,2231
+	ST_PING,97,2251
+	ST_PING_ACK,98,2261
+    ST_REQHISTORICALTICKS,99,2275
+    ST_REQHISTORICALTICKS_ACK,100,2302
+    ST_REQTICKBYTICKDATA,101,2333
+    ST_REQTICKBYTICKDATA_ACK,102,2359
+	ST_WHATIFSAMPLES,103,2389
+	ST_WHATIFSAMPLES_ACK,104,2408
+	ST_IDLE105,2431
+class TestCppClient 109,2463
+	EReaderOSSignal m_osSignal;184,4282
+	EClientSocket * const m_pClient;185,4311
+	State m_state;187,4367
+	time_t m_sleepDeadline;188,4383
+	OrderId m_orderId;190,4409
+	EReader *m_pReader;m_pReader191,4429
+    bool m_extraAuth;192,4450
+	std::string m_bboExchange;193,4472
+
+tws/twsapi/IBJts/source/cppclient/client/TwsSocketClientErrors.h,329
+#define TWS_API_CLIENT_TWSSOCKETCLIENTERRORS_H6,273
+static const int NO_VALID_ID 10,340
+static const int NO_VALID_ERROR_CODE 11,375
+static const int SYSTEM_ERROR 12,417
+class CodeMsgPair 14,455
+	CodeMsgPair(16,483
+	int m_errorCode;19,574
+	std::string m_errorMsg;20,592
+	int	  code(22,625
+	const std::string& msg(23,679
+
+tws/twsapi/IBJts/source/cppclient/client/OperatorCondition.h,49
+#define TWS_API_CLIENT_OPERATORCONDITION_H6,269
+
+tws/twsapi/IBJts/source/cppclient/client/EWrapper_prototypes.h,76
+# define EWRAPPER_VIRTUAL_IMPL7,291
+#undef EWRAPPER_VIRTUAL_IMPL108,10205
+
+tws/twsapi/IBJts/source/cppclient/client/Contract.h,3149
+#define TWS_API_CLIENT_CONTRACT_H6,260
+enum LegOpenClose 16,441
+enum LegOpenClose { SAME_POS,16,441
+enum LegOpenClose { SAME_POS, OPEN_POS,16,441
+enum LegOpenClose { SAME_POS, OPEN_POS, CLOSE_POS,16,441
+enum LegOpenClose { SAME_POS, OPEN_POS, CLOSE_POS, UNKNOWN_POS 16,441
+struct ComboLeg18,508
+	ComboLeg(20,526
+	long		conId;29,628
+	long		ratio;30,642
+	std::string	action;31,656
+	std::string	exchange;33,696
+	long		openClose;34,719
+	long		shortSaleSlot;37,807
+	std::string	designatedLocation;38,869
+	int			exemptCode;39,902
+	bool operator==(operator==41,922
+struct DeltaNeutralContract54,1269
+	DeltaNeutralContract(56,1299
+	long	conId;62,1367
+	double	delta;63,1380
+	double	price;64,1395
+typedef std::shared_ptr<ComboLeg> ComboLegSPtr;67,1414
+struct Contract69,1463
+	Contract(71,1481
+	long		conId;80,1604
+	std::string	symbol;81,1618
+	std::string	secType;82,1639
+	std::string	lastTradeDateOrContractMonth;83,1661
+	double		strike;84,1704
+	std::string	right;85,1721
+	std::string	multiplier;86,1741
+	std::string	exchange;87,1766
+	std::string	primaryExchange;88,1789
+	std::string	currency;89,1916
+	std::string	localSymbol;90,1939
+	std::string	tradingClass;91,1965
+	bool		includeExpired;92,1992
+	std::string	secIdType;93,2015
+	std::string	secId;94,2064
+	std::string comboLegsDescrip;97,2096
+	typedef std::vector<ComboLegSPtr> ComboLegList;100,2194
+	typedef std::shared_ptr<ComboLegList> ComboLegListSPtr;101,2243
+	ComboLegListSPtr comboLegs;103,2301
+	DeltaNeutralContract* deltaNeutralContract;106,2358
+struct ContractDetails114,2510
+	ContractDetails(116,2535
+	Contract	contract;129,2741
+	std::string	marketName;130,2761
+	double		minTick;131,2786
+	std::string	orderTypes;132,2804
+	std::string	validExchanges;133,2829
+	long		priceMagnifier;134,2858
+	int			underConId;135,2881
+	std::string	longName;136,2900
+	std::string	contractMonth;137,2923
+	std::string	industry;138,2951
+	std::string	category;139,2974
+	std::string	subcategory;140,2997
+	std::string	timeZoneId;141,3023
+	std::string	tradingHours;142,3048
+	std::string	liquidHours;143,3075
+	std::string	evRule;144,3101
+	double		evMultiplier;145,3122
+	int			mdSizeMultiplier;146,3145
+	int			aggGroup;147,3170
+	std::string	underSymbol;148,3187
+	std::string	underSecType;149,3213
+	std::string marketRuleIds;150,3240
+	std::string realExpirationDate;151,3268
+	std::string lastTradeTime;152,3301
+	TagValueListSPtr secIdList;154,3330
+	std::string	cusip;157,3376
+	std::string	ratings;158,3396
+	std::string	descAppend;159,3418
+	std::string	bondType;160,3443
+	std::string	couponType;161,3466
+	bool		callable;162,3491
+	bool		putable;163,3508
+	double		coupon;164,3524
+	bool		convertible;165,3541
+	std::string	maturity;166,3561
+	std::string	issueDate;167,3584
+	std::string	nextOptionDate;168,3608
+	std::string	nextOptionType;169,3637
+	bool		nextOptionPartial;170,3666
+	std::string	notes;171,3692
+struct ContractDescription174,3716
+	Contract contract;176,3745
+	typedef std::vector<std::string> DerivativeSecTypesList;177,3765
+	DerivativeSecTypesList derivativeSecTypes;178,3823
+Contract::CloneComboLegs(CloneComboLegs182,3883
+
+tws/twsapi/IBJts/source/cppclient/client/HistoricalTick.h,153
+#define TWS_API_CLIENT_HISTORICALTICK_H6,266
+struct HistoricalTick8,307
+    long long time;10,331
+    double price;11,351
+    long long size;12,369
+
+tws/twsapi/IBJts/source/cppclient/client/Execution.h,844
+#define TWS_API_CLIENT_EXECUTION_H6,261
+struct Execution10,316
+	Execution(12,335
+	std::string	execId;25,504
+	std::string	time;26,525
+	std::string	acctNumber;27,544
+	std::string	exchange;28,569
+	std::string	side;29,592
+	double		shares;30,611
+	double		price;31,628
+	int			permId;32,644
+	long		clientId;33,659
+	long		orderId;34,676
+	int			liquidation;35,692
+	double			cumQty;36,712
+	double		avgPrice;37,730
+	std::string	orderRef;38,749
+	std::string	evRule;39,772
+	double		evMultiplier;40,793
+	std::string modelCode;41,816
+    int         lastLiquidity;42,840
+struct ExecutionFilter45,875
+	ExecutionFilter(47,900
+	long		m_clientId;53,962
+	std::string	m_acctCode;54,981
+	std::string	m_time;55,1006
+	std::string	m_symbol;56,1027
+	std::string	m_secType;57,1050
+	std::string	m_exchange;58,1074
+	std::string	m_side;59,1099
+
+tws/twsapi/IBJts/source/cppclient/client/PercentChangeCondition.h,54
+#define TWS_API_CLIENT_PERCENTCHANGECONDITION_H6,274
+
+tws/twsapi/IBJts/source/cppclient/client/EPosixClientSocketPlatform.h,432
+#define TWS_API_CLIENT_EPOSIXCLIENTSOCKETPLATFORM_H6,278
+	#define EISCONN 17,447
+	#define EWOULDBLOCK 18,475
+	#define ECONNREFUSED 19,511
+	inline bool SocketsInit(25,613
+	inline bool SocketsDestroy(29,715
+	inline int SocketClose(30,774
+	inline bool SetSocketNonBlocking(32,844
+	inline bool SocketsInit(49,1154
+	inline bool SocketsDestroy(50,1198
+	inline int SocketClose(51,1245
+	inline bool SetSocketNonBlocking(53,1309
+
+tws/twsapi/IBJts/source/cppclient/client/bar.h,228
+#define TWS_API_CLIENT_BAR_H6,255
+struct Bar10,304
+	std::string time;12,317
+	double high;13,336
+	double low;14,350
+	double open;15,363
+	double close;16,377
+	double wap;17,392
+	long long volume;18,405
+	int count;19,424
+
+tws/twsapi/IBJts/source/cppclient/client/EReader.h,39
+#define TWS_API_CLIENT_EREADER_H6,259
+
+tws/twsapi/IBJts/source/cppclient/client/platformspecific.h,256
+#define TWS_API_CLIENT_PLATFORMSPECIFIC_H6,268
+#define TWSAPIDLLEXP 12,366
+#define assert 16,424
+#define snprintf 18,465
+#define IB_WIN3223,560
+#define atoll 24,577
+#define IB_POSIX39,941
+#define IBAPI_STD_MUTEX41,1034
+#define TWSAPIDLLEXP50,1168
+
+tws/twsapi/IBJts/source/cppclient/client/EMessage.h,40
+#define TWS_API_CLIENT_EMESSAGE_H6,260
+
+tws/twsapi/IBJts/source/cppclient/client/VolumeCondition.h,47
+#define TWS_API_CLIENT_VOLUMECONDITION_H6,267
+
+tws/twsapi/IBJts/source/cppclient/client/HistoricalTickLast.h,279
+#define TWS_API_CLIENT_HISTORICALTICKLAST_H6,270
+struct HistoricalTickLast11,362
+    long long time;13,390
+    TickAttribLast tickAttribLast;14,410
+    double price;15,445
+    long long size;16,463
+    std::string exchange;17,483
+    std::string specialConditions;18,509
+
+tws/twsapi/IBJts/source/cppclient/client/TimeCondition.h,45
+#define TWS_API_CLIENT_TIMECONDITION_H6,265
+
+tws/twsapi/IBJts/source/cppclient/client/StdAfx.h,38
+#define TWS_API_CLIENT_STDAFX_H7,274
+
+tws/twsapi/IBJts/source/cppclient/client/ScannerSubscription.h,981
+#define TWS_API_CLIENT_SCANNERSUBSCRIPTION_H6,271
+#define UNSET_DOUBLE 13,376
+#define UNSET_INTEGER 14,405
+#define NO_ROW_NUMBER_SPECIFIED 15,435
+struct ScannerSubscription 17,472
+	ScannerSubscription(18,501
+    int numberOfRows;30,828
+    std::string instrument;31,850
+    std::string locationCode;32,878
+    std::string scanCode;33,908
+    double abovePrice;34,934
+    double belowPrice;35,957
+    int aboveVolume;36,980
+    double marketCapAbove;37,1001
+    double marketCapBelow;38,1028
+    std::string moodyRatingAbove;39,1055
+    std::string moodyRatingBelow;40,1089
+    std::string spRatingAbove;41,1123
+    std::string spRatingBelow;42,1154
+    std::string maturityDateAbove;43,1185
+    std::string maturityDateBelow;44,1220
+    double couponRateAbove;45,1255
+    double couponRateBelow;46,1283
+    int excludeConvertible;47,1311
+	int averageOptionVolumeAbove;48,1339
+	std::string scannerSettingPairs;49,1370
+	std::string stockTypeFilter;50,1404
+
+tws/twsapi/IBJts/source/cppclient/client/DefaultEWrapper.h,47
+#define TWS_API_CLIENT_DEFAULTEWRAPPER_H6,267
+
+tws/twsapi/IBJts/source/cppclient/client/TickAttribLast.h,123
+#define TWS_API_CLIENT_TICKATTRIBLAST_H6,266
+struct TickAttribLast8,307
+	bool pastLimit;10,331
+	bool unreported;11,348
+
+tws/twsapi/IBJts/source/cppclient/client/EOrderDecoder.h,221
+#define TWS_API_CLIENT_EORDERDECODER_H6,262
+class EOrderDecoder14,420
+	Contract* m_contract;99,5630
+	Order* m_order;100,5653
+	OrderState* m_orderState;101,5670
+	int m_version;102,5697
+	int m_serverVersion;103,5713
+
+tws/twsapi/IBJts/source/cppclient/client/HistogramEntry.h,120
+#define TWS_API_CLIENT_HISTOGRAMENTRY_H6,266
+struct HistogramEntry8,307
+	double price;10,331
+	long long size;11,346
+
+tws/twsapi/IBJts/source/cppclient/client/PriceCondition.h,201
+#define TWS_API_CLIENT_PRICECONDITION_H6,266
+	enum Method 24,684
+		Default 25,699
+		DoubleBidAsk 26,714
+		Last 27,734
+		DoubleLast 28,746
+		BidAsk 29,764
+		LastBidAsk 30,778
+		MidPoint 31,796
+
+tws/twsapi/IBJts/source/cppclient/client/FamilyCode.h,133
+#define TWS_API_CLIENT_FAMILYCODE_H6,262
+struct FamilyCode10,318
+	std::string accountID;12,338
+	std::string familyCodeStr;13,362
+
+tws/twsapi/IBJts/source/cppclient/client/DepthMktDataDescription.h,307
+#define TWS_API_CLIENT_DEPTHMKTDATADESCRIPTION_H6,275
+#define UNSET_INTEGER 11,364
+struct DepthMktDataDescription13,395
+	DepthMktDataDescription(15,428
+	std::string exchange;24,567
+	std::string secType;25,590
+	std::string listingExch;26,612
+	std::string serviceDataType;27,638
+	int aggGroup;28,668
+
+tws/twsapi/IBJts/source/cppclient/client/TickAttrib.h,141
+#define TWS_API_CLIENT_TICKATTRIB_H6,262
+struct TickAttrib8,299
+	bool canAutoExecute;10,319
+	bool pastLimit;11,341
+	bool preOpen;12,358
+
+tws/twsapi/IBJts/source/cppclient/client/EWrapper.h,3193
+#define TWS_API_CLIENT_EWRAPPER_H6,260
+enum TickType 26,709
+enum TickType { BID_SIZE,26,709
+enum TickType { BID_SIZE, BID,26,709
+enum TickType { BID_SIZE, BID, ASK,26,709
+enum TickType { BID_SIZE, BID, ASK, ASK_SIZE,26,709
+enum TickType { BID_SIZE, BID, ASK, ASK_SIZE, LAST,26,709
+enum TickType { BID_SIZE, BID, ASK, ASK_SIZE, LAST, LAST_SIZE,26,709
+				HIGH,27,772
+				HIGH, LOW,27,772
+				HIGH, LOW, VOLUME,27,772
+				HIGH, LOW, VOLUME, CLOSE,27,772
+				BID_OPTION_COMPUTATION,28,802
+				ASK_OPTION_COMPUTATION,29,830
+				LAST_OPTION_COMPUTATION,30,858
+				MODEL_OPTION,31,887
+				OPEN,32,905
+				LOW_13_WEEK,33,915
+				HIGH_13_WEEK,34,932
+				LOW_26_WEEK,35,950
+				HIGH_26_WEEK,36,967
+				LOW_52_WEEK,37,985
+				HIGH_52_WEEK,38,1002
+				AVG_VOLUME,39,1020
+				OPEN_INTEREST,40,1036
+				OPTION_HISTORICAL_VOL,41,1055
+				OPTION_IMPLIED_VOL,42,1082
+				OPTION_BID_EXCH,43,1106
+				OPTION_ASK_EXCH,44,1127
+				OPTION_CALL_OPEN_INTEREST,45,1148
+				OPTION_PUT_OPEN_INTEREST,46,1179
+				OPTION_CALL_VOLUME,47,1209
+				OPTION_PUT_VOLUME,48,1233
+				INDEX_FUTURE_PREMIUM,49,1256
+				BID_EXCH,50,1282
+				ASK_EXCH,51,1296
+				AUCTION_VOLUME,52,1310
+				AUCTION_PRICE,53,1330
+				AUCTION_IMBALANCE,54,1349
+				MARK_PRICE,55,1372
+				BID_EFP_COMPUTATION,56,1388
+				ASK_EFP_COMPUTATION,57,1413
+				LAST_EFP_COMPUTATION,58,1438
+				OPEN_EFP_COMPUTATION,59,1464
+				HIGH_EFP_COMPUTATION,60,1490
+				LOW_EFP_COMPUTATION,61,1516
+				CLOSE_EFP_COMPUTATION,62,1541
+				LAST_TIMESTAMP,63,1568
+				SHORTABLE,64,1588
+				FUNDAMENTAL_RATIOS,65,1603
+				RT_VOLUME,66,1627
+				HALTED,67,1642
+				BID_YIELD,68,1654
+				ASK_YIELD,69,1669
+				LAST_YIELD,70,1684
+				CUST_OPTION_COMPUTATION,71,1700
+				TRADE_COUNT,72,1729
+				TRADE_RATE,73,1746
+				VOLUME_RATE,74,1762
+				LAST_RTH_TRADE,75,1779
+				RT_HISTORICAL_VOL,76,1799
+				IB_DIVIDENDS,77,1822
+				BOND_FACTOR_MULTIPLIER,78,1840
+				REGULATORY_IMBALANCE,79,1868
+				NEWS_TICK,80,1894
+				SHORT_TERM_VOLUME_3_MIN,81,1909
+				SHORT_TERM_VOLUME_5_MIN,82,1938
+				SHORT_TERM_VOLUME_10_MIN,83,1967
+				DELAYED_BID,84,1997
+				DELAYED_ASK,85,2014
+				DELAYED_LAST,86,2031
+				DELAYED_BID_SIZE,87,2049
+				DELAYED_ASK_SIZE,88,2071
+				DELAYED_LAST_SIZE,89,2093
+				DELAYED_HIGH,90,2116
+				DELAYED_LOW,91,2134
+				DELAYED_VOLUME,92,2151
+				DELAYED_CLOSE,93,2171
+				DELAYED_OPEN,94,2190
+				RT_TRD_VOLUME,95,2208
+				CREDITMAN_MARK_PRICE,96,2227
+				CREDITMAN_SLOW_MARK_PRICE,97,2253
+				DELAYED_BID_OPTION_COMPUTATION,98,2284
+				DELAYED_ASK_OPTION_COMPUTATION,99,2320
+				DELAYED_LAST_OPTION_COMPUTATION,100,2356
+				DELAYED_MODEL_OPTION_COMPUTATION,101,2393
+				LAST_EXCH,102,2431
+				LAST_REG_TIME,103,2446
+				FUTURES_OPEN_INTEREST,104,2465
+				AVG_OPT_VOLUME,105,2492
+				DELAYED_LAST_TIMESTAMP,106,2512
+				SHORTABLE_SHARES,107,2540
+				NOT_SET 108,2562
+typedef std::map<int,int110,2578
+typedef std::map<int, std::tuple<std::string, char>> SmartComponentsMap;110,2578
+typedef std::vector<HistogramEntry> HistogramDataVector;111,2651
+inline bool isPrice(114,2710
+class EWrapper127,3076
+   virtual ~EWrapper(130,3101
+	#define EWRAPPER_VIRTUAL_IMPL 132,3129
+
+tws/twsapi/IBJts/source/cppclient/client/Order.h,5784
+#define TWS_API_CLIENT_ORDER_H6,254
+#define UNSET_DOUBLE 14,404
+#define UNSET_INTEGER 15,433
+#define UNSET_LONG 16,463
+enum Origin 18,493
+enum Origin { CUSTOMER,18,493
+              FIRM,19,517
+              UNKNOWN 20,537
+enum AuctionStrategy 22,563
+enum AuctionStrategy { AUCTION_UNSET 22,563
+                       AUCTION_MATCH 23,605
+                       AUCTION_IMPROVEMENT 24,647
+                       AUCTION_TRANSPARENT 25,695
+enum UsePriceMmgtAlgo 27,746
+enum UsePriceMmgtAlgo { DONT_USE 27,746
+                        USE,28,784
+                        DEFAULT 29,813
+struct OrderComboLeg31,865
+	OrderComboLeg(33,888
+	double price;38,936
+	bool operator==(operator==40,952
+typedef std::shared_ptr<OrderComboLeg> OrderComboLegSPtr;46,1047
+struct Order48,1106
+	Order(50,1121
+	long     orderId;182,4536
+	long     clientId;183,4555
+	int      permId;184,4575
+	std::string action;187,4616
+	double     totalQuantity;188,4637
+	std::string orderType;189,4664
+	double   lmtPrice;190,4688
+	double   auxPrice;191,4708
+	std::string tif;194,4755
+	std::string activeStartTime;195,4819
+	std::string activeStopTime;196,4867
+	std::string ocaGroup;197,4914
+	int      ocaType;198,4972
+	std::string orderRef;199,5067
+	bool     transmit;200,5114
+	long     parentId;201,5193
+	bool     blockOrder;202,5301
+	bool     sweepToFill;203,5323
+	int      displaySize;204,5346
+	int      triggerMethod;205,5369
+	bool     outsideRth;206,5491
+	bool     hidden;207,5513
+	std::string goodAfterTime;208,5531
+	std::string goodTillDate;209,5603
+	std::string rule80A;210,5675
+	bool     allOrNone;211,5885
+	int      minQty;212,5906
+	double   percentOffset;213,5924
+	bool     overridePercentageConstraints;214,5968
+	double   trailStopPrice;215,6009
+	double   trailingPercent;216,6061
+	std::string faGroup;219,6117
+	std::string faProfile;220,6139
+	std::string faMethod;221,6163
+	std::string faPercentage;222,6186
+	std::string openClose;225,6254
+	Origin   origin;226,6297
+	int      shortSaleSlot;227,6340
+	std::string designatedLocation;228,6463
+	int      exemptCode;229,6521
+	double   discretionaryAmt;232,6567
+	bool     eTradeOnly;233,6595
+	bool     firmQuoteOnly;234,6617
+	double   nbboPriceCap;235,6642
+	bool     optOutSmartRouting;236,6666
+	int      auctionStrategy;239,6726
+	double   startingPrice;240,6812
+	double   stockRefPrice;241,6837
+	double   delta;242,6862
+	double   stockRangeLower;245,6920
+	double   stockRangeUpper;246,6947
+    bool randomizeSize;248,6975
+    bool randomizePrice;249,6999
+	double   volatility;252,7052
+	int      volatilityType;253,7074
+	std::string deltaNeutralOrderType;254,7125
+	double   deltaNeutralAuxPrice;255,7161
+	long     deltaNeutralConId;256,7193
+	std::string deltaNeutralSettlingFirm;257,7222
+	std::string deltaNeutralClearingAccount;258,7261
+	std::string deltaNeutralClearingIntent;259,7303
+	std::string deltaNeutralOpenClose;260,7344
+	bool     deltaNeutralShortSale;261,7380
+	int      deltaNeutralShortSaleSlot;262,7413
+	std::string deltaNeutralDesignatedLocation;263,7450
+	bool     continuousUpdate;264,7495
+	int      referencePriceType;265,7523
+	double   basisPoints;268,7603
+	int      basisPointsType;269,7650
+	int      scaleInitLevelSize;272,7720
+	int      scaleSubsLevelSize;273,7750
+	double   scalePriceIncrement;274,7780
+	double   scalePriceAdjustValue;275,7811
+	int      scalePriceAdjustInterval;276,7844
+	double   scaleProfitOffset;277,7880
+	bool     scaleAutoReset;278,7909
+	int      scaleInitPosition;279,7935
+	int      scaleInitFillQty;280,7964
+	bool     scaleRandomPercent;281,7992
+	std::string scaleTable;282,8022
+	std::string hedgeType;285,8065
+	std::string hedgeParam;286,8139
+	std::string account;289,8242
+	std::string settlingFirm;290,8278
+	std::string clearingAccount;291,8305
+	std::string clearingIntent;292,8368
+	std::string algoStrategy;295,8468
+	TagValueListSPtr algoParams;297,8496
+	TagValueListSPtr smartComboRoutingParams;298,8526
+	std::string algoId;300,8570
+	bool     whatIf;303,8604
+	bool     notHeld;306,8636
+	bool     solicited;307,8655
+	std::string modelCode;310,8688
+	typedef std::vector<OrderComboLegSPtr> OrderComboLegList;313,8734
+	typedef std::shared_ptr<OrderComboLegList> OrderComboLegListSPtr;314,8793
+	OrderComboLegListSPtr orderComboLegs;316,8861
+	TagValueListSPtr orderMiscOptions;318,8901
+	int referenceContractId;321,8963
+	double peggedChangeAmount;322,8989
+	bool isPeggedChangeAmountDecrease;323,9017
+	double referenceChangeAmount;324,9053
+	std::string referenceExchangeId;325,9084
+	std::string adjustedOrderType;326,9118
+	double triggerPrice;327,9150
+	double adjustedStopPrice;328,9172
+	double adjustedStopLimitPrice;329,9199
+	double adjustedTrailingAmount;330,9231
+	int adjustableTrailingUnit;331,9263
+	double lmtPriceOffset;332,9292
+	std::vector<std::shared_ptr<OrderCondition>> conditions;334,9317
+	bool conditionsCancelOrder;335,9375
+	bool conditionsIgnoreRth;336,9404
+	std::string extOperator;339,9449
+	SoftDollarTier softDollarTier;341,9476
+	double cashQty;344,9534
+    std::string mifid2DecisionMaker;346,9552
+    std::string mifid2DecisionAlgo;347,9589
+    std::string mifid2ExecutionTrader;348,9625
+    std::string mifid2ExecutionAlgo;349,9664
+	bool dontUseAutoPriceForHedge;352,9737
+    bool isOmsContainer;354,9770
+    bool discretionaryUpToLimitPrice;356,9796
+    std::string autoCancelDate;358,9835
+    double filledQuantity;359,9867
+    int refFuturesConId;360,9894
+    bool autoCancelParent;361,9919
+    std::string shareholder;362,9946
+    bool imbalanceOnly;363,9975
+    bool routeMarketableToBbo;364,9999
+    long long parentPermId;365,10030
+    UsePriceMmgtAlgo usePriceMgmtAlgo;367,10059
+Order::CloneOrderComboLegs(CloneOrderComboLegs376,10232
+
+tws/twsapi/IBJts/source/cppclient/client/CommissionReport.h,278
+#define TWS_API_CLIENT_COMMISSIONREPORT_H6,268
+struct CommissionReport10,330
+	CommissionReport(12,356
+	std::string	execId;21,489
+	double		commission;22,510
+	std::string	currency;23,531
+	double		realizedPNL;24,554
+	double		yield;25,576
+	int			yieldRedemptionDate;26,592
+
+tws/twsapi/IBJts/source/cppclient/client/OrderCondition.h,188
+#define TWS_API_CLIENT_ORDERCONDITION_H6,266
+	enum OrderConditionType 15,455
+		Price 16,482
+		Time 17,495
+		Margin 18,507
+		Execution 19,521
+		Volume 20,538
+		PercentChange 21,552
+
+tws/twsapi/IBJts/source/cppclient/client/OrderState.h,714
+#define TWS_API_CLIENT_ORDERSTATE_H6,259
+struct OrderState 10,316
+	explicit OrderState(12,337
+	std::string status;19,458
+	std::string initMarginBefore;21,480
+	std::string maintMarginBefore;22,511
+	std::string equityWithLoanBefore;23,543
+	std::string initMarginChange;24,578
+	std::string maintMarginChange;25,609
+	std::string equityWithLoanChange;26,641
+	std::string initMarginAfter;27,676
+	std::string maintMarginAfter;28,706
+	std::string equityWithLoanAfter;29,737
+	double  commission;31,772
+	double  minCommission;32,793
+	double  maxCommission;33,817
+	std::string commissionCurrency;34,841
+	std::string warningText;36,875
+	std::string completedTime;38,902
+	std::string completedStatus;39,930
+
+tws/twsapi/IBJts/source/cppclient/client/ETransport.h,99
+#define TWS_API_CLIENT_ETRANSPORT_H6,262
+struct ETransport10,316
+    virtual ~ETransport(15,469
+
+tws/twsapi/IBJts/source/cppclient/client/TickAttribBidAsk.h,129
+#define TWS_API_CLIENT_TICKATTRIBBIDASK_H6,268
+struct TickAttribBidAsk8,311
+	bool bidPastLow;10,337
+	bool askPastHigh;11,355
+
+tws/twsapi/IBJts/source/cppclient/client/EClientSocket.h,103
+#define TWS_API_CLIENT_ECLIENTSOCKET_H6,265
+class TWSAPIDLLEXP EClientSocket : public EClient,16,433
+
+tws/twsapi/IBJts/source/cppclient/client/EClientMsgSink.h,110
+#define TWS_API_CLIENT_ECLIENTMSGSINK_H6,266
+struct EClientMsgSink8,307
+    virtual ~EClientMsgSink(12,457
+
+tws/twsapi/IBJts/source/cppclient/client/SoftDollarTier.h,46
+#define TWS_API_CLIENT_SOFTDOLLARTIER_H6,266
+
+tws/twsapi/IBJts/source/cppclient/client/PriceIncrement.h,124
+#define TWS_API_CLIENT_PRICEINCREMENT_H6,266
+struct PriceIncrement8,307
+	double lowEdge;10,331
+	double increment;11,348
+
+tws/twsapi/IBJts/source/cppclient/client/EClient.h,422
+#define TWS_API_CLIENT_ECLIENT_H6,256
+namespace ibapi 17,462
+namespace client_constants 18,480
+	enum ConnState 236,10735
+		CS_DISCONNECTED,237,10753
+		CS_CONNECTING,238,10772
+		CS_CONNECTED,239,10789
+		CS_REDIRECT240,10805
+void EClient::EncodeField(EncodeField427,18513
+#define ENCODE_CONTRACT(432,18593
+#define ENCODE_TAGVALUELIST(433,18653
+#define ENCODE_FIELD(434,18721
+#define ENCODE_FIELD_MAX(435,18775
+
+tws/twsapi/IBJts/source/cppclient/client/NewsProvider.h,139
+#define TWS_API_CLIENT_NEWSPROVIDER_H6,264
+struct NewsProvider10,322
+	std::string providerCode;12,344
+	std::string providerName;13,371
+
+tws/twsapi/IBJts/source/cppclient/client/EMutex.h,38
+#define TWS_API_CLIENT_EMUTEX_H6,258
+
+tws/twsapi/IBJts/source/cppclient/client/ContractCondition.h,49
+#define TWS_API_CLIENT_CONTRACTCONDITION_H6,269
+
+tws/twsapi/IBJts/source/cppclient/client/executioncondition.h,50
+#define TWS_API_CLIENT_EXECUTIONCONDITION_H6,270
+
+tws/twsapi/IBJts/source/cppclient/client/EReaderOSSignal.h,72
+#define TWS_API_CLIENT_EREADEROSSIGNAL_H6,267
+#define INFINITE 13,411
+
+tws/twsapi/IBJts/source/cppclient/client/EDecoder.h,8203
+#define TWS_API_CLIENT_EDECODER_H6,257
+const int MIN_SERVER_VER_PTA_ORDERS 22,765
+const int MIN_SERVER_VER_FUNDAMENTAL_DATA 23,823
+const int MIN_SERVER_VER_DELTA_NEUTRAL 24,881
+const int MIN_SERVER_VER_CONTRACT_DATA_CHAIN 25,939
+const int MIN_SERVER_VER_SCALE_ORDERS2 26,997
+const int MIN_SERVER_VER_ALGO_ORDERS 27,1055
+const int MIN_SERVER_VER_EXECUTION_DATA_CHAIN 28,1113
+const int MIN_SERVER_VER_NOT_HELD 29,1171
+const int MIN_SERVER_VER_SEC_ID_TYPE 30,1229
+const int MIN_SERVER_VER_PLACE_ORDER_CONID 31,1287
+const int MIN_SERVER_VER_REQ_MKT_DATA_CONID 32,1345
+const int MIN_SERVER_VER_REQ_CALC_IMPLIED_VOLAT 33,1403
+const int MIN_SERVER_VER_REQ_CALC_OPTION_PRICE 34,1461
+const int MIN_SERVER_VER_CANCEL_CALC_IMPLIED_VOLAT 35,1519
+const int MIN_SERVER_VER_CANCEL_CALC_OPTION_PRICE 36,1577
+const int MIN_SERVER_VER_SSHORTX_OLD 37,1635
+const int MIN_SERVER_VER_SSHORTX 38,1693
+const int MIN_SERVER_VER_REQ_GLOBAL_CANCEL 39,1751
+const int MIN_SERVER_VER_HEDGE_ORDERS 40,1809
+const int MIN_SERVER_VER_REQ_MARKET_DATA_TYPE 41,1867
+const int MIN_SERVER_VER_OPT_OUT_SMART_ROUTING 42,1925
+const int MIN_SERVER_VER_SMART_COMBO_ROUTING_PARAMS 43,1983
+const int MIN_SERVER_VER_DELTA_NEUTRAL_CONID 44,2041
+const int MIN_SERVER_VER_SCALE_ORDERS3 45,2099
+const int MIN_SERVER_VER_ORDER_COMBO_LEGS_PRICE 46,2157
+const int MIN_SERVER_VER_TRAILING_PERCENT 47,2215
+const int MIN_SERVER_VER_DELTA_NEUTRAL_OPEN_CLOSE 48,2273
+const int MIN_SERVER_VER_POSITIONS 49,2331
+const int MIN_SERVER_VER_ACCOUNT_SUMMARY 50,2389
+const int MIN_SERVER_VER_TRADING_CLASS 51,2447
+const int MIN_SERVER_VER_SCALE_TABLE 52,2505
+const int MIN_SERVER_VER_LINKING 53,2563
+const int MIN_SERVER_VER_ALGO_ID 54,2621
+const int MIN_SERVER_VER_OPTIONAL_CAPABILITIES 55,2679
+const int MIN_SERVER_VER_ORDER_SOLICITED 56,2737
+const int MIN_SERVER_VER_LINKING_AUTH 57,2795
+const int MIN_SERVER_VER_PRIMARYEXCH 58,2853
+const int MIN_SERVER_VER_RANDOMIZE_SIZE_AND_PRICE 59,2911
+const int MIN_SERVER_VER_FRACTIONAL_POSITIONS 60,2969
+const int MIN_SERVER_VER_PEGGED_TO_BENCHMARK 61,3028
+const int MIN_SERVER_VER_MODELS_SUPPORT 62,3087
+const int MIN_SERVER_VER_SEC_DEF_OPT_PARAMS_REQ 63,3146
+const int MIN_SERVER_VER_EXT_OPERATOR 64,3205
+const int MIN_SERVER_VER_SOFT_DOLLAR_TIER 65,3264
+const int MIN_SERVER_VER_REQ_FAMILY_CODES 66,3323
+const int MIN_SERVER_VER_REQ_MATCHING_SYMBOLS 67,3382
+const int MIN_SERVER_VER_PAST_LIMIT 68,3441
+const int MIN_SERVER_VER_MD_SIZE_MULTIPLIER 69,3500
+const int MIN_SERVER_VER_CASH_QTY 70,3559
+const int MIN_SERVER_VER_REQ_MKT_DEPTH_EXCHANGES 71,3618
+const int MIN_SERVER_VER_TICK_NEWS 72,3677
+const int MIN_SERVER_VER_REQ_SMART_COMPONENTS 73,3736
+const int MIN_SERVER_VER_REQ_NEWS_PROVIDERS 74,3795
+const int MIN_SERVER_VER_REQ_NEWS_ARTICLE 75,3854
+const int MIN_SERVER_VER_REQ_HISTORICAL_NEWS 76,3913
+const int MIN_SERVER_VER_REQ_HEAD_TIMESTAMP 77,3972
+const int MIN_SERVER_VER_REQ_HISTOGRAM 78,4031
+const int MIN_SERVER_VER_SERVICE_DATA_TYPE 79,4090
+const int MIN_SERVER_VER_AGG_GROUP 80,4149
+const int MIN_SERVER_VER_UNDERLYING_INFO 81,4208
+const int MIN_SERVER_VER_CANCEL_HEADTIMESTAMP 82,4267
+const int MIN_SERVER_VER_SYNT_REALTIME_BARS 83,4326
+const int MIN_SERVER_VER_CFD_REROUTE 84,4385
+const int MIN_SERVER_VER_MARKET_RULES 85,4444
+const int MIN_SERVER_VER_DAILY_PNL 86,4503
+const int MIN_SERVER_VER_PNL 87,4562
+const int MIN_SERVER_VER_NEWS_QUERY_ORIGINS 88,4621
+const int MIN_SERVER_VER_UNREALIZED_PNL 89,4680
+const int MIN_SERVER_VER_HISTORICAL_TICKS 90,4739
+const int MIN_SERVER_VER_MARKET_CAP_PRICE 91,4798
+const int MIN_SERVER_VER_PRE_OPEN_BID_ASK 92,4857
+const int MIN_SERVER_VER_REAL_EXPIRATION_DATE 93,4916
+const int MIN_SERVER_VER_REALIZED_PNL 94,4975
+const int MIN_SERVER_VER_LAST_LIQUIDITY 95,5034
+const int MIN_SERVER_VER_TICK_BY_TICK 96,5093
+const int MIN_SERVER_VER_DECISION_MAKER 97,5152
+const int MIN_SERVER_VER_MIFID_EXECUTION 98,5211
+const int MIN_SERVER_VER_TICK_BY_TICK_IGNORE_SIZE 99,5270
+const int MIN_SERVER_VER_AUTO_PRICE_FOR_HEDGE 100,5329
+const int MIN_SERVER_VER_WHAT_IF_EXT_FIELDS 101,5388
+const int MIN_SERVER_VER_SCANNER_GENERIC_OPTS 102,5447
+const int MIN_SERVER_VER_API_BIND_ORDER 103,5506
+const int MIN_SERVER_VER_ORDER_CONTAINER 104,5565
+const int MIN_SERVER_VER_SMART_DEPTH 105,5624
+const int MIN_SERVER_VER_REMOVE_NULL_ALL_CASTING 106,5683
+const int MIN_SERVER_VER_D_PEG_ORDERS 107,5742
+const int MIN_SERVER_VER_MKT_DEPTH_PRIM_EXCHANGE 108,5801
+const int MIN_SERVER_VER_COMPLETED_ORDERS 109,5860
+const int MIN_SERVER_VER_PRICE_MGMT_ALGO 110,5919
+const int MIN_CLIENT_VER 115,6050
+const int MAX_CLIENT_VER 116,6082
+const int TICK_PRICE 120,6164
+const int TICK_SIZE 121,6221
+const int ORDER_STATUS 122,6278
+const int ERR_MSG 123,6335
+const int OPEN_ORDER 124,6392
+const int ACCT_VALUE 125,6449
+const int PORTFOLIO_VALUE 126,6506
+const int ACCT_UPDATE_TIME 127,6563
+const int NEXT_VALID_ID 128,6620
+const int CONTRACT_DATA 129,6677
+const int EXECUTION_DATA 130,6735
+const int MARKET_DEPTH 131,6793
+const int MARKET_DEPTH_L2 132,6851
+const int NEWS_BULLETINS 133,6909
+const int MANAGED_ACCTS 134,6967
+const int RECEIVE_FA 135,7025
+const int HISTORICAL_DATA 136,7083
+const int BOND_CONTRACT_DATA 137,7141
+const int SCANNER_PARAMETERS 138,7199
+const int SCANNER_DATA 139,7257
+const int TICK_OPTION_COMPUTATION 140,7315
+const int TICK_GENERIC 141,7373
+const int TICK_STRING 142,7431
+const int TICK_EFP 143,7489
+const int CURRENT_TIME 144,7547
+const int REAL_TIME_BARS 145,7605
+const int FUNDAMENTAL_DATA 146,7663
+const int CONTRACT_DATA_END 147,7721
+const int OPEN_ORDER_END 148,7779
+const int ACCT_DOWNLOAD_END 149,7837
+const int EXECUTION_DATA_END 150,7895
+const int DELTA_NEUTRAL_VALIDATION 151,7953
+const int TICK_SNAPSHOT_END 152,8011
+const int MARKET_DATA_TYPE 153,8069
+const int COMMISSION_REPORT 154,8127
+const int POSITION_DATA 155,8185
+const int POSITION_END 156,8243
+const int ACCOUNT_SUMMARY 157,8301
+const int ACCOUNT_SUMMARY_END 158,8359
+const int VERIFY_MESSAGE_API 159,8417
+const int VERIFY_COMPLETED 160,8475
+const int DISPLAY_GROUP_LIST 161,8533
+const int DISPLAY_GROUP_UPDATED 162,8591
+const int VERIFY_AND_AUTH_MESSAGE_API 163,8649
+const int VERIFY_AND_AUTH_COMPLETED 164,8707
+const int POSITION_MULTI 165,8765
+const int POSITION_MULTI_END 166,8823
+const int ACCOUNT_UPDATE_MULTI 167,8881
+const int ACCOUNT_UPDATE_MULTI_END 168,8939
+const int SECURITY_DEFINITION_OPTION_PARAMETER 169,8997
+const int SECURITY_DEFINITION_OPTION_PARAMETER_END 170,9055
+const int SOFT_DOLLAR_TIERS 171,9113
+const int FAMILY_CODES 172,9171
+const int SYMBOL_SAMPLES 173,9229
+const int MKT_DEPTH_EXCHANGES 174,9287
+const int TICK_REQ_PARAMS 175,9345
+const int SMART_COMPONENTS 176,9403
+const int NEWS_ARTICLE 177,9461
+const int TICK_NEWS 178,9519
+const int NEWS_PROVIDERS 179,9577
+const int HISTORICAL_NEWS 180,9635
+const int HISTORICAL_NEWS_END 181,9693
+const int HEAD_TIMESTAMP 182,9751
+const int HISTOGRAM_DATA 183,9809
+const int HISTORICAL_DATA_UPDATE 184,9867
+const int REROUTE_MKT_DATA_REQ 185,9925
+const int REROUTE_MKT_DEPTH_REQ 186,9983
+const int MARKET_RULE 187,10041
+const int PNL 188,10099
+const int PNL_SINGLE 189,10157
+const int HISTORICAL_TICKS 190,10215
+const int HISTORICAL_TICKS_BID_ASK 191,10273
+const int HISTORICAL_TICKS_LAST 192,10331
+const int TICK_BY_TICK 193,10389
+const int ORDER_BOUND 194,10447
+const int COMPLETED_ORDER 195,10506
+const int COMPLETED_ORDERS_END 196,10565
+const int HEADER_LEN 198,10625
+const int MAX_MSG_LEN 199,10677
+const char API_SIGN[API_SIGN200,10727
+struct BarData 206,10822
+   std::string date;207,10839
+   double open;208,10860
+   double high;209,10876
+   double low;210,10892
+   double close;211,10907
+   int volume;212,10924
+   double average;213,10939
+   std::string hasGaps;214,10958
+   int barCount;215,10982
+struct ScanData 218,11003
+   ContractDetails contract;219,11021
+   int rank;220,11050
+   std::string distance;221,11063
+   std::string benchmark;222,11088
+   std::string projection;223,11114
+   std::string legsStr;224,11141
+#define DECODE_FIELD(352,19512
+#define DECODE_FIELD_TIME(353,19590
+#define DECODE_FIELD_MAX(354,19677
+
+tws/twsapi/IBJts/source/cppclient/client/TagValue.h,324
+#define TWS_API_CLIENT_TAGVALUE_H6,260
+struct TagValue12,350
+	TagValue(14,368
+	TagValue(15,383
+	std::string tag;19,483
+	std::string value;20,501
+typedef std::shared_ptr<TagValue> TagValueSPtr;23,525
+typedef std::vector<TagValueSPtr> TagValueList;24,573
+typedef std::shared_ptr<TagValueList> TagValueListSPtr;25,621
+
+tws/twsapi/IBJts/source/cppclient/client/HistoricalTickBidAsk.h,276
+#define TWS_API_CLIENT_HISTORICALTICKBIDASK_H6,272
+struct HistoricalTickBidAsk10,350
+    long long time;12,380
+    TickAttribBidAsk tickAttribBidAsk;13,400
+    double priceBid;14,439
+    double priceAsk;15,460
+    long long sizeBid;16,481
+    long long sizeAsk;17,504
+
+tws/twsapi/IBJts/source/cppclient/client/MarginCondition.h,47
+#define TWS_API_CLIENT_MARGINCONDITION_H6,267
+
+tws/twsapi/IBJts/source/cppclient/client/EReaderSignal.h,107
+#define TWS_API_CLIENT_EREADERSIGNAL_H6,265
+struct EReaderSignal8,305
+    virtual ~EReaderSignal(12,402
+
+tws/twsapi/IBJts/source/cppclient/client/CommonDefs.h,399
+#define TWS_API_CLIENT_COMMONDEFS_H6,262
+typedef long TickerId;8,299
+typedef long OrderId;9,322
+enum faDataType 11,345
+enum faDataType { GROUPS=11,345
+enum faDataType { GROUPS=1, PROFILES,11,345
+enum faDataType { GROUPS=1, PROFILES, ALIASES 11,345
+inline const char* faDataTypeStr 13,396
+enum MarketDataType 26,611
+	REALTIME 27,634
+	FROZEN 28,650
+	DELAYED 29,663
+	DELAYED_FROZEN 30,677
+
+tws/twsapi/IBJts/source/cppclient/client/IExternalizable.h,77
+#define TWS_API_CLIENT_IEXTERNALIZABLE_H6,267
+struct IExternalizable10,325
+
+tws/twsapi/IBJts/source/cppclient/client/resource.h,159
+#define _APS_NEXT_RESOURCE_VALUE 14,418
+#define _APS_NEXT_COMMAND_VALUE 15,462
+#define _APS_NEXT_CONTROL_VALUE 16,508
+#define _APS_NEXT_SYMED_VALUE 17,553
+
+tws/twsapi/IBJts/source/cppclient/client/ESocket.h,121
+#define TWS_API_CLIENT_ESOCKET_H6,259
+class ESocket 11,336
+    int m_fd;14,376
+	std::vector<char> m_outBuffer;15,390
+
+ext/GaucheAdapter_glue.h,93
+#define TWS_CLIENT_P(10,126
+#define TWS_CLIENT_UNBOX(11,188
+#define TWS_CLIENT_BOX(12,263
+
+ext/GaucheAdapter.h,3036
+#define TWS_API_SAMPLES_TESTCPPCLIENT_TESTCPPCLIENT_H6,280
+enum State 17,467
+	ST_CONNECT,18,480
+	ST_TICKDATAOPERATION,19,493
+	ST_TICKDATAOPERATION_ACK,20,516
+	ST_TICKOPTIONCOMPUTATIONOPERATION,21,543
+	ST_TICKOPTIONCOMPUTATIONOPERATION_ACK,22,579
+	ST_DELAYEDTICKDATAOPERATION,23,619
+	ST_DELAYEDTICKDATAOPERATION_ACK,24,649
+	ST_MARKETDEPTHOPERATION,25,683
+	ST_MARKETDEPTHOPERATION_ACK,26,709
+	ST_REALTIMEBARS,27,739
+	ST_REALTIMEBARS_ACK,28,757
+	ST_MARKETDATATYPE,29,779
+	ST_MARKETDATATYPE_ACK,30,799
+	ST_HISTORICALDATAREQUESTS,31,823
+	ST_HISTORICALDATAREQUESTS_ACK,32,851
+	ST_OPTIONSOPERATIONS,33,883
+	ST_OPTIONSOPERATIONS_ACK,34,906
+	ST_CONTRACTOPERATION,35,933
+	ST_CONTRACTOPERATION_ACK,36,956
+	ST_MARKETSCANNERS,37,983
+	ST_MARKETSCANNERS_ACK,38,1003
+	ST_FUNDAMENTALS,39,1027
+	ST_FUNDAMENTALS_ACK,40,1045
+	ST_BULLETINS,41,1067
+	ST_BULLETINS_ACK,42,1082
+	ST_ACCOUNTOPERATIONS,43,1101
+	ST_ACCOUNTOPERATIONS_ACK,44,1124
+	ST_ORDEROPERATIONS,45,1151
+	ST_ORDEROPERATIONS_ACK,46,1172
+	ST_OCASAMPLES,47,1197
+	ST_OCASAMPLES_ACK,48,1213
+	ST_CONDITIONSAMPLES,49,1233
+	ST_CONDITIONSAMPLES_ACK,50,1255
+	ST_BRACKETSAMPLES,51,1281
+	ST_BRACKETSAMPLES_ACK,52,1301
+	ST_HEDGESAMPLES,53,1325
+	ST_HEDGESAMPLES_ACK,54,1343
+	ST_TESTALGOSAMPLES,55,1365
+	ST_TESTALGOSAMPLES_ACK,56,1386
+	ST_FAORDERSAMPLES,57,1411
+	ST_FAORDERSAMPLES_ACK,58,1431
+	ST_FAOPERATIONS,59,1455
+	ST_FAOPERATIONS_ACK,60,1473
+	ST_DISPLAYGROUPS,61,1495
+	ST_DISPLAYGROUPS_ACK,62,1514
+	ST_MISCELANEOUS,63,1537
+	ST_MISCELANEOUS_ACK,64,1555
+	ST_CANCELORDER,65,1577
+	ST_CANCELORDER_ACK,66,1594
+	ST_FAMILYCODES,67,1615
+	ST_FAMILYCODES_ACK,68,1632
+	ST_SYMBOLSAMPLES,69,1653
+	ST_SYMBOLSAMPLES_ACK,70,1672
+	ST_REQMKTDEPTHEXCHANGES,71,1695
+	ST_REQMKTDEPTHEXCHANGES_ACK,72,1721
+	ST_REQNEWSTICKS,73,1751
+	ST_REQNEWSTICKS_ACK,74,1769
+	ST_REQSMARTCOMPONENTS,75,1791
+	ST_REQSMARTCOMPONENTS_ACK,76,1815
+	ST_NEWSPROVIDERS,77,1843
+	ST_NEWSPROVIDERS_ACK,78,1862
+	ST_REQNEWSARTICLE,79,1885
+	ST_REQNEWSARTICLE_ACK,80,1905
+	ST_REQHISTORICALNEWS,81,1929
+	ST_REQHISTORICALNEWS_ACK,82,1952
+	ST_REQHEADTIMESTAMP,83,1979
+	ST_REQHEADTIMESTAMP_ACK,84,2001
+	ST_REQHISTOGRAMDATA,85,2027
+	ST_REQHISTOGRAMDATA_ACK,86,2049
+	ST_REROUTECFD,87,2075
+	ST_REROUTECFD_ACK,88,2091
+	ST_MARKETRULE,89,2111
+	ST_MARKETRULE_ACK,90,2127
+    ST_PNL,91,2147
+    ST_PNL_ACK,92,2159
+    ST_PNLSINGLE,93,2175
+    ST_PNLSINGLE_ACK,94,2193
+    ST_CONTFUT,95,2215
+    ST_CONTFUT_ACK,96,2231
+	ST_PING,97,2251
+	ST_PING_ACK,98,2261
+    ST_REQHISTORICALTICKS,99,2275
+    ST_REQHISTORICALTICKS_ACK,100,2302
+    ST_REQTICKBYTICKDATA,101,2333
+    ST_REQTICKBYTICKDATA_ACK,102,2359
+	ST_WHATIFSAMPLES,103,2389
+	ST_WHATIFSAMPLES_ACK,104,2408
+	ST_IDLE105,2431
+class GaucheAdapter 109,2463
+	EReaderOSSignal m_osSignal;184,4281
+	EClientSocket * const m_pClient;185,4310
+	State m_state;187,4366
+	time_t m_sleepDeadline;188,4382
+	OrderId m_orderId;190,4408
+	EReader *m_pReader;m_pReader191,4428
+    bool m_extraAuth;192,4449
+	std::string m_bboExchange;193,4471
+
+ext/Utils.h,72
+#define TWS_API_SAMPLES_TESTCPPCLIENT_UTILS_H5,271
+class Utils 11,374

@@ -240,7 +240,10 @@
 (tws-client-connect tws "localhost" 7497 0)
 (define (on-next-valid-id id)
   #?=id
-  (tws-client-historical-data-request tws))
+  (let ((date (date->string (current-date) "~Y~m~d ~T"))
+        (duration (* 60 60 3)))
+    (tws-client-historical-data-request tws 4001 "EUR" "CASH" "GBP" "IDEALPRO" date
+                                        #`",duration S" "1 hour" "MIDPOINT")))
 
 (define (on-historical-data req-id time open high low close volume count wap)
   #?=#`"historical data: ,req-id ,time ,open ,high ,low ,close ,volume ,count ,wap"

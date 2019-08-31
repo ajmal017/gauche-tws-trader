@@ -132,7 +132,11 @@ public:
 	void marketDepthOperations();
 	void realTimeBars();
 	void marketDataType();
-	void historicalDataRequests();
+	void historicalDataRequests(TickerId reqId, const char* symbol,
+                                const char* secType, const char* currency,
+                                const char* exchange, const char* queryTime,
+                                const char* duration, const char* barSize,
+                                const char* whatToShow);
 	void optionsOperations();
 	void accountOperations();
 	void orderOperations();
