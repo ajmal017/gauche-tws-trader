@@ -4,8 +4,7 @@
 (use math.mt-random)
 (use text.tree)
 
-(use dbi)
-(use dbd.pg)
+(use redis)
 
 (add-load-path "./lib/")
 (use trader)
@@ -13,7 +12,7 @@
 
 (use config)
 
-(define *conn* (dbi-connect #`"dbi:pg:user=postgres;host=,db-host"))
+(define *conn* (redis-open redis-host 6379))
 
 (define (same-trend? p1 p2)
   (> (* (poly-a p1) (poly-b p1) (poly-a p2) (poly-b p2)) 0))
@@ -116,7 +115,7 @@
                       (loop (cdr src) (cons pos dest)))))))))
 
 (define (inspect date positions index)
-  (let* ((data (query-data *conn* date *data-count* "1 hour"))
+  (let* ((data (query-data *conn* "EUR.GBP" date *data-count* "1 hour"))
          (actual-date (last-date data)))
     (if (> (time-second (time-difference (date->time-utc actual-date) (date->time-utc date)))
            (* 15 60))
@@ -130,9 +129,9 @@
 ;; Function: make-date nanosecond second minute hour day month year zone-offset
 
 (define (main . args)
-  (let* ((d1 (make-date 0 0 15 0 1 4 2018 0))
+  (let* ((d1 (make-date 0 0 15 0 1 10 2018 0))
          (t1 (date->time-utc d1))
-         (d2 (make-date 0 0 15 0 1 4 2019 0))
+         (d2 (make-date 0 0 15 0 1 8 2019 0))
          #;(d2 (make-date 0 0 15 0 5 4 2018 0))
          (t2 (date->time-utc d2)))
     (let loop ((index 0)
