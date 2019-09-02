@@ -1,5 +1,5 @@
 (use sxml.tools)
-
+(use gauche.threads)
 (use srfi-19)
 
 (add-load-path "./gauche-rheingau/lib/")
@@ -12,16 +12,16 @@
 (use trader)
 (use query)
 
-(use config)
+(use redis)
 
-(use dbi)
-(use dbd.pg)
+(use config)
 
 ;;
 ;; Application
 ;;
 
-(define *conn* (dbi-connect #`"dbi:pg:user=postgres;host=,db-host"))
+(define *conn* (redis-open redis-host 6379))
+#?=*conn*
 
 (define (make-bar-from-row row chart-width half-bar-width bar-width count index transform-y)
   (let ((date  (bar-date  row))
@@ -218,7 +218,8 @@
       (violet-async
        (^[await]
          (let* ((end-date (make-date 0 0 minute hour date month year 0))
-                (data (await (^[] (query-data *conn* (next-day end-date) (* 24 5 4) "1 hour")))))
+                (data (await (^[] (query-data *conn* "EUR.GBP" (next-day end-date)
+                                              (* 24 5 4) "1 hour")))))
            (respond/ok req (cons "<!DOCTYPE html>"
                                  (sxml:sxml->html
                                   (create-page
@@ -246,7 +247,11 @@
                                         #`",duration S" "1 hour" "MIDPOINT")))
 
 (define (on-historical-data req-id time open high low close volume count wap)
-  #?=#`"historical data: ,req-id ,time ,open ,high ,low ,close ,volume ,count ,wap"
-)
+  (let ((date (string->date time "~Y~m~d  ~H:~M:~S"))) ; "20190830  22:00:00"
+    (add-data *conn* "EUR.GBP" "1 hour" date open close high low)))
 
-(set-update-proc! (lambda () (tws-client-process-messages tws)))
+(thread-start! 
+ (make-thread
+  (lambda ()
+    (tws-client-process-messages tws)
+    )))

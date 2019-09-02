@@ -1,7 +1,7 @@
 (define-module config
-  (export db-host)
+  (export redis-host)
 )
 
 (select-module config)
 
-(define db-host "localhost")
+(define redis-host "localhost")

@@ -9,16 +9,16 @@ services:
     expose:
       - "2222"
     depends_on:
-      - postgres
+      - redis
     network_mode: "host"
 
-  postgres:
-    image: postgres:alpine
+  redis:
+    image: redis:alpine
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - redisdata:/data
     ports:
-      - "5432:5432"
+      - "6379:6379"
     network_mode: "host"
 
 volumes:
-    pgdata:
+    redisdata:
