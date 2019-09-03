@@ -264,6 +264,10 @@
   (let ((date (string->date time "~Y~m~d  ~H:~M:~S"))) ; "20190830  22:00:00"
     (add-data *conn* "EUR.GBP" "1 hour" date open close high low)))
 
+(define (on-historical-data-end req-id start-date end-date)
+  #?=`(,req-id ,start-date ,end-date)
+)
+
 (thread-start! 
  (make-thread
   (lambda ()

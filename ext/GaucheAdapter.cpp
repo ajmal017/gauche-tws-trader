@@ -695,6 +695,18 @@ void GaucheAdapter::historicalData(TickerId reqId, const Bar& bar) {
 //! [historicaldataend]
 void GaucheAdapter::historicalDataEnd(int reqId, const std::string& startDateStr, const std::string& endDateStr) {
 	std::cout << "HistoricalDataEnd. ReqId: " << reqId << " - Start Date: " << startDateStr << ", End Date: " << endDateStr << std::endl;
+
+    ScmObj proc = SCM_UNDEFINED;
+    SCM_BIND_PROC(proc, "on-historical-data-end", Scm_CurrentModule());
+    ScmEvalPacket epak;
+    ScmObj arglist =
+        SCM_LIST3(Scm_MakeInteger(reqId),
+                  SCM_MAKE_STR(startDateStr.c_str()),
+                  SCM_MAKE_STR(endDateStr.c_str()));
+
+    if (Scm_Apply(proc, arglist, &epak) < 0) {
+        scm_error(epak.exception);
+    }
 }
 //! [historicaldataend]
 
