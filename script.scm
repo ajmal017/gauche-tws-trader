@@ -240,11 +240,25 @@
 
 (tws-client-connect tws "localhost" 7497 0)
 (define (on-next-valid-id id)
-  #?=id
-  (let ((date (date->string (current-date) "~Y~m~d ~T"))
-        (duration (* 60 60 3)))
-    (tws-client-historical-data-request tws 4001 "EUR" "CASH" "GBP" "IDEALPRO" date
-                                        #`",duration S" "1 hour" "MIDPOINT")))
+  (let* ((date
+          (let ((cur (current-date)))
+            (make-date 0 0 0
+                       (date-hour cur) (date-day cur) (date-month cur) (date-year cur)
+                       (date-zone-offset cur))))
+         (date-str (date->string date "~Y~m~d ~T"))
+         (last-data #?=(query-data *conn* "EUR.GBP" date 1 "1 hour"))
+         (duration
+          (if (zero? #?=(data-set-count last-data))
+              "1 Y"
+              (let ((sec
+                     (time-second
+                      (time-difference
+                       (date->time-utc date)
+                       (date->time-utc (bar-date (car (data-set-rows last-data))))))))
+                #`",sec S"))))
+    (unless (string=? #?=duration "3600 S")
+      (tws-client-historical-data-request tws 4001 "EUR" "CASH" "GBP" "IDEALPRO" date-str
+                                          duration "1 hour" "MIDPOINT"))))
 
 (define (on-historical-data req-id time open high low close volume count wap)
   (let ((date (string->date time "~Y~m~d  ~H:~M:~S"))) ; "20190830  22:00:00"
@@ -253,5 +267,7 @@
 (thread-start! 
  (make-thread
   (lambda ()
-    (tws-client-process-messages tws)
-    )))
+    (let loop ()
+      (tws-client-process-messages tws)
+      (loop)))))
+
