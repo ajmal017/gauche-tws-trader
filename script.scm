@@ -1,5 +1,6 @@
 (use sxml.tools)
 (use gauche.threads)
+(use data.queue)
 (use srfi-19)
 
 (add-load-path "./gauche-rheingau/lib/")
@@ -11,6 +12,7 @@
 (use violet)
 (use trader)
 (use query)
+(use scanner)
 
 (use redis)
 
@@ -238,6 +240,12 @@
 
 (define tws (make-tws-client))
 
+(define *request-id* 4000)
+(define (request-id!)
+  (let ((id *request-id*))
+    (inc! *request-id*)
+    id))
+
 (tws-client-connect tws "localhost" 7497 0)
 (define (on-next-valid-id id)
   (let* ((date
@@ -256,22 +264,58 @@
                        (date->time-utc date)
                        (date->time-utc (bar-date (car (data-set-rows last-data))))))))
                 #`",sec S"))))
-    (unless (string=? #?=duration "3600 S")
-      (tws-client-historical-data-request tws 4001 "EUR" "CASH" "GBP" "IDEALPRO" date-str
-                                          duration "1 hour" "MIDPOINT"))))
+    (if (string=? #?=duration "3600 S")
+        (sleep-and-update)
+        (tws-client-historical-data-request tws (request-id!)
+                                            "EUR" "CASH" "GBP" "IDEALPRO" date-str
+                                            duration "1 hour" "MIDPOINT"))))
 
 (define (on-historical-data req-id time open high low close volume count wap)
   (let ((date (string->date time "~Y~m~d  ~H:~M:~S"))) ; "20190830  22:00:00"
     (add-data *conn* "EUR.GBP" "1 hour" date open close high low)))
 
+(define *task-queue* (make-mtqueue))
+
+(define (sleep-and-update)
+  (let ((min (date-minute (current-date))))
+    (thread-start!
+     (make-thread
+      (lambda ()
+        (sys-sleep #?=(* 60 (- 60 min)))
+        (enqueue! *task-queue*
+                  (lambda ()
+                    (let* ((date
+                            (let ((cur #?=(current-date)))
+                              (make-date 0 0 0
+                                         (date-hour cur) (date-day cur)
+                                         (date-month cur) (date-year cur)
+                                         (date-zone-offset cur))))
+                           (date-str (date->string date "~Y~m~d ~T")))
+                      (tws-client-historical-data-request tws #?=(request-id!)
+                                                          "EUR" "CASH" "GBP" "IDEALPRO"
+                                                          date-str
+                                                          "3660 S" "1 hour" "MIDPOINT")
+                      ))))))))
+
+(define *positions* ())
+(define *index* 0)
+
 (define (on-historical-data-end req-id start-date end-date)
   #?=`(,req-id ,start-date ,end-date)
+  (let-values (((pos poss) (inspect *conn* (current-date) *positions* *index*)))
+    (if pos
+        (set! *positions* (cons pos poss))
+        (set! *positions* poss)))
+  #?=*positions*
+  (inc! *index*)
+  (sleep-and-update)
 )
 
 (thread-start! 
  (make-thread
   (lambda ()
     (let loop ()
+      (let ((task (dequeue! *task-queue* #f)))
+        (when task (task)))
       (tws-client-process-messages tws)
       (loop)))))
-
