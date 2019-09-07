@@ -35,7 +35,6 @@ const int SLEEP_BETWEEN_PINGS = 30; // seconds
 GaucheAdapter::GaucheAdapter() :
       m_osSignal(2000)//2-seconds timeout
     , m_pClient(new EClientSocket(this, &m_osSignal))
-	// , m_state(ST_CONNECT)
 	, m_sleepDeadline(0)
 	, m_orderId(0)
     , m_pReader(0)
@@ -108,15 +107,6 @@ void GaucheAdapter::connectAck() {
 }
 //! [connectack]
 
-// void GaucheAdapter::reqCurrentTime() {}
-// void GaucheAdapter::pnlOperation() {}
-// void GaucheAdapter::pnlSingleOperation() {}
-// void GaucheAdapter::tickDataOperation() {}
-// void GaucheAdapter::tickOptionComputationOperation() {}
-// void GaucheAdapter::delayedTickDataOperation() {}
-// void GaucheAdapter::marketDepthOperations() {}
-// void GaucheAdapter::realTimeBars() {}
-// void GaucheAdapter::marketDataType() {}
 void GaucheAdapter::historicalDataRequests(TickerId reqId, const char* symbol,
                                            const char* secType, const char* currency,
                                            const char* exchange, const char* queryTime,
@@ -134,38 +124,6 @@ void GaucheAdapter::historicalDataRequests(TickerId reqId, const char* symbol,
                                  queryTime, duration, barSize, whatToShow, 1, 1, false,
                                  TagValueListSPtr());
 }
-// void GaucheAdapter::optionsOperations() {}
-// void GaucheAdapter::contractOperations() {}
-// void GaucheAdapter::marketScanners() {}
-// void GaucheAdapter::fundamentals() {}
-// void GaucheAdapter::bulletins() {}
-// void GaucheAdapter::accountOperations() {}
-// void GaucheAdapter::orderOperations() {}
-// void GaucheAdapter::ocaSamples() {}
-// void GaucheAdapter::conditionSamples() {}
-// void GaucheAdapter::bracketSample() {}
-// void GaucheAdapter::hedgeSample() {}
-// void GaucheAdapter::testAlgoSamples() {}
-// void GaucheAdapter::financialAdvisorOrderSamples() {}
-// void GaucheAdapter::financialAdvisorOperations() {}
-// void GaucheAdapter::testDisplayGroups() {}
-// void GaucheAdapter::miscelaneous() {}
-// void GaucheAdapter::reqFamilyCodes() {}
-// void GaucheAdapter::reqMatchingSymbols() {}
-// void GaucheAdapter::reqMktDepthExchanges() {}
-// void GaucheAdapter::reqNewsTicks() {}
-// void GaucheAdapter::reqSmartComponents() {}
-// void GaucheAdapter::reqNewsProviders() {}
-// void GaucheAdapter::reqNewsArticle() {}
-// void GaucheAdapter::reqHistoricalNews() {}
-// void GaucheAdapter::reqHeadTimestamp() {}
-// void GaucheAdapter::reqHistogramData() {}
-// void GaucheAdapter::rerouteCFDOperations() {}
-// void GaucheAdapter::marketRuleOperations() {}
-// void GaucheAdapter::continuousFuturesOperations() {}
-// void GaucheAdapter::reqHistoricalTicks()  {}
-// void GaucheAdapter::reqTickByTickData() {}
-// void GaucheAdapter::whatIfSamples() {}
 
 static void scm_error(ScmObj c) {
     ScmObj m = Scm_ConditionMessage(c);
