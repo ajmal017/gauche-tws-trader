@@ -124,53 +124,53 @@ public:
 	bool isConnected() const;
 
 public:
-    void pnlOperation();
-    void pnlSingleOperation();
-	void tickDataOperation();
-	void tickOptionComputationOperation();
-	void delayedTickDataOperation();
-	void marketDepthOperations();
-	void realTimeBars();
-	void marketDataType();
+    // void pnlOperation();
+    // void pnlSingleOperation();
+	// void tickDataOperation();
+	// void tickOptionComputationOperation();
+	// void delayedTickDataOperation();
+	// void marketDepthOperations();
+	// void realTimeBars();
+	// void marketDataType();
 	void historicalDataRequests(TickerId reqId, const char* symbol,
                                 const char* secType, const char* currency,
                                 const char* exchange, const char* queryTime,
                                 const char* duration, const char* barSize,
                                 const char* whatToShow);
-	void optionsOperations();
-	void accountOperations();
-	void orderOperations();
-	void ocaSamples();
-	void conditionSamples();
-	void bracketSample();
-	void hedgeSample();
-	void contractOperations();
-	void marketScanners();
-	void fundamentals();
-	void bulletins();
-	void testAlgoSamples();
-	void financialAdvisorOrderSamples();
-	void financialAdvisorOperations();
-	void testDisplayGroups();
-	void miscelaneous();
-	void reqFamilyCodes();
-	void reqMatchingSymbols();
-	void reqMktDepthExchanges();
-	void reqNewsTicks();
-	void reqSmartComponents();
-	void reqNewsProviders();
-	void reqNewsArticle();
-	void reqHistoricalNews();
-	void reqHeadTimestamp();
-	void reqHistogramData();
-	void rerouteCFDOperations();
-	void marketRuleOperations();
-	void continuousFuturesOperations();
-    void reqHistoricalTicks();
-    void reqTickByTickData();
-	void whatIfSamples();
+	// void optionsOperations();
+	// void accountOperations();
+	// void orderOperations();
+	// void ocaSamples();
+	// void conditionSamples();
+	// void bracketSample();
+	// void hedgeSample();
+	// void contractOperations();
+	// void marketScanners();
+	// void fundamentals();
+	// void bulletins();
+	// void testAlgoSamples();
+	// void financialAdvisorOrderSamples();
+	// void financialAdvisorOperations();
+	// void testDisplayGroups();
+	// void miscelaneous();
+	// void reqFamilyCodes();
+	// void reqMatchingSymbols();
+	// void reqMktDepthExchanges();
+	// void reqNewsTicks();
+	// void reqSmartComponents();
+	// void reqNewsProviders();
+	// void reqNewsArticle();
+	// void reqHistoricalNews();
+	// void reqHeadTimestamp();
+	// void reqHistogramData();
+	// void rerouteCFDOperations();
+	// void marketRuleOperations();
+	// void continuousFuturesOperations();
+    // void reqHistoricalTicks();
+    // void reqTickByTickData();
+	// void whatIfSamples();
 
-	void reqCurrentTime();
+	// void reqCurrentTime();
 
 public:
 	// events
