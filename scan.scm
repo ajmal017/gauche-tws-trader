@@ -23,7 +23,7 @@
                (positions ()))
       (if (time<? t t2)
           (let ((date (time-utc->date t)))
-            (let-values (((pos poss) (inspect *conn* date positions index)))
+            (let-values (((pos poss) (inspect *conn* date positions index print)))
               (when pos
                 (print (date->string (position-date pos) "http://localhost:2222/~Y/~m/~d/~H/~M"))
                 (print (position->string pos)))

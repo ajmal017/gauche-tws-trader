@@ -225,7 +225,7 @@
            (respond/ok req (cons "<!DOCTYPE html>"
                                  (sxml:sxml->html
                                   (create-page
-                                   `(html (body (p ,#`"USD.EUR ,(date->string end-date)")
+                                   `(html (body (p ,#`"EUR.GBP ,(date->string end-date)")
                                                 (h2 "1 hour")
                                                 (div ,@(format-data data))
                                                 ))))))))))))
@@ -266,9 +266,11 @@
                 #`",sec S"))))
     (if (string=? #?=duration "3600 S")
         (sleep-and-update)
-        (tws-client-historical-data-request tws (request-id!)
-                                            "EUR" "CASH" "GBP" "IDEALPRO" date-str
-                                            duration "1 hour" "MIDPOINT"))))
+        (enqueue! *task-queue*
+                  (lambda ()
+                    (tws-client-historical-data-request tws (request-id!)
+                                                        "EUR" "CASH" "GBP" "IDEALPRO" date-str
+                                                        duration "1 hour" "MIDPOINT"))))))
 
 (define (on-historical-data req-id time open high low close volume count wap)
   (let ((date (string->date time "~Y~m~d  ~H:~M:~S"))) ; "20190830  22:00:00"
@@ -300,11 +302,19 @@
 (define *positions* ())
 (define *index* 0)
 
+(define (close-position order)
+  #?=order)
+
+(define (open-position pos)
+  #?=pos)
+
 (define (on-historical-data-end req-id start-date end-date)
   #?=`(,req-id ,start-date ,end-date)
-  (let-values (((pos poss) (inspect *conn* (current-date) *positions* *index*)))
+  (let-values (((pos poss) (inspect *conn* (current-date) *positions* *index* close-position)))
     (if pos
-        (set! *positions* (cons pos poss))
+        (begin
+          (set! *positions* (cons pos poss))
+          (open-position pos))
         (set! *positions* poss)))
   #?=*positions*
   (inc! *index*)
@@ -315,7 +325,10 @@
  (make-thread
   (lambda ()
     (let loop ()
-      (let ((task (dequeue! *task-queue* #f)))
-        (when task (task)))
+      (let task-loop ()
+        (let ((task (dequeue! *task-queue* #f)))
+          (when task
+            (task)
+            (task-loop))))
       (tws-client-process-messages tws)
       (loop)))))
