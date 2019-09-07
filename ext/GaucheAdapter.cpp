@@ -26,9 +26,6 @@
 #include <gauche.h>
 #include <gauche/static.h>
 
-const int PING_DEADLINE = 2; // seconds
-const int SLEEP_BETWEEN_PINGS = 30; // seconds
-
 ///////////////////////////////////////////////////////////
 // member funcs
 //! [socket_init]
@@ -91,8 +88,6 @@ void GaucheAdapter::setConnectOptions(const std::string& connectOptions)
 
 void GaucheAdapter::processMessages()
 {
-	time_t now = time(NULL);
-
 	m_osSignal.waitForSignal();
 	errno = 0;
 	m_pReader->processMsgs();
