@@ -35,7 +35,7 @@ const int SLEEP_BETWEEN_PINGS = 30; // seconds
 GaucheAdapter::GaucheAdapter() :
       m_osSignal(2000)//2-seconds timeout
     , m_pClient(new EClientSocket(this, &m_osSignal))
-	, m_state(ST_CONNECT)
+	// , m_state(ST_CONNECT)
 	, m_sleepDeadline(0)
 	, m_orderId(0)
     , m_pReader(0)
