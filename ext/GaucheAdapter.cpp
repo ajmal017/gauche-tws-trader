@@ -33,7 +33,7 @@ GaucheAdapter::GaucheAdapter() :
       m_osSignal(2000)//2-seconds timeout
     , m_pClient(new EClientSocket(this, &m_osSignal))
 	, m_sleepDeadline(0)
-	, m_orderId(0)
+	// , m_orderId(0)
     , m_pReader(0)
     , m_extraAuth(false)
 {
@@ -120,6 +120,23 @@ void GaucheAdapter::historicalDataRequests(TickerId reqId, const char* symbol,
                                  TagValueListSPtr());
 }
 
+void GaucheAdapter::placeFxMarketOrder(OrderId orderId, const char* symbol,
+                                       const char* currency, const char* exchange,
+                                       const char* action, double quantity) {
+	Contract contract;
+	contract.symbol = symbol;
+	contract.secType = "CASH";
+	contract.currency = currency;
+	contract.exchange = exchange;
+
+	Order order;
+	order.action = action;
+	order.orderType = "MKT";
+	order.totalQuantity = quantity;
+
+    m_pClient->placeOrder(orderId, contract, order);
+}
+
 static void scm_error(ScmObj c) {
     ScmObj m = Scm_ConditionMessage(c);
     if (SCM_FALSEP(m)) {
@@ -133,7 +150,7 @@ static void scm_error(ScmObj c) {
 void GaucheAdapter::nextValidId( OrderId orderId)
 {
 	Scm_Printf(SCM_CURERR, "Next Valid Id: %ld\n", orderId);
-	m_orderId = orderId;
+	// m_orderId = orderId;
 	//! [nextvalidid]
 
     ScmObj proc = SCM_UNDEFINED;

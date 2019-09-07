@@ -39,6 +39,10 @@ public:
                                 const char* duration, const char* barSize,
                                 const char* whatToShow);
 
+    void placeFxMarketOrder(OrderId orderId, const char* symbol,
+                            const char* currency, const char* exchange,
+                            const char* action, double quantity);
+
 public:
 	// events
 	#include "EWrapper_prototypes.h"
@@ -58,7 +62,7 @@ private:
 	// State m_state;
 	time_t m_sleepDeadline;
 
-	OrderId m_orderId;
+	// OrderId m_orderId;
 	EReader *m_pReader;
     bool m_extraAuth;
 	std::string m_bboExchange;

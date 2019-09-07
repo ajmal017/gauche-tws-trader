@@ -33,6 +33,17 @@
   ::<void>
   "cl->historicalDataRequests(reqId, symbol, secType, currency, exchange, queryTime, duration, barSize, whatToShow);")
 
+(define-cproc tws-client-place-fx-market-order (cl::<tws-client>
+                                                orderId::<int>
+                                                symbol::<const-cstring>
+                                                currency::<const-cstring>
+                                                exchange::<const-cstring>
+                                                action::<const-cstring>
+                                                quantity::<double>
+                                                )
+  ::<void>
+  "cl->placeFxMarketOrder(orderId, symbol, currency, exchange, action, quantity);")
+
 ;; Local Variables:
 ;; mode: scheme
 ;; End:
