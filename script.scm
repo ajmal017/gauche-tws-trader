@@ -247,7 +247,14 @@
     id))
 
 (tws-client-connect tws "localhost" 7497 0)
+(define *order-id* #f)
+(define (order-id!)
+  (let ((id #?=*order-id*))
+    (inc! *order-id*)
+    id))
+
 (define (on-next-valid-id id)
+  (set! *order-id* id)
   (let* ((date
           (let ((cur (current-date)))
             (make-date 0 0 0
@@ -300,24 +307,62 @@
                       ))))))))
 
 (define *positions* ())
-(define *index* 0)
+(define (position-id)
+  (redis-get "position-id"))
 
-(define (close-position order)
-  #?=order)
+(define (position-id-bump!)
+  #?=(redis-incr *conn* "position-id"))
+
+(define *quantitiy-unit* 10000.0)
+
+(define (close-position close-order)
+  #?=close-order
+  ;;; (list 'close pos-idx price result gain)
+  (let ((pos (get-position (cadr close-order))))
+    (order (case (position-action pos)
+             (('sell) "BUY")
+             (('buy) "SELL"))
+           "EUR" "GBP" "IDEALPRO"
+           *quantitiy-unit*)
+    ))
+
+(define (get-position id)
+  (let ((pos-str (redis-hget *conn* "positions" id)))
+    (apply make-position #?=(read-from-string pos-str))))
 
 (define (open-position pos)
-  #?=pos)
+  #?=(position->string pos)
+
+  (order (case (position-action pos)
+           (('sell) "SELL")
+           (('buy) "BUY"))
+         "EUR" "GBP" "IDEALPRO"
+         *quantitiy-unit*
+         ))
+
+(define (order action symbol currecy exchange quantity)
+  (enqueue! *task-queue*
+            (lambda ()
+              (tws-client-place-fx-market-order
+               tws #?=(order-id!) #?=symbol currecy exchange
+               #?=action
+               quantity))))
 
 (define (on-historical-data-end req-id start-date end-date)
   #?=`(,req-id ,start-date ,end-date)
-  (let-values (((pos poss) (inspect *conn* (current-date) *positions* *index* close-position)))
+  (let-values (((pos poss) (inspect *conn* (current-date) *positions* (position-id) close-position)))
     (if pos
         (begin
           (set! *positions* (cons pos poss))
-          (open-position pos))
+          (open-position pos)
+          (position-id-bump!))
         (set! *positions* poss)))
   #?=*positions*
-  (inc! *index*)
+
+  ;;; test test...
+  (order
+   "BUY" "EUR" "GBP" "IDEALPRO" 100000.0)
+
   (sleep-and-update)
 )
 
