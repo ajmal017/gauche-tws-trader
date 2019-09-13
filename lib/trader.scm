@@ -40,6 +40,17 @@
    pos-info-long-trend-error
    pos-info-short-trend-poly
    pos-info-short-trend-error
+   make-currency-pair
+   currency-pair-name
+   currency-pair-symbol
+   currency-pair-currency
+   make-trading-style
+   trading-style-currency-pair
+   trading-style-exchange
+   trading-style-bar-size
+   trading-style-duration-for-wait
+   trading-style-duration-for-query
+   trading-style-history-period
    ))
 
 (select-module trader)
@@ -212,3 +223,20 @@
   closed-at
   position
   gain)
+
+(define-record-type currency-pair #t #t
+  symbol
+  currency
+  )
+
+(define (currency-pair-name cp)
+  #`",(currency-pair-symbol cp).,(currency-pair-currency cp)")
+
+(define-record-type trading-style #t #t
+  currency-pair
+  exchange
+  bar-size
+  duration-for-wait
+  duration-for-query
+  history-period
+  )

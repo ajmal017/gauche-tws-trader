@@ -253,6 +253,18 @@
     (inc! *order-id*)
     id))
 
+(define *eur-gbp* (make-currency-pair "EUR" "GBP"))
+
+(define *eur-gbp-1hour*
+  (make-trading-style
+   *eur-gbp*
+   "IDEALPRO"
+   "1 hour"
+   "3600 S"
+   "3660 S"
+   "1 Y"
+   ))
+
 (define (on-next-valid-id id)
   (set! *order-id* id)
   (let* ((date
@@ -261,7 +273,9 @@
                        (date-hour cur) (date-day cur) (date-month cur) (date-year cur)
                        (date-zone-offset cur))))
          (date-str (date->string date "~Y~m~d ~T"))
-         (last-data #?=(query-data *conn* "EUR.GBP" date 1 "1 hour"))
+         (last-data #?=(query-data *conn* (currency-pair-name
+                                           (trading-style-currency-pair *eur-gbp-1hour*))
+                                   date 1 (trading-style-bar-size *eur-gbp-1hour*)))
          (duration
           (if (zero? #?=(data-set-count last-data))
               "1 Y"
@@ -270,7 +284,9 @@
                       (time-difference
                        (date->time-utc date)
                        (date->time-utc (bar-date (car (data-set-rows last-data))))))))
-                #`",sec S"))))
+                (if (> sec 86400)
+                    "4 W"
+                    #`",sec S")))))
     (if (string=? #?=duration "3600 S")
         (sleep-and-update)
         (enqueue! *task-queue*
