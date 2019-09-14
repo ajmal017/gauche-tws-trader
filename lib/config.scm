@@ -1,7 +1,8 @@
 (define-module config
-  (export redis-host)
+  (export redis-host tws-host)
 )
 
 (select-module config)
 
-(define redis-host "localhost")
+(define redis-host "redis")
+(define tws-host "host.docker.internal")

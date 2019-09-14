@@ -10,7 +10,6 @@ services:
       - "2222"
     depends_on:
       - redis
-    network_mode: "host"
 
   redis:
     image: redis:alpine
@@ -18,7 +17,6 @@ services:
       - redisdata:/data
     ports:
       - "6379:6379"
-    network_mode: "host"
 
 volumes:
     redisdata:

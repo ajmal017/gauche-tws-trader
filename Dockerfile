@@ -1,5 +1,7 @@
 FROM practicalscheme/gauche
 
+# https://askubuntu.com/questions/939345/the-package-cache-file-is-corrupted-error
+RUN rm -rf /var/lib/apt/lists/*
 RUN apt-get update
 RUN apt-get install -y autoconf git
 

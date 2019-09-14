@@ -5,7 +5,7 @@ TWS_LFLAGS=-pthread -Wall -Wno-switch -Wpedantic -std=c++11
 LFLAGS=-luv $(LIBPATH) -lgauche-0.97
 LD_LIBRARY_PATH=$(shell gauche-config --sysarchdir)
 
-TWS_ROOT_DIR=./tws/twsapi/IBJts/source/cppclient
+TWS_ROOT_DIR=./tws/twsapi/source/cppclient
 TWS_BASE_SRC_DIR=${TWS_ROOT_DIR}/client
 TWS_CFLAGS=-I${TWS_BASE_SRC_DIR} -I${TWS_ROOT_DIR}
 
