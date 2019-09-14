@@ -246,7 +246,7 @@
     (inc! *request-id*)
     id))
 
-(tws-client-connect tws "localhost" 7497 0)
+(tws-client-connect tws tws-host 7497 0)
 (define *order-id* #f)
 (define (order-id!)
   (let ((id #?=*order-id*))
