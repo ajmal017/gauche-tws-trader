@@ -329,7 +329,7 @@
 (define (position-id-bump!)
   #?=(redis-incr *conn* "position-id"))
 
-(define *quantitiy-unit* 10000.0)
+(define *quantitiy-unit* 20000.0)       ; minimum size = 20K
 
 (define (close-position close-order)
   #?=close-order
@@ -374,10 +374,6 @@
           (position-id-bump!))
         (set! *positions* poss)))
   #?=*positions*
-
-  ;;; test test...
-  (order
-   "BUY" "EUR" "GBP" "IDEALPRO" 100000.0)
 
   (sleep-and-update)
 )
