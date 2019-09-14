@@ -312,6 +312,26 @@
 
 (define *task-queue* (make-mtqueue))
 
+(define (update-history style)
+  (let* ((date
+          (let ((cur #?=(current-date)))
+            (make-date 0 0 0
+                       (date-hour cur) (date-day cur)
+                       (date-month cur) (date-year cur)
+                       (date-zone-offset cur))))
+         (date-str (date->string date "~Y~m~d ~T")))
+    (tws-client-historical-data-request
+     tws #?=(request-id!)
+     (currency-pair-symbol (trading-style-currency-pair style))
+     "CASH"
+     (currency-pair-currency (trading-style-currency-pair style))
+     (trading-style-exchange style)
+     date-str
+     (trading-style-duration-for-query style)
+     (trading-style-bar-size style)
+     "MIDPOINT")
+    ))
+
 (define (sleep-and-update)
   (let ((min (date-minute (current-date))))
     (thread-start!
@@ -321,24 +341,7 @@
         #?="slept"
         (enqueue! *task-queue*
                   (lambda ()
-                    (let* ((date
-                            (let ((cur #?=(current-date)))
-                              (make-date 0 0 0
-                                         (date-hour cur) (date-day cur)
-                                         (date-month cur) (date-year cur)
-                                         (date-zone-offset cur))))
-                           (date-str (date->string date "~Y~m~d ~T")))
-                      (tws-client-historical-data-request
-                       tws #?=(request-id!)
-                       (currency-pair-symbol (trading-style-currency-pair *eur-gbp-1hour*))
-                       "CASH"
-                       (currency-pair-currency (trading-style-currency-pair *eur-gbp-1hour*))
-                       (trading-style-exchange *eur-gbp-1hour*)
-                       date-str
-                       (trading-style-duration-for-query *eur-gbp-1hour*)
-                       (trading-style-bar-size *eur-gbp-1hour*)
-                       "MIDPOINT")
-                      ))))))))
+                    (update-history *eur-gbp-1hour*))))))))
 
 (define *positions* ())
 (define (position-id)
