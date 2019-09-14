@@ -336,8 +336,8 @@
   ;;; (list 'close pos-idx price result gain)
   (let ((pos (get-position (cadr close-order))))
     (order (case (position-action pos)
-             (('sell) "BUY")
-             (('buy) "SELL"))
+             ((sell) "BUY")
+             ((buy) "SELL"))
            "EUR" "GBP" "IDEALPRO"
            *quantitiy-unit*)
     ))
