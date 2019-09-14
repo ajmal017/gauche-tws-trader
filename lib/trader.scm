@@ -51,6 +51,7 @@
    trading-style-duration-for-wait
    trading-style-duration-for-query
    trading-style-history-period
+   trading-style-min-period
    ))
 
 (select-module trader)
@@ -239,4 +240,5 @@
   duration-for-wait
   duration-for-query
   history-period
+  min-period
   )

@@ -263,6 +263,7 @@
    "3600 S"
    "3660 S"
    "1 Y"
+   "4 W"
    ))
 
 (define (on-next-valid-id id)
@@ -278,26 +279,36 @@
                                    date 1 (trading-style-bar-size *eur-gbp-1hour*)))
          (duration
           (if (zero? #?=(data-set-count last-data))
-              "1 Y"
+              (trading-style-history-period *eur-gbp-1hour*)
               (let ((sec
                      (time-second
                       (time-difference
                        (date->time-utc date)
                        (date->time-utc (bar-date (car (data-set-rows last-data))))))))
                 (if (> sec 86400)
-                    "4 W"
+                    (trading-style-min-period *eur-gbp-1hour*)
                     #`",sec S")))))
-    (if (string=? #?=duration "3600 S")
+    (if (string=? #?=duration (trading-style-duration-for-wait *eur-gbp-1hour*))
         (sleep-and-update)
         (enqueue! *task-queue*
                   (lambda ()
-                    (tws-client-historical-data-request tws (request-id!)
-                                                        "EUR" "CASH" "GBP" "IDEALPRO" date-str
-                                                        duration "1 hour" "MIDPOINT"))))))
+                    (tws-client-historical-data-request
+                     tws (request-id!)
+                     (currency-pair-symbol (trading-style-currency-pair *eur-gbp-1hour*))
+                     "CASH"
+                     (currency-pair-currency (trading-style-currency-pair *eur-gbp-1hour*))
+                     (trading-style-exchange *eur-gbp-1hour*)
+                     date-str
+                     duration
+                     (trading-style-bar-size *eur-gbp-1hour*)
+                     "MIDPOINT"))))))
 
 (define (on-historical-data req-id time open high low close volume count wap)
   (let ((date (string->date time "~Y~m~d  ~H:~M:~S"))) ; "20190830  22:00:00"
-    (add-data *conn* "EUR.GBP" "1 hour" date open close high low)))
+    (add-data *conn*
+              (currency-pair-name (trading-style-currency-pair *eur-gbp-1hour*))
+              (trading-style-bar-size *eur-gbp-1hour*)
+              date open close high low)))
 
 (define *task-queue* (make-mtqueue))
 
@@ -307,6 +318,7 @@
      (make-thread
       (lambda ()
         (sys-sleep #?=(* 60 (- 60 min)))
+        #?="slept"
         (enqueue! *task-queue*
                   (lambda ()
                     (let* ((date
@@ -316,10 +328,16 @@
                                          (date-month cur) (date-year cur)
                                          (date-zone-offset cur))))
                            (date-str (date->string date "~Y~m~d ~T")))
-                      (tws-client-historical-data-request tws #?=(request-id!)
-                                                          "EUR" "CASH" "GBP" "IDEALPRO"
-                                                          date-str
-                                                          "3660 S" "1 hour" "MIDPOINT")
+                      (tws-client-historical-data-request
+                       tws #?=(request-id!)
+                       (currency-pair-symbol (trading-style-currency-pair *eur-gbp-1hour*))
+                       "CASH"
+                       (currency-pair-currency (trading-style-currency-pair *eur-gbp-1hour*))
+                       (trading-style-exchange *eur-gbp-1hour*)
+                       date-str
+                       (trading-style-duration-for-query *eur-gbp-1hour*)
+                       (trading-style-bar-size *eur-gbp-1hour*)
+                       "MIDPOINT")
                       ))))))))
 
 (define *positions* ())
@@ -338,7 +356,9 @@
     (order (case (position-action pos)
              ((sell) "BUY")
              ((buy) "SELL"))
-           "EUR" "GBP" "IDEALPRO"
+           (currency-pair-symbol (trading-style-currency-pair *eur-gbp-1hour*))
+           (currency-pair-currency (trading-style-currency-pair *eur-gbp-1hour*))
+           (trading-style-exchange *eur-gbp-1hour*)
            *quantitiy-unit*)
     ))
 
@@ -352,7 +372,9 @@
   (order (case (position-action pos)
            ((sell) "SELL")
            ((buy) "BUY"))
-         "EUR" "GBP" "IDEALPRO"
+         (currency-pair-symbol (trading-style-currency-pair *eur-gbp-1hour*))
+         (currency-pair-currency (trading-style-currency-pair *eur-gbp-1hour*))
+         (trading-style-exchange *eur-gbp-1hour*)
          *quantitiy-unit*
          ))
 
