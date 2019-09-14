@@ -234,7 +234,8 @@ void GaucheAdapter::openOrderEnd() {
 
 void GaucheAdapter::winError( const std::string& str, int lastError) {}
 void GaucheAdapter::connectionClosed() {
-	Scm_Printf(SCM_CURERR, "Connection Closed\n");
+  printf("Connection Closed\n");
+	// Scm_Printf(SCM_CURERR, "Connection Closed\n");
 }
 
 //! [updateaccountvalue]
