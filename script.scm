@@ -308,7 +308,7 @@
 
 (define *positions* ())
 (define (position-id)
-  (redis-get "position-id"))
+  (redis-get *conn* "position-id"))
 
 (define (position-id-bump!)
   #?=(redis-incr *conn* "position-id"))
@@ -334,8 +334,8 @@
   #?=(position->string pos)
 
   (order (case (position-action pos)
-           (('sell) "SELL")
-           (('buy) "BUY"))
+           ((sell) "SELL")
+           ((buy) "BUY"))
          "EUR" "GBP" "IDEALPRO"
          *quantitiy-unit*
          ))
