@@ -3,6 +3,8 @@
   (use gauche.record)
   (use srfi-19)
 
+  (use util.match)
+
   (export
    min-line/range/step
    min-line/range
@@ -13,6 +15,7 @@
    bar-high
    bar-open
    bar-close
+   make-poly
    poly?
    poly-a
    poly-b
@@ -34,6 +37,7 @@
    position-lower-limit
    position->string
    position-info
+   deserialize-position
    make-pos-info
    pos-info-gain
    pos-info-long-trend-poly
@@ -198,12 +202,31 @@
 
   (list 'position
         (position-index pos)
-        (date->string (position-date pos) "\"~4\"")
+        (date->string (position-date pos) "~4")
         (position-action pos)
         (position-price pos)
         (serialize-limit (position-upper-limit pos))
         (serialize-limit (position-lower-limit pos))
         (pos-info->string (position-info pos))))
+
+(define (deserialize-position ser)
+  (define (deserialize-limit lim)
+    (match lim
+           ((? number? num) num)
+           (('poly a b c) (make-poly a b c))))
+
+  (match ser
+         (('position pos-id
+                     date-str
+                     action
+                     price
+                     upper-limit
+                     lower-limit
+                     info)
+          (make-position pos-id (string->date date-str "~Y-~m-~dT~H:~M:~S~z") action price
+                         (deserialize-limit upper-limit)
+                         (deserialize-limit lower-limit)
+                         (deserialize-pos-info info)))))
 
 (define (pos-info->string info)
   (list 'pos-info
@@ -212,6 +235,17 @@
         (pos-info-long-trend-error info)
         (poly->string (pos-info-short-trend-poly info))
         (pos-info-short-trend-error info)))
+
+(define (deserialize-pos-info ser)
+  (match ser
+         (('pos-info (? number? gain)
+                     ('poly a1 b1 c1)
+                     (? number? err1)
+                     ('poly a2 b2 c2)
+                     (? number? err2))
+          (make-pos-info gain
+                         (make-poly a1 b1 c1) err1
+                         (make-poly a2 b2 c2) err2))))
 
 (define-record-type pos-info #t #t
   gain
