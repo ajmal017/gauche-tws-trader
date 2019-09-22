@@ -51,7 +51,7 @@
                   (val (last-distance short-trend price data))
                   (gain (last-distance long-trend price data)))
              (and (> gain 0) (< val 0)
-                  (make-position index date 'sell price (+ price 0.0003) long-trend
+                  (make-position index date 'sell price (+ price 0.0001) long-trend
                                  (make-pos-info gain
                                                 long-trend long-err
                                                 short-trend short-err))))))))
@@ -67,7 +67,7 @@
                   (val (last-distance short-trend price data))
                   (gain (- (last-distance long-trend price data))))
              (and (> gain 0) (> val 0)
-                  (make-position index date 'buy price long-trend (- price 0.0003)
+                  (make-position index date 'buy price long-trend (- price 0.0001)
                                  (make-pos-info gain
                                                 long-trend long-err
                                                 short-trend short-err))))))))
