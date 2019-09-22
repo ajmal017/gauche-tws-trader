@@ -267,8 +267,18 @@
    "4 W"
    ))
 
-(define (on-next-valid-id id)
-  (set! *order-id* id)
+(define *eur-gbp-15min*
+  (make-trading-style
+   *eur-gbp*
+   "IDEALPRO"
+   "15 minutes"
+   "900 S"
+   "960 S"
+   "3 M"
+   "1 W"
+   ))
+
+(define (query-history style)
   (let* ((date
           (let ((cur (current-date)))
             (make-date 0 0 0
@@ -303,6 +313,10 @@
                      duration
                      (trading-style-bar-size *eur-gbp-1hour*)
                      "MIDPOINT"))))))
+
+(define (on-next-valid-id id)
+  (set! *order-id* id)
+  (enqueue! *task-queue* (^[] (query-history *eur-gbp-1hour*))))
 
 (define (on-historical-data req-id time open high low close volume count wap)
   (let ((date (string->date time "~Y~m~d  ~H:~M:~S"))) ; "20190830  22:00:00"
