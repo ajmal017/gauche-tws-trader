@@ -278,51 +278,56 @@
    "1 W"
    ))
 
+(define *trading-style-table* (make-hash-table))
+
 (define (query-history style)
-  (let* ((date
-          (let ((cur (current-date)))
-            (make-date 0 0 0
-                       (date-hour cur) (date-day cur) (date-month cur) (date-year cur)
-                       (date-zone-offset cur))))
-         (date-str (date->string date "~Y~m~d ~T"))
-         (last-data #?=(query-data *conn* (currency-pair-name
-                                           (trading-style-currency-pair *eur-gbp-1hour*))
-                                   date 1 (trading-style-bar-size *eur-gbp-1hour*)))
-         (duration
-          (if (zero? #?=(data-set-count last-data))
-              (trading-style-history-period *eur-gbp-1hour*)
-              (let ((sec
-                     (time-second
-                      (time-difference
-                       (date->time-utc date)
-                       (date->time-utc (bar-date (car (data-set-rows last-data))))))))
-                (if (> sec 86400)
-                    (trading-style-min-period *eur-gbp-1hour*)
-                    #`",sec S")))))
-    (if (string=? #?=duration (trading-style-duration-for-wait *eur-gbp-1hour*))
-        (sleep-and-update)
-        (enqueue! *task-queue*
-                  (lambda ()
-                    (tws-client-historical-data-request
-                     tws (request-id!)
-                     (currency-pair-symbol (trading-style-currency-pair *eur-gbp-1hour*))
-                     "CASH"
-                     (currency-pair-currency (trading-style-currency-pair *eur-gbp-1hour*))
-                     (trading-style-exchange *eur-gbp-1hour*)
-                     date-str
-                     duration
-                     (trading-style-bar-size *eur-gbp-1hour*)
-                     "MIDPOINT"))))))
+  (let ((req-id (request-id!)))
+    (hash-table-put! *trading-style-table* req-id style)
+    (let* ((date
+            (let ((cur (current-date)))
+              (make-date 0 0 0
+                         (date-hour cur) (date-day cur) (date-month cur) (date-year cur)
+                         (date-zone-offset cur))))
+           (date-str (date->string date "~Y~m~d ~T"))
+           (last-data #?=(query-data *conn* (currency-pair-name
+                                             (trading-style-currency-pair style))
+                                     date 1 (trading-style-bar-size style)))
+           (duration
+            (if (zero? #?=(data-set-count last-data))
+                (trading-style-history-period style)
+                (let ((sec
+                       (time-second
+                        (time-difference
+                         (date->time-utc date)
+                         (date->time-utc (bar-date (car (data-set-rows last-data))))))))
+                  (if (> sec 86400)
+                      (trading-style-min-period style)
+                      #`",sec S")))))
+      (if (string=? #?=duration (trading-style-duration-for-wait style))
+          (sleep-and-update)
+          (enqueue! *task-queue*
+                    (lambda ()
+                      (tws-client-historical-data-request
+                       tws req-id
+                       (currency-pair-symbol (trading-style-currency-pair style))
+                       "CASH"
+                       (currency-pair-currency (trading-style-currency-pair style))
+                       (trading-style-exchange style)
+                       date-str
+                       duration
+                       (trading-style-bar-size style)
+                       "MIDPOINT")))))))
 
 (define (on-next-valid-id id)
   (set! *order-id* id)
   (enqueue! *task-queue* (^[] (query-history *eur-gbp-1hour*))))
 
 (define (on-historical-data req-id time open high low close volume count wap)
-  (let ((date (string->date time "~Y~m~d  ~H:~M:~S"))) ; "20190830  22:00:00"
+  (let ((style (hash-table-get *trading-style-table* req-id))
+        (date (string->date time "~Y~m~d  ~H:~M:~S"))) ; "20190830  22:00:00"
     (add-data *conn*
-              (currency-pair-name (trading-style-currency-pair *eur-gbp-1hour*))
-              (trading-style-bar-size *eur-gbp-1hour*)
+              (currency-pair-name (trading-style-currency-pair style))
+              (trading-style-bar-size style)
               date open close high low)))
 
 (define *task-queue* (make-mtqueue))
@@ -390,13 +395,14 @@
   exchange)
 
 (define (serialize-order-data dat)
-  (list (order-data-order-id dat)
+  (list 'order-data
+        (order-data-order-id dat)
         (order-data-symbol dat)
         (order-data-currency dat)
         (order-data-exchange dat)))
 
 (define (deserialize-order-data ser)
-  (apply make-order-data ser))
+  (apply make-order-data (cdr ser)))
 
 (define (get-position pos-id)
   (let ((pos-str (redis-hget *conn* "positions" pos-id)))
@@ -439,13 +445,14 @@
 
 (define (on-historical-data-end req-id start-date end-date)
   #?=`(,req-id ,start-date ,end-date)
-  (let-values (((pos poss) (inspect *conn* *eur-gbp-1hour* (current-date) *positions* (position-id) close-position)))
-    (if pos
-        (begin
-          (set! *positions* (cons pos poss))
-          (open-position pos)
-          (position-id-bump!))
-        (set! *positions* poss)))
+  (let ((style (hash-table-get *trading-style-table* req-id)))
+    (let-values (((pos poss) (inspect *conn* style (current-date) *positions* (position-id) close-position)))
+      (if pos
+          (begin
+            (set! *positions* (cons pos poss))
+            (open-position pos)
+            (position-id-bump!))
+          (set! *positions* poss))))
   #?=*positions*
 
   (sleep-and-update)
