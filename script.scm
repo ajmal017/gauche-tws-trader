@@ -271,7 +271,7 @@
   (make-trading-style
    *eur-gbp*
    "IDEALPRO"
-   "15 minutes"
+   "15 mins"
    "900 S"
    "960 S"
    "3 M"
@@ -320,7 +320,7 @@
 
 (define (on-next-valid-id id)
   (set! *order-id* id)
-  (enqueue! *task-queue* (^[] (query-history *eur-gbp-1hour*))))
+  (enqueue! *task-queue* (^[] (query-history *eur-gbp-15min*))))
 
 (define (on-historical-data req-id time open high low close volume count wap)
   (let ((style (hash-table-get *trading-style-table* req-id))
