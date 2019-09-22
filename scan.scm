@@ -12,6 +12,19 @@
 
 ;; Function: make-date nanosecond second minute hour day month year zone-offset
 
+(define *eur-gbp* (make-currency-pair "EUR" "GBP"))
+
+(define *eur-gbp-1hour*
+  (make-trading-style
+   *eur-gbp*
+   "IDEALPRO"
+   "1 hour"
+   "3600 S"
+   "3660 S"
+   "1 Y"
+   "4 W"
+   ))
+
 (define (main . args)
   (let* ((d1 (make-date 0 0 15 0 1 10 2018 0))
          (t1 (date->time-utc d1))
@@ -23,7 +36,7 @@
                (positions ()))
       (if (time<? t t2)
           (let ((date (time-utc->date t)))
-            (let-values (((pos poss) (inspect *conn* date positions index print)))
+            (let-values (((pos poss) (inspect *conn* *eur-gbp-1hour* date positions index print)))
               (when pos
                 (print (date->string (position-date pos) "http://localhost:2222/~Y/~m/~d/~H/~M"))
                 (print (position->string pos)))
