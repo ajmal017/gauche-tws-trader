@@ -1,5 +1,6 @@
 (use sxml.tools)
 (use gauche.threads)
+(use gauche.record)
 (use data.queue)
 (use srfi-19)
 
@@ -365,33 +366,66 @@
            *quantitiy-unit*)
     ))
 
-(define (get-position id)
-  (let ((pos-str (redis-hget *conn* "positions" id)))
-    (apply make-position #?=(read-from-string pos-str))))
+;; positions : pos-id -> [position]
+;; order-data : pos-id -> [order-id symbol currentcy exchange]
+
+(define-record-type order-data #t #t
+  order-id
+  symbol
+  currency
+  exchange)
+
+(define (serialize-order-data dat)
+  (list (order-data-order-id dat)
+        (order-data-symbol dat)
+        (order-data-currency dat)
+        (order-data-exchange dat)))
+
+(define (deserialize-order-data ser)
+  (apply make-order-data ser))
+
+(define (get-position pos-id)
+  (let ((pos-str (redis-hget *conn* "positions" pos-id)))
+    (deserialize-position (read-from-string pos-str))))
+
+(define (get-contract pos-id)
+  (let ((cont (redis-hget *conn* "contracts" pos-id)))
+    ))
+
+(define (save-position pos-id ord-id symbol currecy exchange action quantity)
+  (redis-hadd *conn* pos-id
+              (write-to-string (position->string pos))))
 
 (define (open-position pos)
   #?=(position->string pos)
 
+  (let ((sym (currency-pair-symbol (trading-style-currency-pair *eur-gbp-1hour*)))
+        (cur (currency-pair-currency (trading-style-currency-pair *eur-gbp-1hour*)))
+        (exc (trading-style-exchange *eur-gbp-1hour*))
+        (qty *quantitiy-unit*))
   (order (case (position-action pos)
            ((sell) "SELL")
            ((buy) "BUY"))
-         (currency-pair-symbol (trading-style-currency-pair *eur-gbp-1hour*))
-         (currency-pair-currency (trading-style-currency-pair *eur-gbp-1hour*))
-         (trading-style-exchange *eur-gbp-1hour*)
-         *quantitiy-unit*
-         ))
+         sym cur exc qty
+         (lambda (oid)
+           (save-position (position-index pos) oid symbol currecy exchange action quantity)
+           )
+         )))
 
-(define (order action symbol currecy exchange quantity)
+(define (orders-key symbol currecy exchange)
+  #`"orders:,|symbol|:,|currecy|:,|exchange|")
+
+(define (order action symbol currecy exchange quantity proc)
   (enqueue! *task-queue*
             (lambda ()
-              (tws-client-place-fx-market-order
-               tws #?=(order-id!) #?=symbol currecy exchange
-               #?=action
-               quantity))))
+              (let ((oid (order-id!)))
+                (tws-client-place-fx-market-order
+                 tws oid symbol currecy exchange action quantity)
+                (proc oid)))))
 
 (define (on-historical-data-end req-id start-date end-date)
   #?=`(,req-id ,start-date ,end-date)
-  (let-values (((pos poss) (inspect *conn* (current-date) *positions* (position-id) close-position)))
+  (let-values (((pos poss) (inspect *conn* *eur-gbp-1hour* (current-date) *positions* (position-id) close-position)))
     (if pos
         (begin
           (set! *positions* (cons pos poss))

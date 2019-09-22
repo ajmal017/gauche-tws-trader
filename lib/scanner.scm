@@ -114,8 +114,10 @@
                         (loop (cdr src) dest))
                       (loop (cdr src) (cons pos dest)))))))))
 
-(define (inspect conn date positions index close-proc)
-  (let* ((data (query-data conn "EUR.GBP" date *data-count* "1 hour"))
+(define (inspect conn style date positions index close-proc)
+  (let* ((cur (currency-pair-name (trading-style-currency-pair style)))
+         (bar-size (trading-style-bar-size style))
+         (data (query-data conn cur date *data-count* bar-size))
          (actual-date (last-date data)))
     (if (> (time-second (time-difference (date->time-utc actual-date) (date->time-utc date)))
            (* 15 60))
