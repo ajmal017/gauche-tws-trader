@@ -6,30 +6,28 @@
 
 (define *positions* (make-hash-table))
 
+(define *thresholds* '(0.0001 0.0005 0.001 0.005))
+(define *total-with-threadholds* (make-hash-table))
+
 (let loop ((total-gain 0))
   (let ((line (read)))
     (if (eof-object? line)
-        'done
+        (begin
+          (print (hash-table->alist *total-with-threadholds*)))
         (match line
-               (('position pos-idx date action price lim1 lim2 ('pos-info gain poly1 err1 poly2 err2))
-                (hash-table-put! *positions* pos-idx
-                                 (make-position pos-idx
-                                                (string->date date "~Y-~m-~dT~H:~M:~SZ")
-                                                action
-                                                price
-                                                lim1
-                                                lim2
-                                                (make-pos-info gain poly1 err1 poly2 err2)))
-                (loop total-gain))
-               (('close pos-idx price result gain)
+               (('position _ ...)
+                (let ((pos (deserialize-position line)))
+                  (hash-table-put! *positions* (position-index pos) pos)
+                  (loop total-gain)))
+               (('close total ('close pos-idx price result gain))
                 (let* ((pos (hash-table-get *positions* pos-idx))
                        (info (position-info pos)))
-                  (print #`",(pos-info-long-trend-error info) ,(pos-info-short-trend-error info) ,(pos-info-gain info)")
-                  (loop (+ total-gain gain)))
-                  )
-               (else (loop total-gain))
-               )
-
-
-        ))
-  )
+                  (for-each (lambda (thr)
+                              (if (> gain thr)
+                                  (hash-table-put! *total-with-threadholds* thr
+                                                   (+ (hash-table-get *total-with-threadholds* thr 0)
+                                                      gain))))
+                            *thresholds*)
+                  (print #`",(pos-info-gain info) ,gain")
+                  (loop (+ total-gain gain))))
+               (else (loop total-gain))))))
