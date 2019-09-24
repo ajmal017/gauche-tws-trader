@@ -60,7 +60,7 @@
               (if (and pos
                        (> (pos-info-gain (position-info pos)) 0.0001)) ; > 1 pips
                   (begin
-                    (write (position->string pos))(newline)
+                    (write (serialize-position pos))(newline)
                     (loop (+ index 1) (add-duration t fifteen-mins) (cons pos poss)))
                   (loop (+ index 1) (add-duration t fifteen-mins) poss))
               ))

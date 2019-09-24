@@ -20,7 +20,7 @@
    poly-a
    poly-b
    poly-c
-   poly->string
+   serialize-poly
    distance-to-line
    make-data-set
    data-set-highest
@@ -35,7 +35,7 @@
    position-price
    position-upper-limit
    position-lower-limit
-   position->string
+   serialize-position
    position-info
    deserialize-position
    make-pos-info
@@ -75,7 +75,7 @@
 
 (define-record-type poly #t #t a b c)
 
-(define (poly->string poly)
+(define (serialize-poly poly)
   (list 'poly (poly-a poly) (poly-b poly) (poly-c poly)))
 
 (define (make-line-poly x0 y0 x1 y1)
@@ -194,10 +194,10 @@
   lower-limit
   info)
 
-(define (position->string pos)
+(define (serialize-position pos)
   (define (serialize-limit lim)
     (if (poly? lim)
-        (poly->string lim)
+        (serialize-poly lim)
         lim))
 
   (list 'position
@@ -207,7 +207,7 @@
         (position-price pos)
         (serialize-limit (position-upper-limit pos))
         (serialize-limit (position-lower-limit pos))
-        (pos-info->string (position-info pos))))
+        (serialize-pos-info (position-info pos))))
 
 (define (deserialize-position ser)
   (define (deserialize-limit lim)
@@ -228,12 +228,12 @@
                          (deserialize-limit lower-limit)
                          (deserialize-pos-info info)))))
 
-(define (pos-info->string info)
+(define (serialize-pos-info info)
   (list 'pos-info
         (pos-info-gain info)
-        (poly->string (pos-info-long-trend-poly info))
+        (serialize-poly (pos-info-long-trend-poly info))
         (pos-info-long-trend-error info)
-        (poly->string (pos-info-short-trend-poly info))
+        (serialize-poly (pos-info-short-trend-poly info))
         (pos-info-short-trend-error info)))
 
 (define (deserialize-pos-info ser)

@@ -414,10 +414,10 @@
 
 (define (save-position pos-id ord-id symbol currecy exchange action quantity)
   (redis-hadd *conn* pos-id
-              (write-to-string (position->string pos))))
+              (write-to-string (serialize-position pos))))
 
 (define (open-position pos)
-  #?=(position->string pos)
+  #?=(serialize-position pos)
 
   (let ((sym (currency-pair-symbol (trading-style-currency-pair *eur-gbp-1hour*)))
         (cur (currency-pair-currency (trading-style-currency-pair *eur-gbp-1hour*)))

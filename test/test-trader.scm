@@ -45,7 +45,7 @@
                                                  (make-poly 3.4 5.6 6.7)
                                                  3.456)
                                   )))
-          (let ((ser (position->string pos)))
+          (let ((ser (serialize-position pos)))
             (match ser
                    (('position 123
                                "1978-01-24T11:00:00+0900"
@@ -69,9 +69,9 @@
                                                  (make-poly 3.4 5.6 6.7)
                                                  3.456)
                                   ))
-              (serialized (position->string pos))
+              (serialized (serialize-position pos))
               (deserialized (deserialize-position serialized))
-              (serialized-again (position->string deserialized)))
+              (serialized-again (serialize-position deserialized)))
          (match serialized-again
                 (('position 123
                             "1978-01-24T11:00:00+0900"
