@@ -25,6 +25,11 @@
                 (head2 y))
                x)))
 
+(test* "..." '(1 2 3)
+       (match '(aho 1 2 3)
+              ((x rest ...)
+               rest)))
+
 (test-section "position")
 
 (test* "make-position" #t
