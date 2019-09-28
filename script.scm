@@ -333,15 +333,17 @@
 (define *task-queue* (make-mtqueue))
 
 (define (update-history style)
-  (let* ((date
-          (let ((cur #?=(current-date)))
+  (let* ((req-id (request-id!))
+         (date
+          (let ((cur (current-date)))
             (make-date 0 0 0
                        (date-hour cur) (date-day cur)
                        (date-month cur) (date-year cur)
                        (date-zone-offset cur))))
          (date-str (date->string date "~Y~m~d ~T")))
+    (hash-table-put! *trading-style-table* req-id style)
     (tws-client-historical-data-request
-     tws #?=(request-id!)
+     tws req-id
      (currency-pair-symbol (trading-style-currency-pair style))
      "CASH"
      (currency-pair-currency (trading-style-currency-pair style))
@@ -357,80 +359,77 @@
     (thread-start!
      (make-thread
       (lambda ()
-        (sys-sleep #?=(* 60 (- 60 min)))
-        #?="slept"
-        (enqueue! *task-queue*
+        (let* ((sec (* 60 (modulo (- 60 min) 15))) ; 15 min
+               (count (quotient sec 2)))
+          (let loop ((count count))
+            (if (zero? count)
+                (enqueue! *task-queue*
                   (lambda ()
-                    (update-history *eur-gbp-1hour*))))))))
+                    (update-history *eur-gbp-15min*)))
+                (begin
+                  (sys-sleep 2)
+                  (tws-client-request-current-time tws)
+                  (loop (- count 1)))))))))))
 
-(define *positions* ())
+(define (get-all-positions)
+  (let ((positions (redis-hvals *conn* "positions")))
+    (if (pair? positions)
+        (map (lambda (str)
+               (deserialize-position (read-from-string str)))
+             positions)
+        '())))
+
 (define (position-id)
   (redis-get *conn* "position-id"))
 
 (define (position-id-bump!)
-  #?=(redis-incr *conn* "position-id"))
+  (redis-incr *conn* "position-id"))
 
 (define *quantitiy-unit* 20000.0)       ; minimum size = 20K
 
 (define (close-position close-order)
   #?=close-order
   ;;; (list 'close pos-idx price result gain)
-  (let ((pos (get-position (cadr close-order))))
+  (let* ((pos-id (cadr close-order))
+         (pos (get-position pos-id))
+         (dat (get-order-data pos-id)))
     (order (case (position-action pos)
              ((sell) "BUY")
              ((buy) "SELL"))
-           (currency-pair-symbol (trading-style-currency-pair *eur-gbp-1hour*))
-           (currency-pair-currency (trading-style-currency-pair *eur-gbp-1hour*))
-           (trading-style-exchange *eur-gbp-1hour*)
-           *quantitiy-unit*)
+           (order-data-symbol dat)
+           (order-data-currency dat)
+           (order-data-exchange dat)
+           (order-data-quantity dat))
     ))
 
 ;; positions : pos-id -> [position]
 ;; order-data : pos-id -> [order-id symbol currentcy exchange]
 
-(define-record-type order-data #t #t
-  order-id
-  symbol
-  currency
-  exchange)
-
-(define (serialize-order-data dat)
-  (list 'order-data
-        (order-data-order-id dat)
-        (order-data-symbol dat)
-        (order-data-currency dat)
-        (order-data-exchange dat)))
-
-(define (deserialize-order-data ser)
-  (apply make-order-data (cdr ser)))
-
 (define (get-position pos-id)
   (let ((pos-str (redis-hget *conn* "positions" pos-id)))
     (deserialize-position (read-from-string pos-str))))
 
-(define (get-contract pos-id)
-  (let ((cont (redis-hget *conn* "contracts" pos-id)))
-    ))
+(define (get-order-data pos-id)
+  (let ((ser (redis-hget *conn* "order-data" pos-id)))
+    (deserialize-order-data (read-from-string ser))))
 
-(define (save-position pos-id ord-id symbol currecy exchange action quantity)
-  (redis-hadd *conn* pos-id
-              (write-to-string (serialize-position pos))))
+(define (save-position pos ord)
+  (redis-hadd *conn* "positions" pos-id (write-to-string (serialize-position pos)))
+  (redis-hadd *conn* "order-data" pos-id (write-to-string (serialize-order-data ord))))
 
-(define (open-position pos)
+(define (open-position style pos)
   #?=(serialize-position pos)
 
-  (let ((sym (currency-pair-symbol (trading-style-currency-pair *eur-gbp-1hour*)))
-        (cur (currency-pair-currency (trading-style-currency-pair *eur-gbp-1hour*)))
-        (exc (trading-style-exchange *eur-gbp-1hour*))
+  (let ((sym (currency-pair-symbol (trading-style-currency-pair style)))
+        (cur (currency-pair-currency (trading-style-currency-pair style)))
+        (exc (trading-style-exchange style))
         (qty *quantitiy-unit*))
   (order (case (position-action pos)
            ((sell) "SELL")
            ((buy) "BUY"))
          sym cur exc qty
          (lambda (oid)
-           (save-position (position-index pos) oid symbol currecy exchange action quantity)
-           )
-         )))
+           (save-position pos (make-order-data oid symbol currecy exchange))))))
 
 (define (orders-key symbol currecy exchange)
   #`"orders:,|symbol|:,|currecy|:,|exchange|")
@@ -446,17 +445,16 @@
 (define (on-historical-data-end req-id start-date end-date)
   #?=`(,req-id ,start-date ,end-date)
   (let ((style (hash-table-get *trading-style-table* req-id)))
-    (let-values (((pos poss) (inspect *conn* style (current-date) *positions* (position-id) close-position)))
-      (if pos
-          (begin
-            (set! *positions* (cons pos poss))
-            (open-position pos)
-            (position-id-bump!))
-          (set! *positions* poss))))
-  #?=*positions*
+    (let-values (((pos poss) (inspect *conn* style (current-date) (get-all-positions) (position-id) close-position)))
+      (when pos
+            (open-position style pos)
+            (position-id-bump!))))
 
   (sleep-and-update)
 )
+
+(define (on-current-time time)
+  )
 
 (thread-start! 
  (make-thread
