@@ -81,3 +81,14 @@
                                        ('poly 1.3 2.5 3.6) 1.234
                                        ('poly 3.4 5.6 6.7) 3.456))
                  #t))))
+
+(test* "serialize-order-data" '(order-data 123 "EUR" "GBP" "IDEALPRO" 12345)
+       (serialize-order-data (make-order-data 123 "EUR" "GBP" "IDEALPRO" 12345)))
+
+(test* "deserialize-order-data" '(123 "EUR" "GBP" "IDEALPRO" 12345)
+       (let ((dat (deserialize-order-data
+                   (serialize-order-data (make-order-data 123 "EUR" "GBP" "IDEALPRO" 12345)))))
+       (map (lambda (prod) (prod dat))
+            (list order-data-order-id
+                  order-data-symbol order-data-currency order-data-exchange
+                  order-data-quantity))))

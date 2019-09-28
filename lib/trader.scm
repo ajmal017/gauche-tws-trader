@@ -56,6 +56,14 @@
    trading-style-duration-for-query
    trading-style-history-period
    trading-style-min-period
+   make-order-data
+   serialize-order-data
+   deserialize-order-data
+   order-data-order-id
+   order-data-symbol
+   order-data-currency
+   order-data-exchange
+   order-data-quantity
    ))
 
 (select-module trader)
@@ -276,3 +284,22 @@
   history-period
   min-period
   )
+
+(define-record-type order-data #t #t
+  order-id
+  symbol
+  currency
+  exchange
+  quantity)
+
+(define (serialize-order-data ord)
+  `(order-data ,(order-data-order-id ord)
+               ,(order-data-symbol ord)
+               ,(order-data-currency ord)
+               ,(order-data-exchange ord)
+               ,(order-data-quantity ord)))
+
+(define (deserialize-order-data ser)
+  (match ser
+         (('order-data rest ...)
+          (apply make-order-data rest))))
