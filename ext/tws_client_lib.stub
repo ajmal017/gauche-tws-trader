@@ -44,6 +44,10 @@
   ::<void>
   "cl->placeFxMarketOrder(orderId, symbol, currency, exchange, action, quantity);")
 
+(define-cproc tws-client-request-current-time (cl::<tws-client>)
+  ::<void>
+  "cl->requestCurrentTime();")
+
 ;; Local Variables:
 ;; mode: scheme
 ;; End:

@@ -137,6 +137,10 @@ void GaucheAdapter::placeFxMarketOrder(OrderId orderId, const char* symbol,
     m_pClient->placeOrder(orderId, contract, order);
 }
 
+void GaucheAdapter::requestCurrentTime() {
+  m_pClient->reqCurrentTime();
+}
+
 static void scm_error(ScmObj c) {
     ScmObj m = Scm_ConditionMessage(c);
     if (SCM_FALSEP(m)) {
@@ -163,7 +167,17 @@ void GaucheAdapter::nextValidId( OrderId orderId)
 }
 
 
-void GaucheAdapter::currentTime( long time) {}
+void GaucheAdapter::currentTime(long time) {
+	// Scm_Printf(SCM_CURERR, "Current Time: %ld\n", time);
+
+    ScmObj proc = SCM_UNDEFINED;
+    SCM_BIND_PROC(proc, "on-current-time", Scm_CurrentModule());
+    ScmEvalPacket epak;
+    ScmObj arglist = SCM_LIST1(Scm_MakeInteger(time));
+    if (Scm_Apply(proc, arglist, &epak) < 0) {
+        scm_error(epak.exception);
+    }
+}
 
 //! [error]
 void GaucheAdapter::error(int id, int errorCode, const std::string& errorString)
@@ -868,4 +882,5 @@ void GaucheAdapter::completedOrdersEnd() {
 // Local Variables:
 // mode: c++
 // tab-width: 4
+// c-basic-offset: 4
 // End:

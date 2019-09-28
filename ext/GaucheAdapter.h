@@ -38,6 +38,7 @@ public:
                                 const char* exchange, const char* queryTime,
                                 const char* duration, const char* barSize,
                                 const char* whatToShow);
+    void requestCurrentTime();
 
     void placeFxMarketOrder(OrderId orderId, const char* symbol,
                             const char* currency, const char* exchange,
@@ -73,4 +74,5 @@ private:
 // Local Variables:
 // mode: c++
 // tab-width: 4
+// c-basic-offset: 4
 // End:
