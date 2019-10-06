@@ -307,6 +307,7 @@
           (sleep-and-update)
           (enqueue! *task-queue*
                     (lambda ()
+                      #?='query-history
                       (tws-client-historical-data-request
                        tws req-id
                        (currency-pair-symbol (trading-style-currency-pair style))
@@ -342,6 +343,7 @@
                        (date-zone-offset cur))))
          (date-str (date->string date "~Y~m~d ~T")))
     (hash-table-put! *trading-style-table* req-id style)
+    #?='update-history
     (tws-client-historical-data-request
      tws req-id
      (currency-pair-symbol (trading-style-currency-pair style))
@@ -359,7 +361,10 @@
     (thread-start!
      (make-thread
       (lambda ()
-        (let* ((sec (* 60 (modulo (- 60 min) 15))) ; 15 min
+        (let* ((sec (* 60 (let ((rest (modulo (- 60 min) 15)))
+                            (if (zero? rest)
+                                15
+                                rest)))) ; 15 min
                (count (quotient sec 2)))
           (let loop ((count count))
             (if (zero? count)
@@ -445,7 +450,8 @@
 (define (on-historical-data-end req-id start-date end-date)
   #?=`(,req-id ,start-date ,end-date)
   (let ((style (hash-table-get *trading-style-table* req-id)))
-    (let-values (((pos poss) (inspect *conn* style (current-date) (get-all-positions) (position-id) close-position)))
+    (let-values (((pos poss) (inspect *conn* style (current-date) (get-all-positions)
+                                      (position-id) close-position)))
       (when pos
             (open-position style pos)
             (position-id-bump!))))
