@@ -2,7 +2,7 @@ TARGET=gaucheadapter
 TARGET_STATIC_LIB=$(TARGET).a
 
 LFLAGS=-pthread -Wall -Wno-switch -Wpedantic -std=c++11
-ROOT_DIR=../tws/twsapi/source/cppclient
+ROOT_DIR=../tws/twsapi/IBJts/source/cppclient
 BASE_SRC_DIR=${ROOT_DIR}/client
 CFLAGS=-I${BASE_SRC_DIR} -I${ROOT_DIR} $(shell gauche-config -I)
 
