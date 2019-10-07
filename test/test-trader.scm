@@ -92,3 +92,28 @@
             (list order-data-order-id
                   order-data-symbol order-data-currency order-data-exchange
                   order-data-quantity))))
+
+(test* "latest-bar-closing-date" "2019-10-07T15:30:00Z"
+       (let* ((cur-date (make-date 0 0 35 15 7 10 2019 0))
+              (result (latest-bar-closing-date cur-date (make-time time-duration 0 (* 60 15)))))
+         (date->string result "~4")))
+
+(test* "latest-bar-closing-date" "2019-10-07T15:45:00Z"
+       (let* ((cur-date (make-date 0 0 45 15 7 10 2019 0))
+              (result (latest-bar-closing-date cur-date (make-time time-duration 0 (* 60 15)))))
+         (date->string result "~4")))
+
+(test* "latest-bar-closing-date" "2019-10-07T15:00:00Z"
+       (let* ((cur-date (make-date 0 0 0 15 7 10 2019 0))
+              (result (latest-bar-closing-date cur-date (make-time time-duration 0 (* 60 15)))))
+         (date->string result "~4")))
+
+(test* "latest-bar-closing-date" "2019-10-07T15:00:00Z"
+       (let* ((cur-date (make-date 0 0 20 15 7 10 2019 0))
+              (result (latest-bar-closing-date cur-date (make-time time-duration 0 (* 60 60)))))
+         (date->string result "~4")))
+
+(test* "latest-bar-closing-date" "2019-10-07T15:00:00+0200"
+       (let* ((cur-date (make-date 0 0 20 15 7 10 2019 (* 2 60 60)))
+              (result (latest-bar-closing-date cur-date (make-time time-duration 0 (* 60 60)))))
+         (date->string result "~4")))

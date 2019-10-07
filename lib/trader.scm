@@ -64,6 +64,7 @@
    order-data-currency
    order-data-exchange
    order-data-quantity
+   latest-bar-closing-date
    ))
 
 (select-module trader)
@@ -303,3 +304,11 @@
   (match ser
          (('order-data rest ...)
           (apply make-order-data rest))))
+
+(define (latest-bar-closing-date date duration)
+  (let* ((t (date->time-utc date))
+         (tz (date-zone-offset date))
+         (t-sec (time-second t))
+         (mod (modulo t-sec (time-second duration)))
+         (sec (- t-sec mod)))
+    (time-utc->date (make-time time-utc 0 sec) tz)))
