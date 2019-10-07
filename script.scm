@@ -283,11 +283,7 @@
 (define (query-history style)
   (let ((req-id (request-id!)))
     (hash-table-put! *trading-style-table* req-id style)
-    (let* ((date
-            (let ((cur (current-date)))
-              (make-date 0 0 0
-                         (date-hour cur) (date-day cur) (date-month cur) (date-year cur)
-                         (date-zone-offset cur))))
+    (let* ((date (latest-bar-closing-date (current-date) (make-time time-duration 0 (* 60 15))))
            (date-str (date->string date "~Y~m~d ~T"))
            (last-data #?=(query-data *conn* (currency-pair-name
                                              (trading-style-currency-pair style))
@@ -335,12 +331,7 @@
 
 (define (update-history style)
   (let* ((req-id (request-id!))
-         (date
-          (let ((cur (current-date)))
-            (make-date 0 0 0
-                       (date-hour cur) (date-day cur)
-                       (date-month cur) (date-year cur)
-                       (date-zone-offset cur))))
+         (date #?=(latest-bar-closing-date (current-date) (make-time time-duration 0 (* 60 15))))
          (date-str (date->string date "~Y~m~d ~T")))
     (hash-table-put! *trading-style-table* req-id style)
     #?='update-history
