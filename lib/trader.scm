@@ -56,6 +56,7 @@
    trading-style-duration-for-query
    trading-style-history-period
    trading-style-min-period
+   trading-style-bar-time-duration
    make-order-data
    serialize-order-data
    deserialize-order-data
@@ -65,6 +66,8 @@
    order-data-exchange
    order-data-quantity
    latest-bar-closing-date
+   previous-bar-closing-date
+   next-bar-closing-date
    ))
 
 (select-module trader)
@@ -300,15 +303,37 @@
                ,(order-data-exchange ord)
                ,(order-data-quantity ord)))
 
+(define (trading-style-bar-time-duration style)
+  (match (trading-style-bar-size style)
+         ("15 mins" (make-time time-duration 0 (* 60 15)))
+         ("1 hour" (make-time time-duration 0 (* 60 60)))))
+
+
 (define (deserialize-order-data ser)
   (match ser
          (('order-data rest ...)
           (apply make-order-data rest))))
 
-(define (latest-bar-closing-date date duration)
-  (let* ((t (date->time-utc date))
-         (tz (date-zone-offset date))
-         (t-sec (time-second t))
+(define (latest-bar-closing-date* t tz duration)
+  (let* ((t-sec (time-second t))
          (mod (modulo t-sec (time-second duration)))
          (sec (- t-sec mod)))
     (time-utc->date (make-time time-utc 0 sec) tz)))
+
+(define (latest-bar-closing-date date style)
+  (let* ((duration (trading-style-bar-time-duration style))
+         (t (date->time-utc date))
+         (tz (date-zone-offset date)))
+    (latest-bar-closing-date* t tz duration)))
+
+(define (previous-bar-closing-date date style)
+  (let* ((duration (trading-style-bar-time-duration style))
+         (t (subtract-duration (date->time-utc date) duration))
+         (tz (date-zone-offset date)))
+    (latest-bar-closing-date* t tz duration)))
+
+(define (next-bar-closing-date date style)
+  (let* ((duration (trading-style-bar-time-duration style))
+         (t (add-duration (date->time-utc date) duration))
+         (tz (date-zone-offset date)))
+    (latest-bar-closing-date* t tz duration)))

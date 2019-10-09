@@ -14,6 +14,7 @@
 (use trader)
 (use query)
 (use scanner)
+(use position)
 
 (use redis)
 
@@ -23,7 +24,7 @@
 ;; Application
 ;;
 
-(define *conn* (redis-open redis-host 6379))
+(define *conn* (redis-open redis-host redis-port))
 #?=*conn*
 
 (define (make-bar-from-row row chart-width half-bar-width bar-width count index transform-y)
@@ -239,7 +240,7 @@
 
 ;;;;;;;;;;;;;;
 
-(define tws (make-tws-client))
+(define *tws* (make-tws-client))
 
 (define *request-id* 4000)
 (define (request-id!)
@@ -247,7 +248,7 @@
     (inc! *request-id*)
     id))
 
-(tws-client-connect tws tws-host 7497 0)
+(tws-client-connect *tws* tws-host tws-port tws-client-id)
 (define *order-id* #f)
 (define (order-id!)
   (let ((id #?=*order-id*))
@@ -283,8 +284,8 @@
 (define (query-history style)
   (let ((req-id (request-id!)))
     (hash-table-put! *trading-style-table* req-id style)
-    (let* ((date (latest-bar-closing-date (current-date) (make-time time-duration 0 (* 60 15))))
-           (date-str (date->string date "~Y~m~d ~T"))
+    (let* ((date (latest-bar-closing-date #?=(current-date) style))
+           #;(date-str (date->string #?=date "~Y~m~d ~T"))
            (last-data #?=(query-data *conn* (currency-pair-name
                                              (trading-style-currency-pair style))
                                      date 1 (trading-style-bar-size style)))
@@ -299,9 +300,10 @@
                   (if (> sec 86400)
                       (trading-style-min-period style)
                       #`",sec S")))))
-      (if (string=? #?=duration (trading-style-duration-for-wait style))
+      (if (string=? #?=duration "0 S")
           (sleep-and-update)
-          (enqueue! *task-queue*
+          (update-history style duration)
+          #;(enqueue! *task-queue*
                     (lambda ()
                       #?='query-history
                       (tws-client-historical-data-request
@@ -329,20 +331,20 @@
 
 (define *task-queue* (make-mtqueue))
 
-(define (update-history style)
+(define (update-history style duration)
   (let* ((req-id (request-id!))
-         (date #?=(latest-bar-closing-date (current-date) (make-time time-duration 0 (* 60 15))))
-         (date-str (date->string date "~Y~m~d ~T")))
+         (date (latest-bar-closing-date #?=(current-date) style))
+         (date-str (date->string #?=date "~Y~m~d ~T")))
     (hash-table-put! *trading-style-table* req-id style)
     #?='update-history
     (tws-client-historical-data-request
-     tws req-id
+     *tws* req-id
      (currency-pair-symbol (trading-style-currency-pair style))
      "CASH"
      (currency-pair-currency (trading-style-currency-pair style))
      (trading-style-exchange style)
      date-str
-     (trading-style-duration-for-query style)
+     duration
      (trading-style-bar-size style)
      "MIDPOINT")
     ))
@@ -361,10 +363,11 @@
             (if (zero? count)
                 (enqueue! *task-queue*
                   (lambda ()
-                    (update-history *eur-gbp-15min*)))
+                    (update-history *eur-gbp-15min*
+                                    (trading-style-duration-for-query *eur-gbp-15min*))))
                 (begin
                   (sys-sleep 2)
-                  (tws-client-request-current-time tws)
+                  (tws-client-request-current-time *tws*)
                   (loop (- count 1)))))))))))
 
 (define (get-all-positions)
@@ -387,8 +390,8 @@
   #?=close-order
   ;;; (list 'close pos-idx price result gain)
   (let* ((pos-id (cadr close-order))
-         (pos (get-position pos-id))
-         (dat (get-order-data pos-id)))
+         (pos #?=(get-position *conn* pos-id))
+         (dat #?=(get-order-data *conn* pos-id)))
     (order (case (position-action pos)
              ((sell) "BUY")
              ((buy) "SELL"))
@@ -401,17 +404,17 @@
 ;; positions : pos-id -> [position]
 ;; order-data : pos-id -> [order-id symbol currentcy exchange]
 
-(define (get-position pos-id)
-  (let ((pos-str (redis-hget *conn* "positions" pos-id)))
-    (deserialize-position (read-from-string pos-str))))
+;; (define (get-position pos-id)
+;;   (let ((pos-str (redis-hget *conn* "positions" pos-id)))
+;;     (deserialize-position (read-from-string pos-str))))
 
-(define (get-order-data pos-id)
-  (let ((ser (redis-hget *conn* "order-data" pos-id)))
-    (deserialize-order-data (read-from-string ser))))
+;; (define (get-order-data pos-id)
+;;   (let ((ser (redis-hget *conn* "order-data" pos-id)))
+;;     (deserialize-order-data (read-from-string ser))))
 
-(define (save-position pos ord)
-  (redis-hadd *conn* "positions" pos-id (write-to-string (serialize-position pos)))
-  (redis-hadd *conn* "order-data" pos-id (write-to-string (serialize-order-data ord))))
+;; (define (save-position pos ord)
+;;   (redis-hadd *conn* "positions" pos-id (write-to-string (serialize-position pos)))
+;;   (redis-hadd *conn* "order-data" pos-id (write-to-string (serialize-order-data ord))))
 
 (define (open-position style pos)
   #?=(serialize-position pos)
@@ -425,7 +428,7 @@
            ((buy) "BUY"))
          sym cur exc qty
          (lambda (oid)
-           (save-position pos (make-order-data oid symbol currecy exchange))))))
+           #?=(save-position *conn* pos (make-order-data oid symbol currecy exchange))))))
 
 (define (orders-key symbol currecy exchange)
   #`"orders:,|symbol|:,|currecy|:,|exchange|")
@@ -435,7 +438,7 @@
             (lambda ()
               (let ((oid (order-id!)))
                 (tws-client-place-fx-market-order
-                 tws oid symbol currecy exchange action quantity)
+                 *tws* oid symbol currecy exchange action quantity)
                 (proc oid)))))
 
 (define (on-historical-data-end req-id start-date end-date)
@@ -462,5 +465,5 @@
           (when task
             (task)
             (task-loop))))
-      (tws-client-process-messages tws)
+      (tws-client-process-messages *tws*)
       (loop)))))

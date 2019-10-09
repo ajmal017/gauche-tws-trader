@@ -4,6 +4,7 @@
 
 (use util.match)
 
+(add-load-path "./lib/")
 
 (test-start "Trader")
 (load "./lib/trader")
@@ -93,27 +94,71 @@
                   order-data-symbol order-data-currency order-data-exchange
                   order-data-quantity))))
 
+(define *eur-gbp* (make-currency-pair "EUR" "GBP"))
+
+(define *eur-gbp-15min*
+  (make-trading-style
+   *eur-gbp*
+   "IDEALPRO"
+   "15 mins"
+   "900 S"
+   "960 S"
+   "3 M"
+   "1 W"
+   ))
+
+(define *eur-gbp-1hour*
+  (make-trading-style
+   *eur-gbp*
+   "IDEALPRO"
+   "1 hour"
+   "3600 S"
+   "3660 S"
+   "1 Y"
+   "4 W"
+   ))
+
 (test* "latest-bar-closing-date" "2019-10-07T15:30:00Z"
        (let* ((cur-date (make-date 0 0 35 15 7 10 2019 0))
-              (result (latest-bar-closing-date cur-date (make-time time-duration 0 (* 60 15)))))
+              (result (latest-bar-closing-date cur-date *eur-gbp-15min*)))
          (date->string result "~4")))
 
 (test* "latest-bar-closing-date" "2019-10-07T15:45:00Z"
        (let* ((cur-date (make-date 0 0 45 15 7 10 2019 0))
-              (result (latest-bar-closing-date cur-date (make-time time-duration 0 (* 60 15)))))
+              (result (latest-bar-closing-date cur-date *eur-gbp-15min*)))
          (date->string result "~4")))
 
 (test* "latest-bar-closing-date" "2019-10-07T15:00:00Z"
        (let* ((cur-date (make-date 0 0 0 15 7 10 2019 0))
-              (result (latest-bar-closing-date cur-date (make-time time-duration 0 (* 60 15)))))
+              (result (latest-bar-closing-date cur-date *eur-gbp-15min*)))
          (date->string result "~4")))
 
 (test* "latest-bar-closing-date" "2019-10-07T15:00:00Z"
        (let* ((cur-date (make-date 0 0 20 15 7 10 2019 0))
-              (result (latest-bar-closing-date cur-date (make-time time-duration 0 (* 60 60)))))
+              (result (latest-bar-closing-date cur-date *eur-gbp-1hour*)))
          (date->string result "~4")))
 
 (test* "latest-bar-closing-date" "2019-10-07T15:00:00+0200"
        (let* ((cur-date (make-date 0 0 20 15 7 10 2019 (* 2 60 60)))
-              (result (latest-bar-closing-date cur-date (make-time time-duration 0 (* 60 60)))))
+              (result (latest-bar-closing-date cur-date *eur-gbp-1hour*)))
+         (date->string result "~4")))
+
+(test* "previous-bar-closing-date" "2019-10-07T14:45:00Z"
+       (let* ((cur-date (make-date 0 0 5 15 7 10 2019 0))
+              (result (previous-bar-closing-date cur-date *eur-gbp-15min*)))
+         (date->string result "~4")))
+
+(test* "previous-bar-closing-date" "2019-10-07T14:45:00Z"
+       (let* ((cur-date (make-date 0 0 0 15 7 10 2019 0))
+              (result (previous-bar-closing-date cur-date *eur-gbp-15min*)))
+         (date->string result "~4")))
+
+(test* "next-bar-closing-date" "2019-10-07T15:15:00Z"
+       (let* ((cur-date (make-date 0 0 5 15 7 10 2019 0))
+              (result (next-bar-closing-date cur-date *eur-gbp-15min*)))
+         (date->string result "~4")))
+
+(test* "next-bar-closing-date" "2019-10-07T15:15:00Z"
+       (let* ((cur-date (make-date 0 0 0 15 7 10 2019 0))
+              (result (next-bar-closing-date cur-date *eur-gbp-15min*)))
          (date->string result "~4")))
