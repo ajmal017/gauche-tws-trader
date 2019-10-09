@@ -303,19 +303,7 @@
       (if (string=? #?=duration "0 S")
           (sleep-and-update)
           (update-history style duration)
-          #;(enqueue! *task-queue*
-                    (lambda ()
-                      #?='query-history
-                      (tws-client-historical-data-request
-                       tws req-id
-                       (currency-pair-symbol (trading-style-currency-pair style))
-                       "CASH"
-                       (currency-pair-currency (trading-style-currency-pair style))
-                       (trading-style-exchange style)
-                       date-str
-                       duration
-                       (trading-style-bar-size style)
-                       "MIDPOINT")))))))
+          ))))
 
 (define (on-next-valid-id id)
   (set! *order-id* id)
@@ -403,18 +391,6 @@
 
 ;; positions : pos-id -> [position]
 ;; order-data : pos-id -> [order-id symbol currentcy exchange]
-
-;; (define (get-position pos-id)
-;;   (let ((pos-str (redis-hget *conn* "positions" pos-id)))
-;;     (deserialize-position (read-from-string pos-str))))
-
-;; (define (get-order-data pos-id)
-;;   (let ((ser (redis-hget *conn* "order-data" pos-id)))
-;;     (deserialize-order-data (read-from-string ser))))
-
-;; (define (save-position pos ord)
-;;   (redis-hadd *conn* "positions" pos-id (write-to-string (serialize-position pos)))
-;;   (redis-hadd *conn* "order-data" pos-id (write-to-string (serialize-order-data ord))))
 
 (define (open-position style pos)
   #?=(serialize-position pos)
