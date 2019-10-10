@@ -404,7 +404,7 @@
            ((buy) "BUY"))
          sym cur exc qty
          (lambda (oid)
-           #?=(save-position *conn* pos (make-order-data oid symbol currecy exchange))))))
+           #?=(save-position *conn* pos #?=(make-order-data oid sym cur exc qty))))))
 
 (define (orders-key symbol currecy exchange)
   #`"orders:,|symbol|:,|currecy|:,|exchange|")
