@@ -222,7 +222,7 @@
       (violet-async
        (^[await]
          (let* ((end-date (make-date 0 0 minute hour date month year 0))
-                (data (await (^[] (query-data *conn* "EUR.GBP" (next-day end-date)
+                (data (await (^[] (query-data *conn* "EUR.GBP" end-date
                                               (* 24 5 4) "1 hour")))))
            (respond/ok req (cons "<!DOCTYPE html>"
                                  (sxml:sxml->html
@@ -234,7 +234,18 @@
 
 (define-http-handler "/"
   (^[req app]
-    (respond/redirect req "/2019/1/1/0/0") ))
+    (violet-async
+     (^[await]
+       (let ((positions (await (^[] #?=(get-all-positions)))))
+         (respond/ok req (cons "<!DOCTYPE html>"
+                               (sxml:sxml->html
+                                (create-page
+                                 '(h2 "Positions")
+                                 (map (^p (write-to-string (serialize-position p)))
+                                      positions))))))
+
+       ))
+     ))
 
 (define-http-handler #/^\/static\// (file-handler))
 
