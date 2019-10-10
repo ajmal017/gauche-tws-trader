@@ -87,14 +87,14 @@
           (if (eq? (position-action pos) 'sell)
               (if (> (bar-low bar) (position-upper-limit pos))
                   (begin
-                    (close-proc (close-position (position-index pos) (position-upper-limit pos)
+                    #?=(close-proc (close-position (position-index pos) (position-upper-limit pos)
                                            'loss (- (position-price pos) (position-upper-limit pos))))
                     (loop (cdr src) dest))
                   (if (and (< (distance-to-line (adjusted-index pos) (bar-low bar)
                                                 (position-lower-limit pos)) 0)
                            (> (position-price pos) (bar-high bar)))
                       (begin
-                        (close-proc (close-position (position-index pos) (bar-high bar)
+                        #?=(close-proc (close-position (position-index pos) (bar-high bar)
                                                'gain (- (position-price pos) (bar-high bar))))
                         (loop (cdr src) dest))
                       (loop (cdr src) (cons pos dest))))
@@ -102,14 +102,14 @@
                                         ; buy
               (if (< (bar-high bar) (position-lower-limit pos))
                   (begin
-                    (close-proc (close-position (position-index pos) (position-lower-limit pos)
+                    #?=(close-proc (close-position (position-index pos) (position-lower-limit pos)
                                            'loss (- (position-lower-limit pos) (position-price pos))))
                     (loop (cdr src) dest))
                   (if (and (> (distance-to-line (adjusted-index pos) (bar-high bar)
                                                 (position-upper-limit pos)) 0)
                            (> (bar-low bar) (position-price pos)))
                       (begin
-                        (close-proc (close-position (position-index pos) (bar-low bar)
+                        #?=(close-proc (close-position (position-index pos) (bar-low bar)
                                                'gain (- (bar-low bar) (position-price pos))))
                         (loop (cdr src) dest))
                       (loop (cdr src) (cons pos dest)))))))))

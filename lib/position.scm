@@ -20,7 +20,7 @@
     (deserialize-order-data (read-from-string ser))))
 
 (define (save-position redis-conn pos ord)
-  (redis-hset redis-conn "positions" (position-index pos)
+  #?=(redis-hset redis-conn "positions" (position-index pos)
               (write-to-string (serialize-position pos)))
-  (redis-hset redis-conn "order-data" (position-index pos)
+  #?=(redis-hset redis-conn "order-data" (position-index pos)
               (write-to-string (serialize-order-data ord))))
