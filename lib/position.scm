@@ -7,6 +7,7 @@
   (export get-position
           get-order-data
           save-position
+          delete-position
           ))
 
 (select-module position)
@@ -24,3 +25,7 @@
               (write-to-string (serialize-position pos)))
   #?=(redis-hset redis-conn "order-data" (position-index pos)
               (write-to-string (serialize-order-data ord))))
+
+(define (delete-position redis-conn pos-id)
+  #?=(redis-hdel redis-conn "positions" pos-id)
+  #?=(redis-hdel redis-conn "order-data" pos-id))

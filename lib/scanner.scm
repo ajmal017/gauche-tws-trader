@@ -79,7 +79,7 @@
 
 (define (update-position positions bar index close-proc)
   (define (adjusted-index pos)
-    (+ *data-count* (- index (position-index pos))))
+    (+ *data-count* (- (x->number index) (x->number (position-index pos)))))
   (let loop ((src positions) (dest ()))
     (if (null? src)
         dest

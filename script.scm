@@ -3,6 +3,7 @@
 (use gauche.record)
 (use data.queue)
 (use srfi-19)
+(use scheme.vector)
 
 (add-load-path "./gauche-rheingau/lib/")
 (use rheingau)
@@ -370,7 +371,8 @@
                   (loop (- count 1)))))))))))
 
 (define (get-all-positions)
-  (let ((positions (redis-hvals *conn* "positions")))
+  (let ((positions (vector-fold-right (^[a b] (cons b a)) '() #?=(redis-hvals *conn* "positions"))))
+    #?=(write-to-string positions)
     (if (pair? positions)
         (map (lambda (str)
                (deserialize-position (read-from-string str)))
@@ -397,7 +399,10 @@
            (order-data-symbol dat)
            (order-data-currency dat)
            (order-data-exchange dat)
-           (order-data-quantity dat))
+           (order-data-quantity dat)
+           (lambda (oid)
+             #?=oid
+             #?=(delete-position *conn* pos-id)))
     ))
 
 ;; positions : pos-id -> [position]
