@@ -268,6 +268,8 @@
     id))
 
 (define *eur-gbp* (make-currency-pair "EUR" "GBP"))
+(define *eur-usd* (make-currency-pair "EUR" "USD"))
+(define *gbp-usd* (make-currency-pair "GBP" "USD"))
 
 (define *eur-gbp-1hour*
   (make-trading-style
@@ -283,6 +285,28 @@
 (define *eur-gbp-15min*
   (make-trading-style
    *eur-gbp*
+   "IDEALPRO"
+   "15 mins"
+   "900 S"
+   "960 S"
+   "3 M"
+   "1 W"
+   ))
+
+(define *eur-usd-15min*
+  (make-trading-style
+   *eur-usd*
+   "IDEALPRO"
+   "15 mins"
+   "900 S"
+   "960 S"
+   "3 M"
+   "1 W"
+   ))
+
+(define *gbp-usd-15min*
+  (make-trading-style
+   *gbp-usd*
    "IDEALPRO"
    "15 mins"
    "900 S"
@@ -313,12 +337,14 @@
                       (trading-style-min-period style)
                       #`",sec S")))))
       (if (string=? #?=duration "0 S")
-          (sleep-and-update)
+          (sleep-and-update style)
           (update-history style duration)
           ))))
 
 (define (on-next-valid-id id)
   (set! *order-id* id)
+  (enqueue! *task-queue* (^[] (query-history *eur-usd-15min*)))
+  (enqueue! *task-queue* (^[] (query-history *gbp-usd-15min*)))
   (enqueue! *task-queue* (^[] (query-history *eur-gbp-15min*))))
 
 (define (on-historical-data req-id time open high low close volume count wap)
@@ -349,7 +375,7 @@
      "MIDPOINT")
     ))
 
-(define (sleep-and-update)
+(define (sleep-and-update style)
   (let ((min (date-minute (current-date))))
     (thread-start!
      (make-thread
@@ -363,8 +389,8 @@
             (if (zero? count)
                 (enqueue! *task-queue*
                   (lambda ()
-                    (update-history *eur-gbp-15min*
-                                    (trading-style-duration-for-query *eur-gbp-15min*))))
+                    (update-history style
+                                    (trading-style-duration-for-query style))))
                 (begin
                   (sys-sleep 2)
                   (tws-client-request-current-time *tws*)
@@ -440,10 +466,9 @@
                                       (position-id) close-position)))
       (when pos
             (open-position style pos)
-            (position-id-bump!))))
+            (position-id-bump!)))
 
-  (sleep-and-update)
-)
+    (sleep-and-update style)))
 
 (define (on-current-time time)
   )
