@@ -267,24 +267,9 @@
     (inc! *order-id*)
     id))
 
-(define *eur-gbp* (make-currency-pair "EUR" "GBP"))
-(define *eur-usd* (make-currency-pair "EUR" "USD"))
-(define *gbp-usd* (make-currency-pair "GBP" "USD"))
-
-(define *eur-gbp-1hour*
+(define (fifteen-min-style curpair)
   (make-trading-style
-   *eur-gbp*
-   "IDEALPRO"
-   "1 hour"
-   "3600 S"
-   "3660 S"
-   "1 Y"
-   "4 W"
-   ))
-
-(define *eur-gbp-15min*
-  (make-trading-style
-   *eur-gbp*
+   curpair
    "IDEALPRO"
    "15 mins"
    "900 S"
@@ -293,27 +278,38 @@
    "1 W"
    ))
 
-(define *eur-usd-15min*
-  (make-trading-style
-   *eur-usd*
-   "IDEALPRO"
-   "15 mins"
-   "900 S"
-   "960 S"
-   "3 M"
-   "1 W"
-   ))
+;; (define *eur-gbp-1hour*
+;;   (make-trading-style
+;;    *eur-gbp*
+;;    "IDEALPRO"
+;;    "1 hour"
+;;    "3600 S"
+;;    "3660 S"
+;;    "1 Y"
+;;    "4 W"
+;;    ))
 
-(define *gbp-usd-15min*
-  (make-trading-style
-   *gbp-usd*
-   "IDEALPRO"
-   "15 mins"
-   "900 S"
-   "960 S"
-   "3 M"
-   "1 W"
-   ))
+(define *trading-styles*
+  (map (^p (fifteen-min-style p))
+       (list (make-currency-pair "EUR" "GBP")
+             (make-currency-pair "EUR" "USD")
+             (make-currency-pair "EUR" "CHF")
+             (make-currency-pair "GBP" "USD")
+             (make-currency-pair "GBP" "CHF")
+             (make-currency-pair "CHF" "USD")
+             )))
+
+;; (define *eur-gbp* (make-currency-pair "EUR" "GBP"))
+;; (define *eur-usd* (make-currency-pair "EUR" "USD"))
+;; (define *eur-chf* (make-currency-pair "EUR" "CHF"))
+;; (define *gbp-usd* (make-currency-pair "GBP" "USD"))
+;; (define *gbp-chf* (make-currency-pair "GBP" "CHF"))
+;; (define *chf-usd* (make-currency-pair "CHF" "USD"))
+
+;; (define *eur-gbp-15min* (fifteen-min-style *eur-gbp*))
+;; (define *eur-usd-15min* (fifteen-min-style *eur-usd*))
+;; (define *gbp-usd-15min* (fifteen-min-style *gbp-usd*))
+
 
 (define *trading-style-table* (make-hash-table))
 
@@ -343,9 +339,7 @@
 
 (define (on-next-valid-id id)
   (set! *order-id* id)
-  (enqueue! *task-queue* (^[] (query-history *eur-usd-15min*)))
-  (enqueue! *task-queue* (^[] (query-history *gbp-usd-15min*)))
-  (enqueue! *task-queue* (^[] (query-history *eur-gbp-15min*))))
+  (enqueue! *task-queue* (^[] (for-each query-history *trading-styles*))))
 
 (define (on-historical-data req-id time open high low close volume count wap)
   (let ((style (hash-table-get *trading-style-table* req-id))
@@ -411,7 +405,7 @@
 (define (position-id-bump!)
   (redis-incr *conn* "position-id"))
 
-(define *quantitiy-unit* 20000.0)       ; minimum size = 20K
+(define *quantitiy-unit* 25000.0)       ; minimum size = 20K
 
 (define (close-position close-order)
   #?=close-order
