@@ -213,25 +213,25 @@
          (next-day-time (add-duration time a-day)))
     (time-utc->date next-day-time)))
 
-(define-http-handler #/^\/(\d+)\/0*(\d+)\/0*(\d+)\/0*(\d+)\/0*(\d+)\/?/
-  (^[req app]
-    (let-params req ([year   "p:1" :convert x->integer]
-                     [month  "p:2" :convert x->integer]
-                     [date   "p:3" :convert x->integer]
-                     [hour   "p:4" :convert x->integer]
-                     [minute "p:5" :convert x->integer])
-      (violet-async
-       (^[await]
-         (let* ((end-date (make-date 0 0 minute hour date month year 0))
-                (data (await (^[] (query-data *conn* "EUR.GBP" end-date
-                                              (* 24 5 4) "1 hour")))))
-           (respond/ok req (cons "<!DOCTYPE html>"
-                                 (sxml:sxml->html
-                                  (create-page
-                                   `(html (body (p ,#`"EUR.GBP ,(date->string end-date)")
-                                                (h2 "1 hour")
-                                                (div ,@(format-data data))
-                                                ))))))))))))
+;; (define-http-handler #/^\/(\d+)\/0*(\d+)\/0*(\d+)\/0*(\d+)\/0*(\d+)\/?/
+;;   (^[req app]
+;;     (let-params req ([year   "p:1" :convert x->integer]
+;;                      [month  "p:2" :convert x->integer]
+;;                      [date   "p:3" :convert x->integer]
+;;                      [hour   "p:4" :convert x->integer]
+;;                      [minute "p:5" :convert x->integer])
+;;       (violet-async
+;;        (^[await]
+;;          (let* ((end-date (make-date 0 0 minute hour date month year 0))
+;;                 (data (await (^[] (query-data *conn* "EUR.GBP" end-date
+;;                                               (* 24 5 4) "1 hour")))))
+;;            (respond/ok req (cons "<!DOCTYPE html>"
+;;                                  (sxml:sxml->html
+;;                                   (create-page
+;;                                    `(html (body (p ,#`"EUR.GBP ,(date->string end-date)")
+;;                                                 (h2 "1 hour")
+;;                                                 (div ,@(format-data data))
+;;                                                 ))))))))))))
 
 (define-http-handler "/"
   (^[req app]
@@ -316,13 +316,13 @@
 (define (query-history style)
   (let ((req-id (request-id!)))
     (hash-table-put! *trading-style-table* req-id style)
-    (let* ((date (latest-bar-closing-date #?=(current-date) style))
+    (let* ((date (latest-bar-closing-date (current-date) style))
            #;(date-str (date->string #?=date "~Y~m~d ~T"))
-           (last-data #?=(query-data *conn* (currency-pair-name
+           (last-data (query-data *conn* (currency-pair-name
                                              (trading-style-currency-pair style))
                                      date 1 (trading-style-bar-size style)))
            (duration
-            (if (zero? #?=(data-set-count last-data))
+            (if (zero? (data-set-count last-data))
                 (trading-style-history-period style)
                 (let ((sec
                        (time-second
@@ -332,7 +332,7 @@
                   (if (> sec 86400)
                       (trading-style-min-period style)
                       #`",sec S")))))
-      (if (string=? #?=duration "0 S")
+      (if (string=? duration "0 S")
           (sleep-and-update style)
           (update-history style duration)
           ))))
@@ -353,10 +353,9 @@
 
 (define (update-history style duration)
   (let* ((req-id (request-id!))
-         (date (latest-bar-closing-date #?=(current-date) style))
-         (date-str (date->string #?=date "~Y~m~d ~T")))
+         (date (latest-bar-closing-date (current-date) style))
+         (date-str (date->string date "~Y~m~d ~T")))
     (hash-table-put! *trading-style-table* req-id style)
-    #?='update-history
     (tws-client-historical-data-request
      *tws* req-id
      (currency-pair-symbol (trading-style-currency-pair style))
@@ -391,8 +390,8 @@
                   (loop (- count 1)))))))))))
 
 (define (get-all-positions)
-  (let ((positions (vector-fold-right (^[a b] (cons b a)) '() #?=(redis-hvals *conn* "positions"))))
-    #?=(write-to-string positions)
+  (let ((positions (vector-fold-right (^[a b] (cons b a)) '() (redis-hvals *conn* "positions"))))
+    (write-to-string positions)
     (if (pair? positions)
         (map (lambda (str)
                (deserialize-position (read-from-string str)))
@@ -411,8 +410,8 @@
   #?=close-order
   ;;; (list 'close pos-idx price result gain)
   (let* ((pos-id (cadr close-order))
-         (pos #?=(get-position *conn* pos-id))
-         (dat #?=(get-order-data *conn* pos-id)))
+         (pos (get-position *conn* pos-id))
+         (dat (get-order-data *conn* pos-id)))
     (order (case (position-action pos)
              ((sell) "BUY")
              ((buy) "SELL"))
@@ -421,8 +420,8 @@
            (order-data-exchange dat)
            (order-data-quantity dat)
            (lambda (oid)
-             #?=oid
-             #?=(delete-position *conn* pos-id)))
+             oid
+             (delete-position *conn* pos-id)))
     ))
 
 ;; positions : pos-id -> [position]
@@ -440,7 +439,7 @@
            ((buy) "BUY"))
          sym cur exc qty
          (lambda (oid)
-           #?=(save-position *conn* pos #?=(make-order-data oid sym cur exc qty))))))
+           (save-position *conn* pos (make-order-data oid sym cur exc qty))))))
 
 (define (orders-key symbol currecy exchange)
   #`"orders:,|symbol|:,|currecy|:,|exchange|")
@@ -454,7 +453,6 @@
                 (proc oid)))))
 
 (define (on-historical-data-end req-id start-date end-date)
-  #?=`(,req-id ,start-date ,end-date)
   (let ((style (hash-table-get *trading-style-table* req-id)))
     (let-values (((pos poss) (inspect *conn* style (current-date) (get-all-positions)
                                       (position-id) close-position)))
