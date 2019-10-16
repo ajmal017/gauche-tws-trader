@@ -270,7 +270,7 @@
 (define (fifteen-min-style curpair)
   (make-trading-style
    curpair
-   "IDEALPRO"
+   "SMART"
    "15 mins"
    "900 S"
    "960 S"
@@ -361,7 +361,7 @@
      (currency-pair-symbol (trading-style-currency-pair style))
      "CASH"
      (currency-pair-currency (trading-style-currency-pair style))
-     (trading-style-exchange style)
+     "IDEALPRO" ;;(trading-style-exchange style)
      date-str
      duration
      (trading-style-bar-size style)
@@ -448,8 +448,8 @@
   (enqueue! *task-queue*
             (lambda ()
               (let ((oid (order-id!)))
-                (tws-client-place-fx-market-order
-                 *tws* oid symbol currecy exchange action quantity)
+                (tws-client-place-fx-market-order *tws* oid symbol "CFD"
+                                                  currecy exchange action quantity)
                 (proc oid)))))
 
 (define (on-historical-data-end req-id start-date end-date)
