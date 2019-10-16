@@ -36,13 +36,14 @@
 (define-cproc tws-client-place-fx-market-order (cl::<tws-client>
                                                 orderId::<int>
                                                 symbol::<const-cstring>
+                                                secType::<const-cstring>
                                                 currency::<const-cstring>
                                                 exchange::<const-cstring>
                                                 action::<const-cstring>
                                                 quantity::<double>
                                                 )
   ::<void>
-  "cl->placeFxMarketOrder(orderId, symbol, currency, exchange, action, quantity);")
+  "cl->placeFxMarketOrder(orderId, symbol, secType, currency, exchange, action, quantity);")
 
 (define-cproc tws-client-request-current-time (cl::<tws-client>)
   ::<void>

@@ -41,6 +41,7 @@ public:
     void requestCurrentTime();
 
     void placeFxMarketOrder(OrderId orderId, const char* symbol,
+                            const char* secType,
                             const char* currency, const char* exchange,
                             const char* action, double quantity);
 

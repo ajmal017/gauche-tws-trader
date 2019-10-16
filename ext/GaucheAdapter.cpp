@@ -113,7 +113,8 @@ void GaucheAdapter::historicalDataRequests(TickerId reqId, const char* symbol,
 	contract.currency = currency;
 	contract.exchange = exchange;
 
-    Scm_Printf(SCM_CURERR, "Historical Data requested\n");
+    Scm_Printf(SCM_CURERR, "Historical Data requested: %d: %s.%s on %s\n",
+               reqId, symbol, currency, queryTime);
 
 	m_pClient->reqHistoricalData(reqId, contract,
                                  queryTime, duration, barSize, whatToShow, 1, 1, false,
@@ -121,11 +122,12 @@ void GaucheAdapter::historicalDataRequests(TickerId reqId, const char* symbol,
 }
 
 void GaucheAdapter::placeFxMarketOrder(OrderId orderId, const char* symbol,
+                                       const char* secType,
                                        const char* currency, const char* exchange,
                                        const char* action, double quantity) {
 	Contract contract;
 	contract.symbol = symbol;
-	contract.secType = "CASH";
+	contract.secType = secType;
 	contract.currency = currency;
 	contract.exchange = exchange;
 
