@@ -404,7 +404,7 @@
 (define (position-id-bump!)
   (redis-incr *conn* "position-id"))
 
-(define *quantitiy-unit* 25000.0)       ; minimum size = 20K
+(define *quantitiy-unit* 10000.0)       ; minimum size = 20K
 
 (define (close-position close-order)
   #?=close-order
