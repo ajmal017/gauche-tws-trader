@@ -307,7 +307,7 @@
              (make-currency-pair "EUR" "CHF")
              (make-currency-pair "GBP" "USD")
              (make-currency-pair "GBP" "CHF")
-             (make-currency-pair "CHF" "USD")
+             (make-currency-pair "USD" "CHF")
              )))
 
 ;; (define *eur-gbp* (make-currency-pair "EUR" "GBP"))
