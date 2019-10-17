@@ -8,5 +8,5 @@ violet
 *.tmp.*
 *.o
 TAGS
-
 *.log
+logs/
