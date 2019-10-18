@@ -367,6 +367,11 @@
                 (loop (cdr logs)))))
   (newline (current-error-port)))
 
+(define (on-order-status order-id status filled remaining avg-fill-price perm-id
+                         parent-id last-fill-price client-id why-held mkt-cap-price)
+  (debug-log "on-order-status" order-id status)
+  )
+
 (define *task-queue* (make-mtqueue))
 
 (define (update-history style duration)

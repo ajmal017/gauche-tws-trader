@@ -230,6 +230,29 @@ void GaucheAdapter::orderStatus(OrderId orderId, const std::string& status, doub
 		double remaining, double avgFillPrice, int permId, int parentId,
 		double lastFillPrice, int clientId, const std::string& whyHeld, double mktCapPrice){
 	Scm_Printf(SCM_CURERR, "OrderStatus. Id: %ld, Status: %s, Filled: %g, Remaining: %g, AvgFillPrice: %g, PermId: %d, LastFillPrice: %g, ClientId: %d, WhyHeld: %s, MktCapPrice: %g\n", orderId, status.c_str(), filled, remaining, avgFillPrice, permId, lastFillPrice, clientId, whyHeld.c_str(), mktCapPrice);
+
+    ScmObj proc = SCM_UNDEFINED;
+    SCM_BIND_PROC(proc, "on-order-status", Scm_CurrentModule());
+    ScmEvalPacket epak;
+
+    ScmObj tail =
+        SCM_LIST5(Scm_MakeInteger(parentId),
+                  Scm_MakeFlonum(lastFillPrice),
+                  Scm_MakeInteger(clientId),
+                  SCM_MAKE_STR(whyHeld.c_str()),
+                  Scm_MakeFlonum(mktCapPrice));
+
+    ScmObj arglist =
+        Scm_Cons(Scm_MakeInteger(orderId),
+                 Scm_Cons(SCM_MAKE_STR(status.c_str()),
+                          Scm_Cons(Scm_MakeFlonum(filled),
+                                   Scm_Cons(Scm_MakeFlonum(remaining),
+                                            Scm_Cons(Scm_MakeFlonum(avgFillPrice),
+                                                     Scm_Cons(Scm_MakeInteger(permId),
+                                                              tail))))));
+    if (Scm_Apply(proc, arglist, &epak) < 0) {
+        scm_error(epak.exception);
+    }
 }
 //! [orderstatus]
 
