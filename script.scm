@@ -358,6 +358,15 @@
               (trading-style-bar-size style)
               date open close high low)))
 
+(define (debug-log . rest)
+  (let loop ((logs (cons (date->string (current-date) "~4") rest)))
+    (when (pair? logs)
+          (display (car logs) (current-error-port))
+          (when (pair? (cdr logs))
+                (display "\t" (current-error-port))
+                (loop (cdr logs)))))
+  (newline (current-error-port)))
+
 (define *task-queue* (make-mtqueue))
 
 (define (update-history style duration)
