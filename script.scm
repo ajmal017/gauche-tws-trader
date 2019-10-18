@@ -274,7 +274,7 @@
 (tws-client-connect *tws* tws-host tws-port tws-client-id)
 (define *order-id* #f)
 (define (order-id!)
-  (let ((id #?=*order-id*))
+  (let ((id *order-id*))
     (inc! *order-id*)
     id))
 
@@ -326,7 +326,6 @@
 
 (define (query-history style)
   (let* ((date (latest-bar-closing-date (current-date) style))
-         #;(date-str (date->string #?=date "~Y~m~d ~T"))
          (last-data (query-data *conn* (currency-pair-name
                                         (trading-style-currency-pair style))
                                 date 1 (trading-style-bar-size style)))
@@ -435,7 +434,7 @@
 (define *quantitiy-unit* 10000.0)       ; minimum size = 20K
 
 (define (close-position close-order)
-  #?=close-order
+  (debug-log "Closing" close-order)
   ;;; (list 'close pos-idx price result gain)
   (let* ((pos-id (cadr close-order))
          (dat (get-order-data *conn* pos-id))
@@ -454,14 +453,14 @@
                  (delete-position *conn* sym cur pos-id)
                  (debug-log #`"Closing order done: pos: ,pos-id order: ,oid")
                  ))
-        #?=#`"Redis entry not found: ,pos-id"
+        (debug-log #`"Redis entry not found: ,pos-id")
     )))
 
 ;; positions : pos-id -> [position]
 ;; order-data : pos-id -> [order-id symbol currentcy exchange]
 
 (define (open-position style pos)
-  #?=(serialize-position pos)
+  (debug-log "Opening" (serialize-position pos))
 
   (let ((sym (currency-pair-symbol (trading-style-currency-pair style)))
         (cur (currency-pair-currency (trading-style-currency-pair style)))
@@ -493,8 +492,7 @@
                 (hash-table-put! *order-status-callbacks* oid (lambda () (proc oid)))))))
 
 (define (on-historical-data-end req-id start-date end-date)
-  (let ((style (hash-table-get *trading-style-table* #?=req-id)))
-    #?=(currency-pair-name (trading-style-currency-pair style))
+  (let ((style (hash-table-get *trading-style-table* req-id)))
     (let-values (((pos poss) (inspect *conn* style (current-date) (get-all-positions style)
                                       (position-id) close-position)))
       (when pos
