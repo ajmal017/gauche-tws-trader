@@ -370,7 +370,12 @@
 (define (on-order-status order-id status filled remaining avg-fill-price perm-id
                          parent-id last-fill-price client-id why-held mkt-cap-price)
   (debug-log "on-order-status" order-id status)
-  )
+  (when (string=? status "Filled")
+        (let ((callback (hash-table-get *order-status-callbacks* order-id #f)))
+          (when callback
+                (debug-log "callback found")
+                (hash-table-put! *order-status-callbacks* order-id #f)
+                (enqueue! *task-queue* callback)))))
 
 (define *task-queue* (make-mtqueue))
 
@@ -437,7 +442,6 @@
          (sym (order-data-symbol dat))
          (cur (order-data-currency dat))
          (pos (get-position *conn* sym cur pos-id)))
-    (delete-position *conn* sym cur pos-id)
     (if (and pos dat)
         (order (case (position-action pos)
                  ((sell) "BUY")
@@ -447,7 +451,8 @@
                (order-data-exchange dat)
                (order-data-quantity dat)
                (lambda (oid)
-                 #?=#`"Order done ,oid"
+                 (delete-position *conn* sym cur pos-id)
+                 (debug-log #`"Closing order done: pos: ,pos-id order: ,oid")
                  ))
         #?=#`"Redis entry not found: ,pos-id"
     )))
@@ -476,6 +481,8 @@
   (redis-zadd conn "orderlog" oid
               (write-to-string (list oid action symbol currecy exchange quantity))))
 
+(define *order-status-callbacks* (make-hash-table))
+
 (define (order action symbol currecy exchange quantity proc)
   (enqueue! *task-queue*
             (lambda ()
@@ -483,7 +490,7 @@
                 (tws-client-place-fx-market-order *tws* oid symbol "CFD"
                                                   currecy exchange action quantity)
                 (log-order *conn* oid action symbol currecy exchange quantity)
-                (proc oid)))))
+                (hash-table-put! *order-status-callbacks* oid (lambda () (proc oid)))))))
 
 (define (on-historical-data-end req-id start-date end-date)
   (let ((style (hash-table-get *trading-style-table* #?=req-id)))
