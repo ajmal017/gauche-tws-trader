@@ -372,9 +372,8 @@
   (when (string=? status "Filled")
         (let ((callback (hash-table-get *order-status-callbacks* order-id #f)))
           (when callback
-                (debug-log "callback found")
                 (hash-table-put! *order-status-callbacks* order-id #f)
-                (enqueue! *task-queue* callback)))))
+                (enqueue! *task-queue* (lambda () (callback avg-fill-price)))))))
 
 (define *task-queue* (make-mtqueue))
 
@@ -433,6 +432,29 @@
 
 (define *quantitiy-unit* 10000.0)       ; minimum size = 20K
 
+(define (log-result pos-id order-id order-data action open-price close-price)
+  (let* ((gain (case action
+                 ((sell) (- open-price  close-price))
+                 ((buy)  (- close-price open-price))))
+         (sym (order-data-symbol order-data))
+         (cur (order-data-symbol order-data))
+         (qty (order-data-quantity order-data))
+         (net-gain (* gain qty)))
+    (debug-log #`"Closing order done: pos: ,pos-id order: ,order-id"
+               #`"action: ,action"
+               #`"open-price: ,open-price close-price: ,close-price gain: ,gain")
+    (redis-zadd *conn* "result-log" pos-id (write-to-string
+                                            `((pos-id      . ,pos-id)
+                                              (order-id    . ,order-id)
+                                              (action      . ,action)
+                                              (sym         . ,sym)
+                                              (cur         . ,cur)
+                                              (open-price  . ,open-price)
+                                              (close-price . ,close-price)
+                                              (gain        . ,gain)
+                                              (net-gain    . ,net-gain)
+                                              )))))
+
 (define (close-position close-order)
   (debug-log "Closing" close-order)
   ;;; (list 'close pos-idx price result gain)
@@ -440,7 +462,8 @@
          (dat (get-order-data *conn* pos-id))
          (sym (order-data-symbol dat))
          (cur (order-data-currency dat))
-         (pos (get-position *conn* sym cur pos-id)))
+         (pos (get-position *conn* sym cur pos-id))
+         (pos-key (entry-price-key (make-currency-pair sym cur))))
     (if (and pos dat)
         (order (case (position-action pos)
                  ((sell) "BUY")
@@ -449,29 +472,37 @@
                (order-data-currency dat)
                (order-data-exchange dat)
                (order-data-quantity dat)
-               (lambda (oid)
+               (lambda (oid price)
                  (delete-position *conn* sym cur pos-id)
-                 (debug-log #`"Closing order done: pos: ,pos-id order: ,oid")
-                 ))
-        (debug-log #`"Redis entry not found: ,pos-id")
-    )))
+                 (let ((res (redis-hget *conn* pos-key pos-id)))
+                   (if res
+                       (let ((open-price (string->number res)))
+                         (log-result pos-id oid dat (position-action pos) open-price price))
+                       (debug-log #`"ERROR: Position not found: ,pos-id")))))
+        (debug-log #`"Redis entry not found: ,pos-id"))))
 
 ;; positions : pos-id -> [position]
 ;; order-data : pos-id -> [order-id symbol currentcy exchange]
 
+(define (entry-price-key cur-pair)
+  #`"entry-price:,(currency-pair-name cur-pair)")
+
 (define (open-position style pos)
   (debug-log "Opening" (serialize-position pos))
 
-  (let ((sym (currency-pair-symbol (trading-style-currency-pair style)))
-        (cur (currency-pair-currency (trading-style-currency-pair style)))
-        (exc (trading-style-exchange style))
-        (qty *quantitiy-unit*))
+  (let* ((cur-pair (trading-style-currency-pair style))
+         (sym (currency-pair-symbol cur-pair))
+         (cur (currency-pair-currency cur-pair))
+         (exc (trading-style-exchange style))
+         (qty *quantitiy-unit*)
+         (pos-key (entry-price-key cur-pair)))
   (order (case (position-action pos)
            ((sell) "SELL")
            ((buy) "BUY"))
          sym cur exc qty
-         (lambda (oid)
-           (save-position *conn* sym cur pos (make-order-data oid sym cur exc qty))))))
+         (lambda (oid price)
+           (save-position *conn* sym cur pos (make-order-data oid sym cur exc qty))
+           (redis-hset *conn* pos-key (position-index pos) price)))))
 
 (define (orders-key symbol currecy exchange)
   #`"orders:,|symbol|:,|currecy|:,|exchange|")
@@ -489,7 +520,7 @@
                 (tws-client-place-fx-market-order *tws* oid symbol "CFD"
                                                   currecy exchange action quantity)
                 (log-order *conn* oid action symbol currecy exchange quantity)
-                (hash-table-put! *order-status-callbacks* oid (lambda () (proc oid)))))))
+                (hash-table-put! *order-status-callbacks* oid (lambda (price) (proc oid price)))))))
 
 (define (on-historical-data-end req-id start-date end-date)
   (let ((style (hash-table-get *trading-style-table* req-id)))
