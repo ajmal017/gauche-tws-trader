@@ -233,6 +233,37 @@
 ;;                                                 (div ,@(format-data data))
 ;;                                                 ))))))))))))
 
+(define (render-positions cur-pair positions)
+  (let ((cur (currency-pair-name cur-pair)))
+    (map
+       (^p (let* ((pos-id (position-index p))
+                  (key (entry-price-key cur-pair))
+                  (actual-price (redis-hget *conn* key pos-id)))
+             `(tr
+               ((td ,cur)
+               (td ,pos-id)
+               (td ,(date->string (position-date p) "~4"))
+               (td ,(symbol->string (position-action p)))
+               (td ,(number->string (position-price p)))
+               (td ,actual-price)))))
+     positions)))
+
+(define (render-results num)
+  (let ((logs (redis-zrevrange *conn* "result-log" (- num) -1)))
+    (map
+     (lambda (log)
+       `(tr
+         (td ,(cdr (assoc 'pos-id      log)))
+         (td ,(case (cdr (assoc 'action log))
+                ((buy) "long")
+                ((sell) "short")))
+         (td ,(string-append (cdr (assoc 'sym log)) "." (cdr (assoc 'cur log))))
+         (td ,(format #f "~10,5f" (cdr (assoc 'open-price  log))))
+         (td ,(format #f "~10,6f" (cdr (assoc 'close-price log))))
+         (td ,(format #f "~10,6f" (cdr (assoc 'gain        log))))
+         (td ,(format #f "~10,2f" (cdr (assoc 'net-gain    log))))))
+     (vector-fold-right (^[a b] (cons (read-from-string b) a)) '() logs))))
+
 (define-http-handler "/"
   (^[req app]
     (violet-async
@@ -242,22 +273,30 @@
                                (sxml:sxml->html
                                 (create-page
                                  '(h2 "Positions")
-                                 (map
-                                  (lambda (style)
-                                    (let* ((cur-pair (trading-style-currency-pair style))
-                                           (name (currency-pair-name cur-pair))
-                                           (positions (await (^[] #?=(get-all-positions style)))))
-                                      `((h3 ,name)
-                                        (ul
-                                        ,(map
-                                          (^p `(li ,(write-to-string (serialize-position p))))
-                                          positions)))
-                                      ))
-                                  *trading-styles*)
-                                 )))))
-
-       ))
-     ))
+                                 `(table (@ (class "table"))
+                                   (tr (th "symbol")
+                                       (th "position ID")
+                                       (th "date")
+                                       (th "action")
+                                       (th "price")
+                                       (th "actual price"))
+                                   ,(map
+                                     (lambda (style)
+                                       (let* ((cur-pair (trading-style-currency-pair style))
+                                              (positions (await (^[] #?=(get-all-positions style)))))
+                                         (render-positions cur-pair positions)))
+                                     *trading-styles*))
+                                 '(h2 "Results")
+                                 `(table (@ (class "table"))
+                                         (tr (th "pos ID")
+                                             (th "type")
+                                             (th "symbol")
+                                             (th "open")
+                                             (th "close")
+                                             (th "gain")
+                                             (th "net gain"))
+                                         ,(render-results 100))
+                                 )))))))))
 
 (define-http-handler #/^\/static\// (file-handler))
 
@@ -436,8 +475,8 @@
   (let* ((gain (case action
                  ((sell) (- open-price  close-price))
                  ((buy)  (- close-price open-price))))
-         (sym (order-data-symbol order-data))
-         (cur (order-data-symbol order-data))
+         (sym (order-data-symbol   order-data))
+         (cur (order-data-currency order-data))
          (qty (order-data-quantity order-data))
          (net-gain (* gain qty)))
     (debug-log #`"Closing order done: pos: ,pos-id order: ,order-id"
@@ -445,7 +484,6 @@
                #`"open-price: ,open-price close-price: ,close-price gain: ,gain")
     (redis-zadd *conn* "result-log" pos-id (write-to-string
                                             `((pos-id      . ,pos-id)
-                                              (order-id    . ,order-id)
                                               (action      . ,action)
                                               (sym         . ,sym)
                                               (cur         . ,cur)
