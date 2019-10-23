@@ -28,7 +28,7 @@
 (define *conn* (redis-open redis-host redis-port))
 #?=*conn*
 
-(define (make-bar-from-row row chart-width half-bar-width bar-width count index transform-y)
+(define (make-bar-from-row base-url row chart-width half-bar-width bar-width count index transform-y)
   (let ((date  (bar-date  row))
         (open  (bar-open  row))
         (close (bar-close row))
@@ -37,7 +37,7 @@
     (let* ((x (x->integer (* chart-width (/ index count))))
            (line-color (if (> open close) "red" "black"))
            (color (if (> open close) "red" "white")))
-      (let ((bar `(a (@ (href ,#`"/,(date-year date)/,(date-month date)/,(date-day date)/,(date-hour date)/,(date-minute date)"))
+      (let ((bar `(a (@ (href ,#`",base-url,(date-year date)/,(date-month date)/,(date-day date)/,(date-hour date)/,(date-minute date)"))
                      (line (@ (x1 ,(+ x half-bar-width))
                               (y1 ,(transform-y high))
                               (x2 ,(+ x half-bar-width))
@@ -70,7 +70,7 @@
                   (style ,#`"stroke:,color;stroke-width:1"))
                ))))
 
-(define (format-data data)
+(define (format-data data base-url)
   (let ((chart-height 500)
         (chart-width 1000))
     `(,(let ((highest (data-set-highest data))
@@ -106,7 +106,8 @@
                        (if (null? rows)
                            (reverse dest)
                            (let ((row (car rows)))
-                             (let ((bar (make-bar-from-row row chart-width half-bar-width bar-width
+                             (let ((bar (make-bar-from-row base-url
+                                                           row chart-width half-bar-width bar-width
                                                            count index transform-y)))
                                (loop (cdr rows) (+ 1 index) (cons bar dest))))))
                    ,(draw-line* (min-line/range/step data 0            (- count 48) 4) "black")
@@ -148,7 +149,7 @@
       (link (@ (rel "stylesheet") (href "/static/starter-template.css"))))
      (body
       (nav (@ (class "navbar navbar-expand-md navbar-dark bg-dark fixed-top"))
-             (a (@ (href "#") (class "navbar-brand")) "Trader")
+             (a (@ (href "/") (class "navbar-brand")) "Trader")
              (button
               (@
                (type "button")
@@ -162,7 +163,7 @@
              (div (@ (id "navbarsExampleDefault") (class "collapse navbar-collapse"))
                     (ul (@ (class "navbar-nav mr-auto"))
                           (li (@ (class "nav-item active"))
-                                (a (@ (href "#") (class "nav-link"))
+                                (a (@ (href "/") (class "nav-link"))
                                      "Home " (span (@ (class "sr-only")) "(current)")))
                           (li (@ (class "nav-item")) (a (@ (href "#") (class "nav-link")) "Link"))
                           (li (@ (class "nav-item"))
@@ -213,36 +214,40 @@
          (next-day-time (add-duration time a-day)))
     (time-utc->date next-day-time)))
 
-;; (define-http-handler #/^\/(\d+)\/0*(\d+)\/0*(\d+)\/0*(\d+)\/0*(\d+)\/?/
-;;   (^[req app]
-;;     (let-params req ([year   "p:1" :convert x->integer]
-;;                      [month  "p:2" :convert x->integer]
-;;                      [date   "p:3" :convert x->integer]
-;;                      [hour   "p:4" :convert x->integer]
-;;                      [minute "p:5" :convert x->integer])
-;;       (violet-async
-;;        (^[await]
-;;          (let* ((end-date (make-date 0 0 minute hour date month year 0))
-;;                 (data (await (^[] (query-data *conn* "EUR.GBP" end-date
-;;                                               (* 24 5 4) "1 hour")))))
-;;            (respond/ok req (cons "<!DOCTYPE html>"
-;;                                  (sxml:sxml->html
-;;                                   (create-page
-;;                                    `(html (body (p ,#`"EUR.GBP ,(date->string end-date)")
-;;                                                 (h2 "1 hour")
-;;                                                 (div ,@(format-data data))
-;;                                                 ))))))))))))
+(define-http-handler #/^\/(\w+\.\w+)\/(15 mins)\/(\d+)\/0*(\d+)\/0*(\d+)\/0*(\d+)\/0*(\d+)\/?/
+  (^[req app]
+    (let-params req ([symbol "p:1"]
+                     [size   "p:2"]
+                     [year   "p:3" :convert x->integer]
+                     [month  "p:4" :convert x->integer]
+                     [date   "p:5" :convert x->integer]
+                     [hour   "p:6" :convert x->integer]
+                     [minute "p:7" :convert x->integer])
+      (violet-async
+       (^[await]
+         (let* ((end-date (make-date 0 0 minute hour date month year 0))
+                (data (await (^[] (query-data *conn* symbol end-date
+                                              (* 24 5 4) size)))))
+           (respond/ok req (cons "<!DOCTYPE html>"
+                                 (sxml:sxml->html
+                                  (create-page
+                                   `(html (body (p ,#`",symbol ,(date->string end-date)")
+                                                (h2 ,size)
+                                                (div ,@(format-data data #`"/,|symbol|/,|size|/"))
+                                                ))))))))))))
 
-(define (render-positions cur-pair positions)
+(define (render-positions cur-pair positions bar-size)
   (let ((cur (currency-pair-name cur-pair)))
     (map
        (^p (let* ((pos-id (position-index p))
                   (key (entry-price-key cur-pair))
-                  (actual-price (redis-hget *conn* key pos-id)))
+                  (actual-price (redis-hget *conn* key pos-id))
+                  (date (position-date p))
+                  (url (date->string date #`"/,|cur|/,|bar-size|/~Y/~m/~d/~H/~M")))
              `(tr
                ((td ,cur)
                (td ,pos-id)
-               (td ,(date->string (position-date p) "~4"))
+               (td (a (@ (href ,url)) ,(date->string date "~4")))
                (td ,(symbol->string (position-action p)))
                (td ,(number->string (position-price p)))
                (td ,actual-price)))))
@@ -284,7 +289,7 @@
                                      (lambda (style)
                                        (let* ((cur-pair (trading-style-currency-pair style))
                                               (positions (await (^[] #?=(get-all-positions style)))))
-                                         (render-positions cur-pair positions)))
+                                         (render-positions cur-pair positions "15 mins")))
                                      *trading-styles*))
                                  '(h2 "Results")
                                  `(table (@ (class "table"))
