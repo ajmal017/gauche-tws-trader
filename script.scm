@@ -243,14 +243,18 @@
                   (key (entry-price-key cur-pair))
                   (actual-price (redis-hget *conn* key pos-id))
                   (date (position-date p))
+                  (action (position-action p))
                   (url (date->string date #`"/,|cur|/,|bar-size|/~Y/~m/~d/~H/~M")))
              `(tr
                ((td ,cur)
                (td ,pos-id)
                (td (a (@ (href ,url)) ,(date->string date "~4")))
-               (td ,(symbol->string (position-action p)))
+               (td ,(symbol->string action))
                (td ,(number->string (position-price p)))
-               (td ,actual-price)))))
+               (td ,actual-price))
+               (td ,(number->string (case action
+                                      ((buy)  (position-lower-limit p))
+                                      ((sell) (position-upper-limit p))))))))
      positions)))
 
 (define (render-results num)
@@ -284,7 +288,8 @@
                                        (th "date")
                                        (th "action")
                                        (th "price")
-                                       (th "actual price"))
+                                       (th "actual price")
+                                       (th "stop loss"))
                                    ,(map
                                      (lambda (style)
                                        (let* ((cur-pair (trading-style-currency-pair style))
