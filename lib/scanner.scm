@@ -48,10 +48,11 @@
       (and (positive? (gradient long-trend))
            (bigger-gradient? short-trend long-trend)
            (let* ((price (last-price bar-close data))
+                  (lmt-price (last-price bar-high data))
                   (val (last-distance short-trend price data))
                   (gain (last-distance long-trend price data)))
              (and (> gain 0) (< val 0)
-                  (make-position index date 'sell price (+ price 0.0001) long-trend
+                  (make-position index date 'sell price (+ lmg-price 0.0001) long-trend
                                  (make-pos-info gain
                                                 long-trend long-err
                                                 short-trend short-err))))))))
@@ -64,10 +65,11 @@
       (and (negative? (gradient long-trend))
            (bigger-gradient? short-trend long-trend)
            (let* ((price (last-price bar-close data))
+                  (lmt-price (last-price bar-low data))
                   (val (last-distance short-trend price data))
                   (gain (- (last-distance long-trend price data))))
              (and (> gain 0) (> val 0)
-                  (make-position index date 'buy price long-trend (- price 0.0001)
+                  (make-position index date 'buy price long-trend (- lmt-price 0.0001)
                                  (make-pos-info gain
                                                 long-trend long-err
                                                 short-trend short-err))))))))
