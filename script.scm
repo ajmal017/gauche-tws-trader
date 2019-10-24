@@ -4,6 +4,7 @@
 (use data.queue)
 (use srfi-19)
 (use scheme.vector)
+(use util.match)
 
 (add-load-path "./gauche-rheingau/lib/")
 (use rheingau)
@@ -503,9 +504,8 @@
                                               (net-gain    . ,net-gain)
                                               )))))
 
-(define (close-position close-order)
-  (debug-log "Closing" close-order)
-  ;;; (list 'close pos-idx price result gain)
+(define (set-profits close-order)
+  (debug-log "Really Closing...")
   (let* ((pos-id (cadr close-order))
          (dat (get-order-data *conn* pos-id))
          (sym (order-data-symbol dat))
@@ -528,6 +528,19 @@
                          (log-result pos-id oid dat (position-action pos) open-price price))
                        (debug-log #`"ERROR: Position not found: ,pos-id")))))
         (debug-log #`"Redis entry not found: ,pos-id"))))
+
+(define (close-position close-order)
+  (debug-log "Closing" close-order)
+  ;; (close "95" 1.098735 loss -9.999999999998899e-5)
+  ;;; (list 'close pos-idx price result gain)
+  (match close-order
+         (('close _ _ 'loss . _)
+          (debug-log "Stop loss...")
+          (set-profits close-order))    ; FIXME handle stop loss with Stop Limit
+         (('close _ _ 'gain . _)
+          (set-profits close-order))
+         (('close _ _ 'manual . _)
+          (set-profits close-order))))
 
 ;; positions : pos-id -> [position]
 ;; order-data : pos-id -> [order-id symbol currentcy exchange]
