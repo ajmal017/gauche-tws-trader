@@ -498,7 +498,7 @@
 (define (position-id-bump!)
   (redis-incr *conn* "position-id"))
 
-(define *quantitiy-unit* 40000.0)       ; minimum size = 20K
+(define *quantitiy-unit* 10000.0)       ; minimum size = 20K
 
 (define (log-result pos-id order-id order-data action open-price close-price)
   (let* ((gain (case action
