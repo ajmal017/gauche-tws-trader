@@ -255,7 +255,13 @@
                (td ,actual-price))
                (td ,(number->string (case action
                                       ((buy)  (position-lower-limit p))
-                                      ((sell) (position-upper-limit p))))))))
+                                      ((sell) (position-upper-limit p)))))
+               (td (@ (style "padding: 0px; vertical-align: middle"))
+                   (form (@ (action ,#`"/close/,pos-id") (method "post") (class "form-inline"))
+                         (button (@ (type "submit") (class "btn btn-primary btn-sm")
+                                    (disabled "disabled"))
+                                 "Close Now")
+                         )))))
      positions)))
 
 (define (render-results num)
@@ -290,7 +296,8 @@
                                        (th "action")
                                        (th "price")
                                        (th "actual price")
-                                       (th "stop loss"))
+                                       (th "stop loss")
+                                       (td ""))
                                    ,(map
                                      (lambda (style)
                                        (let* ((cur-pair (trading-style-currency-pair style))
@@ -308,6 +315,17 @@
                                              (th "net gain"))
                                          ,(render-results 100))
                                  )))))))))
+
+(define-http-handler #/^\/close\/(\d+)/
+  (^[req app]
+    (let-params req ([pos-id "p:1"])
+      (violet-async
+       (^[await]
+         (enqueue! *task-queue*
+                   (^[]
+                     (close-position `(close ,pos-id _ manual))
+                     (respond/redirect req "/")))
+         )))))
 
 (define-http-handler #/^\/static\// (file-handler))
 
