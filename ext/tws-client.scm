@@ -7,6 +7,9 @@
           tws-client-historical-data-request
           tws-client-place-fx-market-order
           tws-client-request-current-time
+          tws-client-place-order
+          make-tws-contract
+          make-tws-order
           ))
 (select-module ext.tws-client)
 

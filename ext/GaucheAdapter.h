@@ -40,6 +40,7 @@ public:
                                 const char* whatToShow);
     void requestCurrentTime();
 
+    void placeOrder(OrderId orderId, Contract *contract, Order *order);
     void placeFxMarketOrder(OrderId orderId, const char* symbol,
                             const char* secType,
                             const char* currency, const char* exchange,

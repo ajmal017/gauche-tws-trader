@@ -121,6 +121,11 @@ void GaucheAdapter::historicalDataRequests(TickerId reqId, const char* symbol,
                                  TagValueListSPtr());
 }
 
+void GaucheAdapter::placeOrder(OrderId orderId, Contract *contract, Order *order) {
+    Scm_Printf(SCM_CURERR, "%s: contract = %p, order = %p\n", __FUNCTION__, contract, order);
+    m_pClient->placeOrder(orderId, *contract, *order);
+}
+
 void GaucheAdapter::placeFxMarketOrder(OrderId orderId, const char* symbol,
                                        const char* secType,
                                        const char* currency, const char* exchange,
@@ -136,7 +141,7 @@ void GaucheAdapter::placeFxMarketOrder(OrderId orderId, const char* symbol,
 	order.orderType = "MKT";
 	order.totalQuantity = quantity;
 
-    m_pClient->placeOrder(orderId, contract, order);
+    placeOrder(orderId, &contract, &order);
 }
 
 void GaucheAdapter::requestCurrentTime() {

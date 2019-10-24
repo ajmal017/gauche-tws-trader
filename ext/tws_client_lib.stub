@@ -49,6 +49,54 @@
   ::<void>
   "cl->requestCurrentTime();")
 
+;;;;;;;;;;;;;;;;;
+
+(define-type <tws-contract> "Contract*" "tws-contract"
+  "TWS_CONTRACT_P" "TWS_CONTRACT_UNBOX" "TWS_CONTRACT_BOX")
+
+(define-cproc make-tws-contract (symbol::<const-cstring>
+                                 secType::<const-cstring>
+                                 currency::<const-cstring>
+                                 exchange::<const-cstring>)
+  ::<tws-contract>
+  "Contract *contract = new Contract();"
+  "contract->symbol = symbol;"
+  "contract->secType = secType;"
+  "contract->currency = currency;"
+  "contract->exchange = exchange;"
+  (expr "contract"))
+
+;;;;;;;;;;;;;;;;;
+
+(define-type <tws-order> "Order*" "tws-order"
+  "TWS_ORDER_P" "TWS_ORDER_UNBOX" "TWS_ORDER_BOX")
+
+(define-cproc make-tws-order (action::<const-cstring>
+                              orderType::<const-cstring>
+                              quantity::<double>
+                              lmtPrice::<double>
+                              auxPrice::<double>
+                              parentId::<int>)
+  ::<tws-order>
+  "Order *order = new Order();"
+  "order->action = action;"
+  "order->orderType = orderType;"
+  "order->totalQuantity = quantity;"
+  "order->lmtPrice = lmtPrice;"
+  "order->auxPrice = auxPrice;"
+  "order->parentId = parentId;"
+  (expr "order"))
+
+;;;;;;;;;;
+
+(define-cproc tws-client-place-order (cl::<tws-client>
+                                      orderId::<int>
+                                      contract::<tws-contract>
+                                      order::<tws-order>)
+  ::<void>
+  "cl->placeOrder(orderId, contract, order);")
+
+
 ;; Local Variables:
 ;; mode: scheme
 ;; End:
