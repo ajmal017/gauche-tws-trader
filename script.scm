@@ -562,11 +562,13 @@
 (define *order-status-callbacks* (make-hash-table))
 
 (define (order action symbol currecy exchange quantity proc)
+  (debug-log "ordering")
   (enqueue! *task-queue*
             (lambda ()
-              (let ((oid (order-id!)))
-                (tws-client-place-fx-market-order *tws* oid symbol "CFD"
-                                                  currecy exchange action quantity)
+              (let ((oid (order-id!))
+                    (contract (make-tws-contract symbol "CFD" currecy exchange))
+                    (order (make-tws-order action "MKT" quantity 0 0 0)))
+                (tws-client-place-order *tws* oid contract order)
                 (log-order *conn* oid action symbol currecy exchange quantity)
                 (hash-table-put! *order-status-callbacks* oid (lambda (price) (proc oid price)))))))
 
