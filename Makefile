@@ -16,7 +16,7 @@ RHEINGAU=./gauche-rheingau
 
 TWS_ADAPTER=./ext/gaucheadapter.a
 
-SCANRESULT=result.tmp.txt
+SCANRESULT=result_$(shell date +%Y%m%d-%H%M).tmp.log
 
 run-docker:
 	/usr/local/bin/docker-compose up
@@ -42,7 +42,12 @@ gain-error.dat: sum.scm result.tmp.txt
 scan: $(SCANRESULT)
 
 $(SCANRESULT): scan.scm
-	docker-compose exec gosh gosh scan.scm | tee $@
+	(docker-compose run gosh gosh scan.scm EUR GBP && \
+	 docker-compose run gosh gosh scan.scm EUR USD && \
+	 docker-compose run gosh gosh scan.scm EUR CHF && \
+	 docker-compose run gosh gosh scan.scm GBP USD && \
+	 docker-compose run gosh gosh scan.scm GBP CHF && \
+	 docker-compose run gosh gosh scan.scm USD CHF) | tee $@
 
 ## docker run --rm -p 2222:2222 -v$PWD:/code -w /code -t -i gauche-violet_gosh make debug
 debug: $(TARGET) $(MAKIKI)

@@ -93,9 +93,10 @@
                                                 'loss (- (position-price pos)
                                                          (position-upper-limit pos))))
                     (loop (cdr src) dest))
-                  (if (and (< (distance-to-line (adjusted-index pos) (bar-close bar)
-                                                (position-lower-limit pos)) 0)
-                           (> (position-price pos) (bar-close bar)))
+                  (if (or (and (< (distance-to-line (adjusted-index pos) (bar-close bar)
+                                                    (position-lower-limit pos)) 0)
+                               (> (position-price pos) (bar-close bar)))
+                          (> (position-price pos) (+ (bar-close bar) 0.0015))) ; 15 pips
                       (begin
                         (close-proc (close-position (position-index pos) (bar-close bar)
                                                     'gain (- (position-price pos) (bar-close bar))))
@@ -109,9 +110,10 @@
                                                 'loss (- (position-lower-limit pos)
                                                          (position-price pos))))
                     (loop (cdr src) dest))
-                  (if (and (> (distance-to-line (adjusted-index pos) (bar-close bar)
-                                                (position-upper-limit pos)) 0)
-                           (> (bar-close bar) (position-price pos)))
+                  (if (or (and (> (distance-to-line (adjusted-index pos) (bar-close bar)
+                                                    (position-upper-limit pos)) 0)
+                               (> (bar-close bar) (position-price pos)))
+                          (> (bar-close bar) (+ (position-price pos) 0.0015))) ; 15 pips
                       (begin
                         (close-proc (close-position (position-index pos) (bar-close bar)
                                                     'gain (- (bar-close bar) (position-price pos))))
