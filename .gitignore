@@ -6,7 +6,10 @@ violet
 .DS_Store
 *.dat
 *.tmp.*
+tmp.*
+*.gcx
 *.o
 TAGS
 *.log
 logs/
+/stat/data/
