@@ -268,6 +268,15 @@
   (let ((logs (redis-zrevrange *conn* "result-log" (- num) -1)))
     (map
      (lambda (log)
+       (let* ((log-pos #?=(assoc 'position log))
+              (pos (and log-pos (deserialize-position (cdr log-pos))))
+              (stop-loss (and pos
+                              (case (position-action pos)
+                                ((sell) (position-upper-limit pos))
+                                ((buy) (position-lower-limit pos)))))
+              (expected-loss (if pos
+                                 (x->string (* 10000 (abs (- stop-loss (position-price pos)))))
+                                 "--")))
        `(tr
          (td ,(cdr (assoc 'pos-id      log)))
          (td ,(case (cdr (assoc 'action log))
@@ -277,7 +286,8 @@
          (td ,(format #f "~10,5f" (cdr (assoc 'open-price  log))))
          (td ,(format #f "~10,6f" (cdr (assoc 'close-price log))))
          (td ,(format #f "~10,6f" (cdr (assoc 'gain        log))))
-         (td ,(format #f "~10,2f" (cdr (assoc 'net-gain    log))))))
+         (td ,(format #f "~10,2f" (cdr (assoc 'net-gain    log))))
+         (td ,expected-loss))))
      (vector-fold-right (^[a b] (cons (read-from-string b) a)) '() logs))))
 
 (define-http-handler "/"
@@ -312,7 +322,8 @@
                                              (th "open")
                                              (th "close")
                                              (th "gain")
-                                             (th "net gain"))
+                                             (th "net gain")
+                                             (th "exp. loss"))
                                          ,(render-results 100))
                                  )))))))))
 
@@ -500,7 +511,7 @@
 
 (define *quantitiy-unit* 10000.0)       ; minimum size = 20K
 
-(define (log-result pos-id order-id order-data action open-price close-price)
+(define (log-result pos-id order-id order-data action open-price close-price pos order date)
   (let* ((gain (case action
                  ((sell) (- open-price  close-price))
                  ((buy)  (- close-price open-price))))
@@ -511,7 +522,7 @@
     (debug-log #`"Closing order done: pos: ,pos-id order: ,order-id"
                #`"action: ,action"
                #`"open-price: ,open-price close-price: ,close-price gain: ,gain")
-    (redis-zadd *conn* "result-log" pos-id (write-to-string
+    (redis-zadd *conn* "result-log" pos-id #?=(write-to-string
                                             `((pos-id      . ,pos-id)
                                               (action      . ,action)
                                               (sym         . ,sym)
@@ -520,6 +531,9 @@
                                               (close-price . ,close-price)
                                               (gain        . ,gain)
                                               (net-gain    . ,net-gain)
+                                              (position    . ,(serialize-position pos))
+                                              (close-order . ,order)
+                                              (date        . ,(date->string "~4"))
                                               )))))
 
 (define (set-profits close-order)
@@ -543,7 +557,8 @@
                  (let ((res (redis-hget *conn* pos-key pos-id)))
                    (if res
                        (let ((open-price (string->number res)))
-                         (log-result pos-id oid dat (position-action pos) open-price price))
+                         (log-result pos-id oid dat (position-action pos) open-price price
+                                     pos close-order (current-date)))
                        (debug-log #`"ERROR: Position not found: ,pos-id")))))
         (debug-log #`"Redis entry not found: ,pos-id"))))
 

@@ -29,12 +29,13 @@
 (define *total-gain* 0)
 (define *total-orders* 0)
 
-(define (close-positiion index)
+(define (close-positiion index date)
   (lambda (pos)
     (let ((gain (cadr (cdddr pos))))
       (set! *total-gain* (+ *total-gain* gain))
       (inc! *total-orders*)
-      (print `(close ,*total-orders* ,*total-gain* ,index ,pos)))))
+      (write `(close ,*total-orders* ,*total-gain* ,index ,(date->string date "~4") ,pos))
+      (newline))))
 
 (define (main args)
   (match args ((com sym cur) (scan-main sym cur))))
@@ -54,9 +55,9 @@
       (if (time<? t t2)
           (let ((date (time-utc->date t)))
             (let-values (((pos poss)
-                          (inspect *conn* style date positions index (close-positiion index))))
-              (if (and pos
-                       (> (pos-info-gain (position-info pos)) 0.0010)) ; > 10 pips
+                          (inspect *conn* style date positions index
+                                   (close-positiion index (time-utc->date t)))))
+              (if pos
                   (begin
                     (inc! *total-orders*)
                     (write (serialize-position pos))(newline)
