@@ -268,7 +268,7 @@
   (let ((logs (redis-zrevrange *conn* "result-log" (- num) -1)))
     (map
      (lambda (log)
-       (let* ((log-pos #?=(assoc 'position log))
+       (let* ((log-pos (assoc 'position log))
               (pos (and log-pos (deserialize-position (cdr log-pos))))
               (stop-loss (and pos
                               (case (position-action pos)
@@ -533,7 +533,7 @@
                                               (net-gain    . ,net-gain)
                                               (position    . ,(serialize-position pos))
                                               (close-order . ,order)
-                                              (date        . ,(date->string "~4"))
+                                              (date        . ,(date->string date "~4"))
                                               )))))
 
 (define (set-profits close-order)
