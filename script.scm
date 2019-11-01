@@ -275,7 +275,8 @@
                                 ((sell) (position-upper-limit pos))
                                 ((buy) (position-lower-limit pos)))))
               (expected-loss (if pos
-                                 (x->string (* 10000 (abs (- stop-loss (position-price pos)))))
+                                 (format #f "~5,2f"
+                                         (* 10000 (abs (- stop-loss (position-price pos)))))
                                  "--")))
        `(tr
          (td ,(cdr (assoc 'pos-id      log)))
