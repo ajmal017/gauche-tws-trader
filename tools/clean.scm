@@ -8,7 +8,7 @@
 (use config)
 (use trader)
 
-(define *conn* (redis-open redis-host 6379))
+(define *conn* (redis-open redis-host redis-port))
 
 (define keys (list
               "EUR.CHF:15 mins"
