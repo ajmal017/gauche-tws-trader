@@ -265,7 +265,7 @@
      positions)))
 
 (define (render-results num)
-  (let ((logs (redis-zrevrange *conn* "result-log" (- num) -1)))
+  (let ((logs (redis-zrevrange *conn* "result-log" 0 num)))
     (map
      (lambda (log)
        (let* ((log-pos (assoc 'position log))
