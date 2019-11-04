@@ -14,3 +14,11 @@
         (redis-hset *conn* "test.hget" "a" 123)
         (list (redis-hget *conn* "test.hget" "a")
               (redis-hget *conn* "test.hget" "b"))))
+
+(test "redis-zrange with scores" '("a" "100" "b" "200")
+      (lambda ()
+        (redis-zadd *conn* "test.zset" 100 "a")
+        (redis-zadd *conn* "test.zset" 200 "b")
+        (redis-zadd *conn* "test.zset" 300 "c")
+        (let ((dat (redis-zrange *conn* "test.zset" 0 1 "withscores")))
+          (vector->list dat))))

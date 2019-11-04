@@ -49,9 +49,15 @@
     dest))
 
 (define (add-data conn symbol bar-size date open close high low)
-  (let ((time (time-second (date->time-utc date))))
-    (let ((result (redis-zadd conn (make-redis-key symbol bar-size)
-                              time (write-to-string `(,time ,open ,close ,high ,low)))))
-      (unless (= result 1)
-        (display #`"Failed to add data. Result: ,result" (current-error-port))
-        (newline (current-error-port))))))
+  (let* ((time (time-second (date->time-utc date)))
+         (key (make-redis-key symbol bar-size))
+         (dat (redis-zrangebyscore conn key time time)))
+    (if (> (vector-length dat) 0)
+        (begin
+          (display #`"Data already added: ,(vector->list dat)" (current-error-port))
+          (newline (current-error-port)))
+        (let ((result (redis-zadd conn key
+                                  time (write-to-string `(,time ,open ,close ,high ,low)))))
+          (unless (= result 1)
+                  (display #`"Failed to add data. Result: ,result" (current-error-port))
+                  (newline (current-error-port)))))))

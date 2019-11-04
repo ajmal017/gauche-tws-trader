@@ -27,7 +27,7 @@ build: $(TARGET)
 
 run: $(TARGET) $(MAKIKI)
 #	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH) ./$(TARGET) $(SCRIPT)
-	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH) nodemon -e scm --ignore gosh-modules/ --ignore gauche-rheingau/ --exec ./$(TARGET) $(SCRIPT)
+	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH) nodemon -e scm --ignore gosh-modules/ --ignore gauche-rheingau/ --ignore tools/ --ignore test/ --exec ./$(TARGET) $(SCRIPT)
 
 # run on host
 tags:
