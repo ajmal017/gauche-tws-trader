@@ -259,7 +259,7 @@
                (td (@ (style "padding: 0px; vertical-align: middle"))
                    (form (@ (action ,#`"/close/,pos-id") (method "post") (class "form-inline"))
                          (button (@ (type "submit") (class "btn btn-primary btn-sm")
-                                    (disabled "disabled"))
+                                    #;(disabled "disabled"))
                                  "Close Now")
                          )))))
      positions)))
@@ -331,13 +331,17 @@
 (define-http-handler #/^\/close\/(\d+)/
   (^[req app]
     (let-params req ([pos-id "p:1"])
-      (violet-async
-       (^[await]
-         (enqueue! *task-queue*
-                   (^[]
-                     (close-position `(close ,pos-id _ manual))
-                     (respond/redirect req "/")))
-         )))))
+                (violet-async
+                 (^[await]
+                   (await
+                    (^[]
+                      (enqueue! *task-queue*
+                                (^[]
+                                  (close-position `(close ,pos-id _ manual))
+                                  ))))
+                   (thread-sleep! 3)
+                   (respond/redirect req "/")
+                   )))))
 
 (define-http-handler #/^\/static\// (file-handler))
 
