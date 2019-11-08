@@ -13,3 +13,4 @@ TAGS
 *.log
 logs/
 /stat/data/
+*.sql
