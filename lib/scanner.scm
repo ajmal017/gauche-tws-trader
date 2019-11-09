@@ -85,11 +85,13 @@
   (let loop ((src positions) (dest ()))
     (if (null? src)
         dest
-        (let ((pos (car src)))
+        (let* ((entry (car src))
+               (pos-id (car entry))
+               (pos (cdr entry)))
           (if (eq? (position-action pos) 'sell)
               (if (> (bar-close bar) (position-upper-limit pos))
                   (begin
-                    (close-proc (close-position (position-index pos) (position-upper-limit pos)
+                    (close-proc pos-id (close-position (position-index pos) (position-upper-limit pos)
                                                 'loss (- (position-price pos)
                                                          (position-upper-limit pos))))
                     (loop (cdr src) dest))
@@ -97,15 +99,15 @@
                                                 (position-lower-limit pos)) 0)
                            (> (position-price pos) (bar-close bar)))
                       (begin
-                        (close-proc (close-position (position-index pos) (bar-close bar)
+                        (close-proc pos-id (close-position (position-index pos) (bar-close bar)
                                                     'gain (- (position-price pos) (bar-close bar))))
                         (loop (cdr src) dest))
-                      (loop (cdr src) (cons pos dest))))
+                      (loop (cdr src) (cons entry dest))))
 
                                         ; buy
               (if (< (bar-close bar) (position-lower-limit pos))
                   (begin
-                    (close-proc (close-position (position-index pos) (position-lower-limit pos)
+                    (close-proc pos-id (close-position (position-index pos) (position-lower-limit pos)
                                                 'loss (- (position-lower-limit pos)
                                                          (position-price pos))))
                     (loop (cdr src) dest))
@@ -113,15 +115,16 @@
                                                 (position-upper-limit pos)) 0)
                            (> (bar-close bar) (position-price pos)))
                       (begin
-                        (close-proc (close-position (position-index pos) (bar-close bar)
+                        (close-proc pos-id (close-position (position-index pos) (bar-close bar)
                                                     'gain (- (bar-close bar) (position-price pos))))
                         (loop (cdr src) dest))
-                      (loop (cdr src) (cons pos dest)))))))))
+                      (loop (cdr src) (cons entry dest)))))))))
 
-(define (inspect conn style date positions index close-proc)
+(define (inspect conn style date positions close-proc)
   (let* ((cur (currency-pair-name (trading-style-currency-pair style)))
          (bar-size (trading-style-bar-size style))
          (data (query-data conn cur date *data-count* bar-size))
+         (index (bar-count conn cur date bar-size))
          (actual-date (last-date data)))
     (if (> (time-second (time-difference (date->time-utc date) (date->time-utc actual-date)))
            (if (string=? (trading-style-bar-size style) "1 hour")

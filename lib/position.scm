@@ -21,11 +21,11 @@
   (let* ((ser (redis-hget redis-conn "order-data" pos-id)))
     (deserialize-order-data (read-from-string ser))))
 
-(define (save-position redis-conn symbol currency pos ord)
+(define (save-position redis-conn symbol currency pos-id pos ord)
   (let ((pos-key #`"positions:,|symbol|.,|currency|"))
-    (redis-hset redis-conn pos-key (position-index pos)
+    (redis-hset redis-conn pos-key pos-id
                 (write-to-string (serialize-position pos)))
-    (redis-hset redis-conn "order-data" (position-index pos)
+    (redis-hset redis-conn "order-data" pos-id
                 (write-to-string (serialize-order-data ord)))))
 
 (define (delete-position redis-conn symbol currency pos-id)

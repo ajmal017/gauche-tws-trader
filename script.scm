@@ -240,12 +240,13 @@
 (define (render-positions cur-pair positions bar-size)
   (let ((cur (currency-pair-name cur-pair)))
     (map
-       (^p (let* ((pos-id (position-index p))
-                  (key (entry-price-key cur-pair))
-                  (actual-price (redis-hget *conn* key pos-id))
-                  (date (position-date p))
-                  (action (position-action p))
-                  (url (date->string date #`"/,|cur|/,|bar-size|/~Y/~m/~d/~H/~M")))
+     (^e (let* ((pos-id (car e))
+                (p (cdr e))
+                (key (entry-price-key cur-pair))
+                (actual-price (redis-hget *conn* key pos-id))
+                (date (position-date p))
+                (action (position-action p))
+                (url (date->string date #`"/,|cur|/,|bar-size|/~Y/~m/~d/~H/~M")))
              `(tr
                ((td ,cur)
                (td ,pos-id)
@@ -337,7 +338,7 @@
                     (^[]
                       (enqueue! *task-queue*
                                 (^[]
-                                  (close-position `(close ,pos-id _ manual))
+                                  (close-position pos-id `(close ,pos-id _ manual))
                                   ))))
                    (thread-sleep! 3)
                    (respond/redirect req "/")
@@ -500,13 +501,14 @@
 
 (define (get-all-positions style)
   (let* ((key #`"positions:,(currency-pair-name (trading-style-currency-pair style))")
-         (positions (vector-fold-right (^[a b] (cons b a)) '() (redis-hvals *conn* key))))
-    (write-to-string positions)
-    (if (pair? positions)
-        (map (lambda (str)
-               (deserialize-position (read-from-string str)))
-             positions)
-        '())))
+         (vec (redis-hgetall *conn* key)))
+    (let loop ((i 0) (part ()))
+      (if (< i (vector-length vec))
+          (loop (+ i 2)
+                (cons (cons (vector-ref vec i)
+                            (deserialize-position (read-from-string (vector-ref vec (+ i 1)))))
+                      part))
+          part))))
 
 (define (position-id)
   (redis-get *conn* "position-id"))
@@ -541,10 +543,9 @@
                                               (date        . ,(date->string date "~4"))
                                               )))))
 
-(define (set-profits close-order)
+(define (set-profits pos-id close-order)
   (debug-log "Really Closing...")
-  (let* ((pos-id (cadr close-order))
-         (dat (get-order-data *conn* pos-id))
+  (let* ((dat (get-order-data *conn* pos-id))
          (sym (order-data-symbol dat))
          (cur (order-data-currency dat))
          (pos (get-position *conn* sym cur pos-id))
@@ -567,18 +568,18 @@
                        (debug-log #`"ERROR: Position not found: ,pos-id")))))
         (debug-log #`"Redis entry not found: ,pos-id"))))
 
-(define (close-position close-order)
+(define (close-position pos-id close-order)
   (debug-log "Closing" close-order)
   ;; (close "95" 1.098735 loss -9.999999999998899e-5)
   ;;; (list 'close pos-idx price result gain)
   (match close-order
          (('close _ _ 'loss . _)
           (debug-log "Stop loss...")
-          (set-profits close-order))    ; FIXME handle stop loss with Stop Limit
+          (set-profits pos-id close-order))    ; FIXME handle stop loss with Stop Limit
          (('close _ _ 'gain . _)
-          (set-profits close-order))
+          (set-profits pos-id close-order))
          (('close _ _ 'manual . _)
-          (set-profits close-order))))
+          (set-profits pos-id close-order))))
 
 ;; positions : pos-id -> [position]
 ;; order-data : pos-id -> [order-id symbol currentcy exchange]
@@ -586,7 +587,7 @@
 (define (entry-price-key cur-pair)
   #`"entry-price:,(currency-pair-name cur-pair)")
 
-(define (open-position style pos)
+(define (open-position pos-id style pos)
   (debug-log "Opening" (serialize-position pos))
 
   (let* ((cur-pair (trading-style-currency-pair style))
@@ -600,8 +601,8 @@
            ((buy) "BUY"))
          sym cur exc qty
          (lambda (oid price)
-           (save-position *conn* sym cur pos (make-order-data oid sym cur exc qty))
-           (redis-hset *conn* pos-key (position-index pos) price)))))
+           (save-position *conn* sym cur pos-id pos (make-order-data oid sym cur exc qty))
+           (redis-hset *conn* pos-key pos-id price)))))
 
 (define (orders-key symbol currecy exchange)
   #`"orders:,|symbol|:,|currecy|:,|exchange|")
@@ -626,9 +627,9 @@
 (define (on-historical-data-end req-id start-date end-date)
   (let ((style (hash-table-get *trading-style-table* req-id)))
     (let-values (((pos poss) (inspect *conn* style (current-date) (get-all-positions style)
-                                      (position-id) close-position)))
+                                      close-position)))
       (when pos
-            (open-position style pos)
+            (open-position (position-id) style pos)
             (position-id-bump!)))
 
     (sleep-and-update style)))

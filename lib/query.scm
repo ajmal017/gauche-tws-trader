@@ -12,6 +12,7 @@
   (export
    query-data
    add-data
+   bar-count
    ))
 
 (select-module query)
@@ -20,6 +21,12 @@
 ;; Redis
 ;; ZSET symbol . bar-size [ time ] -> (time open close high low)
 (define (make-redis-key symbol bar-size) #`",|symbol|:,|bar-size|")
+
+(define (bar-count conn symbol end-date size)
+  (let ((key (make-redis-key symbol size))
+        (end-sec (time->seconds (date->time-utc end-date))))
+    (redis-zcount conn key "-inf" end-sec)
+    ))
 
 (define (query-data conn symbol end-date count size)
   (let* ((end-sec (time->seconds (date->time-utc end-date)))
