@@ -328,7 +328,7 @@
          (td ,(format #f "~10,5f (~,5f)"
                       (assoc-ref log 'close-price)
                       (if close-order (caddr close-order) 0)))
-         (td ,(format #f "~10,6f" (cdr (assoc 'gain        log))))
+         ;; (td ,(format #f "~10,6f" (cdr (assoc 'gain        log))))
          (td ,(format #f "~10,2f" (cdr (assoc 'net-gain    log))))
          (td ,expected-loss))))
      (vector-fold-right (^[a b] (cons (read-from-string b) a)) '() logs))))
@@ -364,7 +364,7 @@
                                              (th "symbol")
                                              (th "open")
                                              (th "close")
-                                             (th "gain")
+                                             ;; (th "gain")
                                              (th "net gain")
                                              (th "exp. loss"))
                                          ,(render-results 100))
