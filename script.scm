@@ -17,6 +17,7 @@
 (use query)
 (use scanner)
 (use position)
+(use logger)
 
 (use redis)
 
@@ -52,6 +53,30 @@
                               )))))
         bar))))
 
+(define (date<? a b)
+  (time<? (date->time-utc a) (date->time-utc b)))
+
+(define (draw-orders history prev-date date
+                     chart-width width count index transform-y)
+  (if prev-date
+      (let loop ((key (tree-map-ceiling history prev-date))
+                 (dest ()))
+        (if (and key (date<? key date))
+            (let ((order (tree-map-get history key)))
+              (match order
+                     ((action price)
+                      (let ((x (x->integer (* chart-width (/ index count))))
+                            (y (transform-y price))
+                            (color (case action ((buy) "green") ((sell) "red"))))
+                        (debug-log key action price)
+                        (let ((elem `(rect (@ (x ,x)
+                                              (y ,(- y (/ width 2)))
+                                              (width ,width) (height ,width)
+                                              (style ,#`"fill:,color;stroke:,color")))))
+                          (loop (tree-map-successor history key) (cons elem dest)))))))
+            dest))
+      ()))
+
 (define (draw-line poly chart-width count transform half-bar-width color)
   (let ((a (poly-a poly))
         (b (poly-b poly))
@@ -71,7 +96,7 @@
                   (style ,#`"stroke:,color;stroke-width:1"))
                ))))
 
-(define (format-data data base-url)
+(define (format-data data history base-url)
   (let ((chart-height 500)
         (chart-width 1000))
     `(,(let ((highest (data-set-highest data))
@@ -79,12 +104,13 @@
              (rows (data-set-rows data))
              (count (data-set-count data)))
          (let ((transform-y
-                (^v (- chart-height
-                       (* (- v lowest)
-                          (/ chart-height
-                             (- highest lowest))
-                          0.8)
-                       (* chart-height 0.1)))))
+                (^v (let ((y (- chart-height
+                                (* (- v lowest)
+                                   (/ chart-height
+                                      (- highest lowest))
+                                   0.8)
+                                (* chart-height 0.1))))
+                      (x->integer y)))))
            (let* ((step (/ chart-width count))
                   (bar-width (x->integer (/ step 2)))
                   (half-bar-width (x->integer (/ step 4)))
@@ -103,18 +129,23 @@
                             (style "stroke:none;fill:Lavender")))
                    ,@(let loop ((rows rows)
                                 (index 0)
-                                (dest ()))
+                                (dest ())
+                                (prev-date #f))
                        (if (null? rows)
                            (reverse dest)
                            (let ((row (car rows)))
-                             (let ((bar (make-bar-from-row base-url
-                                                           row chart-width half-bar-width bar-width
-                                                           count index transform-y)))
-                               (loop (cdr rows) (+ 1 index) (cons bar dest))))))
-                   ,(draw-line* (min-line/range/step data 0            (- count 48) 4) "black")
-                   ,(draw-line* (min-line/range      data (- count 48) 23)             "black")
-                   ,(draw-line* (max-line/range/step data 0            (- count 48) 4) "blue")
-                   ,(draw-line* (max-line/range      data (- count 48) 23)             "blue")
+                             (let* ((bar (make-bar-from-row base-url
+                                                            row chart-width half-bar-width bar-width
+                                                            count index transform-y))
+                                    (date (bar-date row))
+                                    (orders (draw-orders history prev-date date
+                                                         chart-width 10 count index transform-y)))
+                               (loop (cdr rows) (+ 1 index)
+                                     (cons (cons bar orders) dest) date)))))
+                   ;; ,(draw-line* (min-line/range/step data 0            (- count 48) 4) "black")
+                   ;; ,(draw-line* (min-line/range      data (- count 48) 23)             "black")
+                   ;; ,(draw-line* (max-line/range/step data 0            (- count 48) 4) "blue")
+                   ;; ,(draw-line* (max-line/range      data (- count 48) 23)             "blue")
                    )))))))
 
 (define (create-page . children)
@@ -215,26 +246,31 @@
          (next-day-time (add-duration time a-day)))
     (time-utc->date next-day-time)))
 
-(define-http-handler #/^\/(\w+\.\w+)\/(15 mins)\/(\d+)\/0*(\d+)\/0*(\d+)\/0*(\d+)\/0*(\d+)\/?/
+(define-http-handler #/^\/(\w+)\.(\w+)\/(15 mins)\/(\d+)\/0*(\d+)\/0*(\d+)\/0*(\d+)\/0*(\d+)\/?/
   (^[req app]
-    (let-params req ([symbol "p:1"]
-                     [size   "p:2"]
-                     [year   "p:3" :convert x->integer]
-                     [month  "p:4" :convert x->integer]
-                     [date   "p:5" :convert x->integer]
-                     [hour   "p:6" :convert x->integer]
-                     [minute "p:7" :convert x->integer])
+    (let-params req ([sym    "p:1"]
+                     [cur    "p:2"]
+                     [size   "p:3"]
+                     [year   "p:4" :convert x->integer]
+                     [month  "p:5" :convert x->integer]
+                     [date   "p:6" :convert x->integer]
+                     [hour   "p:7" :convert x->integer]
+                     [minute "p:8" :convert x->integer])
       (violet-async
        (^[await]
-         (let* ((end-date (make-date 0 0 minute hour date month year 0))
+         (let* ((symbol #`",|sym|.,|cur|")
+                (end-date (make-date 0 0 minute hour date month year 0))
                 (data (await (^[] (query-data *conn* symbol end-date
-                                              (* 24 5 4) size)))))
+                                              (* 24 5 4) size))))
+                (history (await (^[] (result-log->history-tree
+                                      (filter-log/currency-pair *conn* sym cur 100))))))
            (respond/ok req (cons "<!DOCTYPE html>"
                                  (sxml:sxml->html
                                   (create-page
                                    `(html (body (p ,#`",symbol ,(date->string end-date)")
                                                 (h2 ,size)
-                                                (div ,@(format-data data #`"/,|symbol|/,|size|/"))
+                                                (div ,@(format-data data history
+                                                                    #`"/,|symbol|/,|size|/"))
                                                 ))))))))))))
 
 (define (render-positions cur-pair positions bar-size)
@@ -442,15 +478,6 @@
               (trading-style-bar-size style)
               date open close high low)))
 
-(define (debug-log . rest)
-  (let loop ((logs (cons (date->string (current-date) "~4") rest)))
-    (when (pair? logs)
-          (display (car logs) (current-error-port))
-          (when (pair? (cdr logs))
-                (display "\t" (current-error-port))
-                (loop (cdr logs)))))
-  (newline (current-error-port)))
-
 (define (on-order-status order-id status filled remaining avg-fill-price perm-id
                          parent-id last-fill-price client-id why-held mkt-cap-price)
   (debug-log "on-order-status" order-id status)
@@ -518,31 +545,6 @@
 
 (define *quantitiy-unit* 10000.0)       ; minimum size = 20K
 
-(define (log-result pos-id order-id order-data action open-price close-price pos order date)
-  (let* ((gain (case action
-                 ((sell) (- open-price  close-price))
-                 ((buy)  (- close-price open-price))))
-         (sym (order-data-symbol   order-data))
-         (cur (order-data-currency order-data))
-         (qty (order-data-quantity order-data))
-         (net-gain (* gain qty)))
-    (debug-log #`"Closing order done: pos: ,pos-id order: ,order-id"
-               #`"action: ,action"
-               #`"open-price: ,open-price close-price: ,close-price gain: ,gain")
-    (redis-zadd *conn* "result-log" pos-id #?=(write-to-string
-                                            `((pos-id      . ,pos-id)
-                                              (action      . ,action)
-                                              (sym         . ,sym)
-                                              (cur         . ,cur)
-                                              (open-price  . ,open-price)
-                                              (close-price . ,close-price)
-                                              (gain        . ,gain)
-                                              (net-gain    . ,net-gain)
-                                              (position    . ,(serialize-position pos))
-                                              (close-order . ,order)
-                                              (date        . ,(date->string date "~4"))
-                                              )))))
-
 (define (set-profits pos-id close-order)
   (debug-log "Really Closing...")
   (let* ((dat (get-order-data *conn* pos-id))
@@ -563,7 +565,7 @@
                  (let ((res (redis-hget *conn* pos-key pos-id)))
                    (if res
                        (let ((open-price (string->number res)))
-                         (log-result pos-id oid dat (position-action pos) open-price price
+                         (log-result *conn* pos-id oid dat (position-action pos) open-price price
                                      pos close-order (current-date)))
                        (debug-log #`"ERROR: Position not found: ,pos-id")))))
         (debug-log #`"Redis entry not found: ,pos-id"))))
@@ -606,10 +608,6 @@
 
 (define (orders-key symbol currecy exchange)
   #`"orders:,|symbol|:,|currecy|:,|exchange|")
-
-(define (log-order conn oid action symbol currecy exchange quantity)
-  (redis-zadd conn "orderlog" oid
-              (write-to-string (list oid action symbol currecy exchange quantity))))
 
 (define *order-status-callbacks* (make-hash-table))
 
