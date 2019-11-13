@@ -314,15 +314,20 @@
               (expected-loss (if pos
                                  (format #f "~5,2f"
                                          (* 10000 (abs (- stop-loss (position-price pos)))))
-                                 "--")))
+                                 "--"))
+              (close-order (assoc-ref log 'close-order)))
        `(tr
          (td ,(cdr (assoc 'pos-id      log)))
          (td ,(case (cdr (assoc 'action log))
                 ((buy) "long")
                 ((sell) "short")))
          (td ,(string-append (cdr (assoc 'sym log)) "." (cdr (assoc 'cur log))))
-         (td ,(format #f "~10,5f" (cdr (assoc 'open-price  log))))
-         (td ,(format #f "~10,6f" (cdr (assoc 'close-price log))))
+         (td ,(format #f "~10,5f (~,5f)"
+                      (assoc-ref log 'open-price)
+                      (if pos (position-price pos) 0)))
+         (td ,(format #f "~10,5f (~,5f)"
+                      (assoc-ref log 'close-price)
+                      (if close-order (caddr close-order) 0)))
          (td ,(format #f "~10,6f" (cdr (assoc 'gain        log))))
          (td ,(format #f "~10,2f" (cdr (assoc 'net-gain    log))))
          (td ,expected-loss))))
