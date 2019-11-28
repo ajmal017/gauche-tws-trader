@@ -9,7 +9,7 @@ TWS_ROOT_DIR=./tws/twsapi/source/cppclient
 TWS_BASE_SRC_DIR=${TWS_ROOT_DIR}/client
 TWS_CFLAGS=-I${TWS_BASE_SRC_DIR} -I${TWS_ROOT_DIR}
 
-.PHONY: adapter tags
+.PHONY: adapter tags test
 
 MAKIKI=gosh-modules/makiki
 RHEINGAU=./gauche-rheingau
@@ -28,6 +28,9 @@ build: $(TARGET)
 run: $(TARGET) $(MAKIKI)
 #	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH) ./$(TARGET) $(SCRIPT)
 	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH) nodemon -e scm --ignore gosh-modules/ --ignore gauche-rheingau/ --ignore tools/ --ignore test/ --exec ./$(TARGET) $(SCRIPT)
+
+test:
+	docker-compose exec gosh gosh -I. ./test/test-appmain
 
 # run on host
 tags:
