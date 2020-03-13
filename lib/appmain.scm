@@ -475,12 +475,34 @@
         (update-history style duration)
         )))
 
-(define (on-next-valid-id id)
+#;(define (on-next-valid-id id)
   (set! *order-id* id)
   (enqueue! *task-queue* (^[] (for-each query-history *trading-styles*))))
 
+(define (on-next-valid-id id)
+  (set! *order-id* id)
+  (enqueue! *task-queue*
+            (^[]
+              (let* ((duration "1 W")
+                     (req-id (request-id!))
+                     (date (current-date))
+                     (date-str (date->string date "~Y~m~d ~T")))
+                #;(hash-table-put! *trading-style-table* req-id style)
+                (tws-client-historical-data-request
+                 *tws* req-id
+                 "EUR"
+                 "CASH"
+                 "GBP"
+                 "IDEALPRO" ;;(trading-style-exchange style)
+                 #?=date-str
+                 #?=duration
+                 "4 hours"
+                 "MIDPOINT")
+                ))))
+
 (define (on-historical-data req-id time open high low close volume count wap)
-  (let ((style (hash-table-get *trading-style-table* req-id))
+  #?=req-id
+  #;(let ((style (hash-table-get *trading-style-table* req-id))
         (date (string->date time "~Y~m~d  ~H:~M:~S"))) ; "20190830  22:00:00"
     (add-data *conn*
               (currency-pair-name (trading-style-currency-pair style))
@@ -598,7 +620,7 @@
 (define (entry-price-key cur-pair)
   #`"entry-price:,(currency-pair-name cur-pair)")
 
-(define (open-position pos-id style pos)
+(define (open-position pos-id style pos proc)
   (debug-log "Opening" (serialize-position pos))
 
   (let* ((cur-pair (trading-style-currency-pair style))
@@ -613,7 +635,8 @@
          sym cur exc qty
          (lambda (oid price)
            (save-position *conn* sym cur pos-id pos (make-order-data oid sym cur exc qty))
-           (redis-hset *conn* pos-key pos-id price)))))
+           (redis-hset *conn* pos-key pos-id price)
+           (proc style oid price)))))
 
 (define (orders-key symbol currecy exchange)
   #`"orders:,|symbol|:,|currecy|:,|exchange|")
@@ -631,12 +654,29 @@
                 (log-order *conn* oid action symbol currecy exchange quantity)
                 (hash-table-put! *order-status-callbacks* oid (lambda (price) (proc oid price)))))))
 
+(define (open-positin-handler pos style)
+  (lambda (oid price)
+    (debug-log "open-positin-handler" oid price)
+
+    (let* ((cur-pair (trading-style-currency-pair style))
+           (sym (currency-pair-symbol cur-pair))
+           (cur (currency-pair-currency cur-pair))
+           (exc (trading-style-exchange style))
+           (qty *quantitiy-unit*)
+           )
+      (order (case (position-action pos)
+               ((sell) "SELL")
+               ((buy) "BUY"))
+             sym cur exc qty
+             ))
+    ))
+
 (define (on-historical-data-end req-id start-date end-date)
   (let ((style (hash-table-get *trading-style-table* req-id)))
     (let-values (((pos poss) (inspect *conn* style (current-date) (get-all-positions style)
                                       close-position)))
       (when pos
-            (open-position (position-id) style pos)
+            (open-position (position-id) style pos (open-positin-handler pos style))
             (position-id-bump!)))
 
     (sleep-and-update style)))
