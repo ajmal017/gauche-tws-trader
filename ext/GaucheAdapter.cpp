@@ -244,12 +244,12 @@ void GaucheAdapter::orderStatus(OrderId orderId, const std::string& status, doub
         SCM_LIST5(Scm_MakeInteger(parentId),
                   Scm_MakeFlonum(lastFillPrice),
                   Scm_MakeInteger(clientId),
-                  SCM_MAKE_STR(whyHeld.c_str()),
+                  SCM_MAKE_STR_COPYING(whyHeld.c_str()),
                   Scm_MakeFlonum(mktCapPrice));
 
     ScmObj arglist =
         Scm_Cons(Scm_MakeInteger(orderId),
-                 Scm_Cons(SCM_MAKE_STR(status.c_str()),
+                 Scm_Cons(SCM_MAKE_STR_COPYING(status.c_str()),
                           Scm_Cons(Scm_MakeFlonum(filled),
                                    Scm_Cons(Scm_MakeFlonum(remaining),
                                             Scm_Cons(Scm_MakeFlonum(avgFillPrice),
@@ -476,7 +476,7 @@ void GaucheAdapter::historicalData(TickerId reqId, const Bar& bar) {
     ScmEvalPacket epak;
     ScmObj arglist =
         Scm_Cons(Scm_MakeInteger(reqId),
-                 Scm_Cons(SCM_MAKE_STR(bar.time.c_str()),
+                 Scm_Cons(SCM_MAKE_STR_COPYING(bar.time.c_str()),
                           Scm_Cons(Scm_MakeFlonum(bar.open),
                                    Scm_Cons(Scm_MakeFlonum(bar.high),
                                             SCM_LIST5(Scm_MakeFlonum(bar.low),
@@ -500,8 +500,8 @@ void GaucheAdapter::historicalDataEnd(int reqId, const std::string& startDateStr
     ScmEvalPacket epak;
     ScmObj arglist =
         SCM_LIST3(Scm_MakeInteger(reqId),
-                  SCM_MAKE_STR(startDateStr.c_str()),
-                  SCM_MAKE_STR(endDateStr.c_str()));
+                  SCM_MAKE_STR_COPYING(startDateStr.c_str()),
+                  SCM_MAKE_STR_COPYING(endDateStr.c_str()));
 
     if (Scm_Apply(proc, arglist, &epak) < 0) {
         scm_error(epak.exception);
