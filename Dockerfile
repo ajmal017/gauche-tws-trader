@@ -8,9 +8,20 @@ RUN apt-get install -y autoconf git
 RUN apt-get install -y libuv1 libuv1-dev
 RUN apt-get install -y gdb
 
-RUN curl -sL https://deb.nodesource.com/setup_11.x | bash -
+RUN curl -sL https://deb.nodesource.com/setup_12.x | bash -
 RUN apt-get install -y nodejs
 RUN npm install -g nodemon
+
+# Build the HEAD version of Gauche for the C++ compilation issue:
+# https://github.com/shirok/Gauche/pull/560
+
+WORKDIR /build
+RUN git clone https://github.com/shirok/Gauche.git
+WORKDIR Gauche
+RUN ./DIST gen
+RUN ./configure && make && make check && make install
+
+####
 
 WORKDIR /build
 RUN git clone git://github.com/bizenn/Gauche-redis.git
