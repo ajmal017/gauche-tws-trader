@@ -63,6 +63,9 @@
              (make-currency-pair "USD" "CHF")
              )))
 
+(define *historical-data-handers* (make-hash-table))
+(define *historical-data-end-handers* (make-hash-table))
+
 (define (on-next-valid-id id)
   (set! *order-id* id)
   (enqueue! *task-queue*
@@ -71,7 +74,18 @@
                      (req-id (request-id!))
                      (date (current-date))
                      (date-str (date->string date "~Y~m~d ~T")))
-                #;(hash-table-put! *trading-style-table* req-id style)
+
+                (hash-table-put!
+                 *historical-data-handers* req-id
+                 (lambda (time open high low close volume count wap)
+                   (debug-log "[history data]" time open high low close)
+                   ))
+
+                (hash-table-put!
+                 *historical-data-end-handers* req-id
+                 (lambda (start-date end-date)
+                   (debug-log "Historical data end" start-date end-date)))
+                
                 (tws-client-historical-data-request
                  *tws* req-id
                  "EUR"
@@ -85,8 +99,11 @@
                 ))))
 
 (define (on-historical-data req-id time open high low close volume count wap)
-  (debug-log #"on-historical-data ~req-id")
-)
+  (let ((handler (hash-table-get *historical-data-handers* req-id #f)))
+    (when handler
+      (enqueue! *task-queue*
+                (lambda ()
+                  (handler time open high low close volume count wap))))))
 
 (define (on-order-status order-id status filled remaining avg-fill-price perm-id
                          parent-id last-fill-price client-id why-held mkt-cap-price)
@@ -100,8 +117,11 @@
 (define *task-queue* (make-mtqueue))
 
 (define (on-historical-data-end req-id start-date end-date)
-  (debug-log #"on-historical-data-end ~req-id ~start-date ~end-date")
-)
+  (let ((handler (hash-table-get *historical-data-end-handers* req-id #f)))
+    (when handler
+      (enqueue! *task-queue*
+                (lambda ()
+                  (handler start-date end-date))))))
 
 (define (on-current-time time)
   (debug-log #"on-current-time ~time")
