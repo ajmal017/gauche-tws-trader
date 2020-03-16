@@ -66,6 +66,31 @@
 (define *historical-data-handers* (make-hash-table))
 (define *historical-data-end-handers* (make-hash-table))
 
+(define (request-historical-data on-data on-end . args)
+  (let ((req-id (request-id!)))
+    (hash-table-put! *historical-data-handers* req-id on-data)
+    (hash-table-put! *historical-data-end-handers* req-id on-end)
+    (apply tws-client-historical-data-request *tws* req-id args)
+    ))
+
+(define (do-stuff)
+  (let* ((duration "1 D")
+         (date (current-date))
+         (date-str (date->string date "~Y~m~d ~T"))
+         (handle (request-historical-data
+                  "EUR" "CASH" "GBP" "IDEALPRO"
+                  date-str duration "4 hours" "MIDPOINT")))
+    (let loop ((data (handle)))
+      (if (eq? (car data) 'end)
+          (debug-log "historical data end" (cdr data))
+          (begin
+            (debug-log "historical data" (cdr data))
+            (loop (handle)))
+          ))
+    ))
+
+
+
 (define (on-next-valid-id id)
   (set! *order-id* id)
   (enqueue! *task-queue*
