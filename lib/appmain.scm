@@ -66,69 +66,67 @@
 (define *historical-data-handers* (make-hash-table))
 (define *historical-data-end-handers* (make-hash-table))
 
-(define (request-historical-data on-data on-end . args)
+;; Called from C++ (main thread)
+(define (on-historical-data req-id time open high low close volume count wap)
+  (enqueue! *task-queue*
+            (lambda ()
+              (task-on-historical-data req-id time open high low close volume count wap))))
+
+(define (on-historical-data-end req-id start-date end-date)
+  (enqueue! *task-queue*
+            (lambda ()
+              (task-on-historical-data-end req-id start-date end-date))))
+
+;; Task version of those handlers (work thread)
+(define (task-on-historical-data req-id time open high low close volume count wap)
+  (debug-log "task-on-historical-data")
+  (let* ((queue (hash-table-get *historical-data-handers* req-id))
+         (task (dequeue! queue #f)))
+    (if task
+        (task (list 'data time open high low close volume count wap))
+        (on-historical-data req-id time open high low close volume count wap))))
+
+(define (task-on-historical-data-end req-id start-date end-date)
+  (let* ((queue (hash-table-get *historical-data-end-handers* req-id))
+         (task (dequeue! queue #f)))
+    (if task
+        (task (list 'end start-date end-date))
+        (on-historical-data-end req-id start-date end-date))))
+
+(define (request-historical-data . args)
   (let ((req-id (request-id!)))
-    (hash-table-put! *historical-data-handers* req-id on-data)
-    (hash-table-put! *historical-data-end-handers* req-id on-end)
+    (hash-table-put! *historical-data-handers* req-id (make-mtqueue))
+    (hash-table-put! *historical-data-end-handers* req-id (make-mtqueue))
+
     (apply tws-client-historical-data-request *tws* req-id args)
-    ))
+
+    (lambda (yield)
+      (call/cc (lambda (cont)
+                 (enqueue! (hash-table-get *historical-data-handers* req-id) cont)
+                 (enqueue! (hash-table-get *historical-data-end-handers* req-id) cont)
+                 (yield)
+                 )))))
 
 (define (do-stuff)
-  (let* ((duration "1 D")
+  (let* ((duration "1 W")
          (date (current-date))
          (date-str (date->string date "~Y~m~d ~T"))
          (handle (request-historical-data
                   "EUR" "CASH" "GBP" "IDEALPRO"
                   date-str duration "4 hours" "MIDPOINT")))
-    (let loop ((data (handle)))
-      (if (eq? (car data) 'end)
-          (debug-log "historical data end" (cdr data))
-          (begin
-            (debug-log "historical data" (cdr data))
-            (loop (handle)))
-          ))
-    ))
-
-
+    (call/cc
+     (lambda (cont)
+       (let loop ((data (handle cont)))
+         (if (eq? (car data) 'end)
+             (debug-log "historical data end" data)
+             (begin
+               (debug-log "historical data" data)
+               (loop (handle cont)))
+             ))))))
 
 (define (on-next-valid-id id)
   (set! *order-id* id)
-  (enqueue! *task-queue*
-            (^[]
-              (let* ((duration "1 D")
-                     (req-id (request-id!))
-                     (date (current-date))
-                     (date-str (date->string date "~Y~m~d ~T")))
-
-                (hash-table-put!
-                 *historical-data-handers* req-id
-                 (lambda (time open high low close volume count wap)
-                   (debug-log "[history data]" time open high low close)
-                   ))
-
-                (hash-table-put!
-                 *historical-data-end-handers* req-id
-                 (lambda (start-date end-date)
-                   (debug-log "Historical data end" start-date end-date)))
-                
-                (tws-client-historical-data-request
-                 *tws* req-id
-                 "EUR"
-                 "CASH"
-                 "GBP"
-                 "IDEALPRO" ;;(trading-style-exchange style)
-                 date-str
-                 duration
-                 "4 hours"
-                 "MIDPOINT")
-                ))))
-
-(define (on-historical-data req-id time open high low close volume count wap)
-  (let ((handler (hash-table-get *historical-data-handers* req-id #f)))
-    (when handler
-      (enqueue! *task-queue*
-                (lambda ()
-                  (handler time open high low close volume count wap))))))
+  (enqueue! *task-queue* do-stuff))
 
 (define (on-order-status order-id status filled remaining avg-fill-price perm-id
                          parent-id last-fill-price client-id why-held mkt-cap-price)
@@ -140,13 +138,6 @@
                 (enqueue! *task-queue* (lambda () (callback avg-fill-price)))))))
 
 (define *task-queue* (make-mtqueue))
-
-(define (on-historical-data-end req-id start-date end-date)
-  (let ((handler (hash-table-get *historical-data-end-handers* req-id #f)))
-    (when handler
-      (enqueue! *task-queue*
-                (lambda ()
-                  (handler start-date end-date))))))
 
 (define (on-current-time time)
   (debug-log #"on-current-time ~time")
