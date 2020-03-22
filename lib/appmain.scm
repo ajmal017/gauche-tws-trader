@@ -63,8 +63,8 @@
              (make-currency-pair "USD" "CHF")
              )))
 
-(define *historical-data-handers* (make-hash-table))
-(define *historical-data-end-handers* (make-hash-table))
+(define *historical-data-handlers* (make-hash-table))
+(define *historical-data-end-handlers* (make-hash-table))
 
 ;; Called from C++ (main thread)
 (define (on-historical-data req-id time open high low close volume count wap)
@@ -80,14 +80,14 @@
 ;; Task version of those handlers (work thread)
 (define (task-on-historical-data req-id time open high low close volume count wap)
   (debug-log "task-on-historical-data")
-  (let* ((queue (hash-table-get *historical-data-handers* req-id))
+  (let* ((queue (hash-table-get *historical-data-handlers* req-id))
          (task (dequeue! queue #f)))
     (if task
         (task (list 'data time open high low close volume count wap))
         (on-historical-data req-id time open high low close volume count wap))))
 
 (define (task-on-historical-data-end req-id start-date end-date)
-  (let* ((queue (hash-table-get *historical-data-end-handers* req-id))
+  (let* ((queue (hash-table-get *historical-data-end-handlers* req-id))
          (task (dequeue! queue #f)))
     (if task
         (task (list 'end start-date end-date))
@@ -95,15 +95,15 @@
 
 (define (request-historical-data . args)
   (let ((req-id (request-id!)))
-    (hash-table-put! *historical-data-handers* req-id (make-mtqueue))
-    (hash-table-put! *historical-data-end-handers* req-id (make-mtqueue))
+    (hash-table-put! *historical-data-handlers* req-id (make-mtqueue))
+    (hash-table-put! *historical-data-end-handlers* req-id (make-mtqueue))
 
     (apply tws-client-historical-data-request *tws* req-id args)
 
     (lambda (yield)
       (call/cc (lambda (cont)
-                 (enqueue! (hash-table-get *historical-data-handers* req-id) cont)
-                 (enqueue! (hash-table-get *historical-data-end-handers* req-id) cont)
+                 (enqueue! (hash-table-get *historical-data-handlers* req-id) cont)
+                 (enqueue! (hash-table-get *historical-data-end-handlers* req-id) cont)
                  (yield)
                  )))))
 
