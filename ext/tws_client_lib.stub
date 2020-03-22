@@ -1,6 +1,8 @@
-"
-#include \"GaucheAdapter_glue.h\"
-"
+;; "
+;; #include \"GaucheAdapter_glue.h\"
+;; "
+
+(.include "GaucheAdapter_glue.h")
 
 (define-type <tws-client> "GaucheAdapter*" "tws-client"
   "TWS_CLIENT_P" "TWS_CLIENT_UNBOX" "TWS_CLIENT_BOX")
@@ -18,7 +20,7 @@
 
 (define-cproc tws-client-process-messages (cl::<tws-client>)
   ::<void>
-  "cl->processMessages();")
+  (body "cl->processMessages();"))
 
 (define-cproc tws-client-historical-data-request (cl::<tws-client>
                                                   reqId::<int>
@@ -31,7 +33,7 @@
                                                   barSize::<const-cstring>
                                                   whatToShow::<const-cstring>)
   ::<void>
-  "cl->historicalDataRequests(reqId, symbol, secType, currency, exchange, queryTime, duration, barSize, whatToShow);")
+  (body "cl->historicalDataRequests(reqId, symbol, secType, currency, exchange, queryTime, duration, barSize, whatToShow);"))
 
 (define-cproc tws-client-place-fx-market-order (cl::<tws-client>
                                                 orderId::<int>
@@ -43,11 +45,11 @@
                                                 quantity::<double>
                                                 )
   ::<void>
-  "cl->placeFxMarketOrder(orderId, symbol, secType, currency, exchange, action, quantity);")
+  (body "cl->placeFxMarketOrder(orderId, symbol, secType, currency, exchange, action, quantity);"))
 
 (define-cproc tws-client-request-current-time (cl::<tws-client>)
   ::<void>
-  "cl->requestCurrentTime();")
+  (body "cl->requestCurrentTime();"))
 
 ;;;;;;;;;;;;;;;;;
 
@@ -94,7 +96,7 @@
                                       contract::<tws-contract>
                                       order::<tws-order>)
   ::<void>
-  "cl->placeOrder(orderId, contract, order);")
+  (body "cl->placeOrder(orderId, contract, order);"))
 
 
 ;; Local Variables:
