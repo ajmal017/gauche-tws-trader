@@ -66,32 +66,24 @@
 (define *historical-data-handlers* (make-hash-table))
 (define *historical-data-end-handlers* (make-hash-table))
 
-;; Called from C++ (main thread)
-(define (on-historical-data req-id time open high low close volume count wap)
-  (enqueue! *task-queue*
-            (lambda ()
-              (task-on-historical-data req-id time open high low close volume count wap))))
+(define (make-event-handler hash label)
+  (define (new-proc . args)
+    (enqueue! *task-queue*
+              (lambda ()
+                (let* ((queue (hash-table-get hash (car args)))
+                       (task (dequeue! queue #f)))
+                  (if task
+                      (task (cons label (cdr args)))
+                      (apply new-proc args))))))
+  new-proc)
 
-(define (on-historical-data-end req-id start-date end-date)
-  (enqueue! *task-queue*
-            (lambda ()
-              (task-on-historical-data-end req-id start-date end-date))))
+;; Event handlers
+(define on-historical-data
+  (make-event-handler *historical-data-handlers* 'data))
+(define on-historical-data-end
+  (make-event-handler *historical-data-end-handlers* 'end))
 
-;; Task version of those handlers (work thread)
-(define (task-on-historical-data req-id time open high low close volume count wap)
-  (debug-log "task-on-historical-data")
-  (let* ((queue (hash-table-get *historical-data-handlers* req-id))
-         (task (dequeue! queue #f)))
-    (if task
-        (task (list 'data time open high low close volume count wap))
-        (on-historical-data req-id time open high low close volume count wap))))
-
-(define (task-on-historical-data-end req-id start-date end-date)
-  (let* ((queue (hash-table-get *historical-data-end-handlers* req-id))
-         (task (dequeue! queue #f)))
-    (if task
-        (task (list 'end start-date end-date))
-        (on-historical-data-end req-id start-date end-date))))
+;;
 
 (define (request-historical-data . args)
   (let ((req-id (request-id!)))
@@ -107,22 +99,34 @@
                  (yield)
                  )))))
 
+;;; application
+
 (define (do-stuff)
-  (let* ((duration "1 W")
-         (date (current-date))
-         (date-str (date->string date "~Y~m~d ~T"))
-         (handle (request-historical-data
-                  "EUR" "CASH" "GBP" "IDEALPRO"
-                  date-str duration "4 hours" "MIDPOINT")))
+  (let* ((date (current-date))
+         (date-str (date->string date "~Y~m~d ~T")))
     (call/cc
      (lambda (cont)
-       (let loop ((data (handle cont)))
-         (if (eq? (car data) 'end)
-             (debug-log "historical data end" data)
-             (begin
-               (debug-log "historical data" data)
-               (loop (handle cont)))
-             ))))))
+       (let ((handle (request-historical-data
+                      "EUR" "CASH" "GBP" "IDEALPRO"
+                      date-str "1 W" "4 hours" "MIDPOINT")))
+         (let loop ((data (handle cont)))
+           (if (eq? (car data) 'end)
+               (debug-log "historical data end" data)
+               (begin
+                 (debug-log "historical data" data)
+                 (loop (handle cont)))
+               )))
+
+       (let ((handle (request-historical-data
+                      "EUR" "CASH" "GBP" "IDEALPRO"
+                      date-str "1 D" "1 hour" "MIDPOINT")))
+         (let loop ((data (handle cont)))
+           (if (eq? (car data) 'end)
+               (debug-log "1-hour historical data end" data)
+               (begin
+                 (debug-log "1-hour historical data" data)
+                 (loop (handle cont)))
+               )))))))
 
 (define (on-next-valid-id id)
   (set! *order-id* id)
