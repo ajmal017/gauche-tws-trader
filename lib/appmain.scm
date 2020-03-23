@@ -65,6 +65,7 @@
 
 (define *historical-data-handlers* (make-hash-table))
 (define *historical-data-end-handlers* (make-hash-table))
+(define *order-status-handlers* (make-hash-table))
 
 (define (make-event-handler hash label)
   (define (new-proc . args)
@@ -82,7 +83,8 @@
   (make-event-handler *historical-data-handlers* 'data))
 (define on-historical-data-end
   (make-event-handler *historical-data-end-handlers* 'end))
-
+(define on-order-status
+  (make-event-handler *order-status-handlers* 'status))
 ;;
 
 (define (request-historical-data . args)
@@ -96,6 +98,17 @@
       (call/cc (lambda (cont)
                  (enqueue! (hash-table-get *historical-data-handlers* req-id) cont)
                  (enqueue! (hash-table-get *historical-data-end-handlers* req-id) cont)
+                 (yield)
+                 )))))
+
+(define (place-order contract order)
+  (let ((ord-id (order-id!)))
+    (hash-table-put! *order-status-handlers* ord-id (make-mtqueue))
+    (tws-client-place-order *tws* ord-id contract order)
+
+    (lambda (yield)
+      (call/cc (lambda (cont)
+                 (enqueue! (hash-table-get *order-status-handlers* ord-id) cont)
                  (yield)
                  )))))
 
@@ -126,20 +139,27 @@
                (begin
                  (debug-log "1-hour historical data" data)
                  (loop (handle cont)))
-               )))))))
+               )))
+
+       (let* ((contract (make-tws-contract "EUR" "CASH" "GBP" "IDEALPRO"))
+              (order (make-tws-order "BUY" "MKT" 20000 0 0 0))
+              (handle (place-order contract order)))
+         (let loop ((status (handle cont)))
+           (let ((state (string->symbol (cadr status))))
+             (debug-log #"order status: state: ~state")
+             (unless (or (eq? state 'ApiCancelled)
+                         (eq? state 'Cancelled)
+                         (eq? state 'Filled)
+                         (eq? state 'Inactive))
+               (loop (handle cont))))))
+
+       (debug-log "DONE")
+
+       ))))
 
 (define (on-next-valid-id id)
   (set! *order-id* id)
   (enqueue! *task-queue* do-stuff))
-
-(define (on-order-status order-id status filled remaining avg-fill-price perm-id
-                         parent-id last-fill-price client-id why-held mkt-cap-price)
-  (debug-log "on-order-status" order-id status)
-  (when (string=? status "Filled")
-        (let ((callback (hash-table-get *order-status-callbacks* order-id #f)))
-          (when callback
-                (hash-table-put! *order-status-callbacks* order-id #f)
-                (enqueue! *task-queue* (lambda () (callback avg-fill-price)))))))
 
 (define *task-queue* (make-mtqueue))
 
