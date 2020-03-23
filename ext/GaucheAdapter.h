@@ -39,6 +39,7 @@ public:
                                 const char* duration, const char* barSize,
                                 const char* whatToShow);
     void requestCurrentTime();
+    void requestPositions();
 
     void placeOrder(OrderId orderId, Contract *contract, Order *order);
     void placeFxMarketOrder(OrderId orderId, const char* symbol,

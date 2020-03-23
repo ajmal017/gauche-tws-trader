@@ -148,6 +148,10 @@ void GaucheAdapter::requestCurrentTime() {
   m_pClient->reqCurrentTime();
 }
 
+void GaucheAdapter::requestPositions() {
+    m_pClient->reqPositions();
+}
+
 static void scm_error(ScmObj c) {
     ScmObj m = Scm_ConditionMessage(c);
     if (SCM_FALSEP(m)) {

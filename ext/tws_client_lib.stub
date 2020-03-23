@@ -1,7 +1,3 @@
-;; "
-;; #include \"GaucheAdapter_glue.h\"
-;; "
-
 (.include "GaucheAdapter_glue.h")
 
 (define-type <tws-client> "GaucheAdapter*" "tws-client"
@@ -50,6 +46,10 @@
 (define-cproc tws-client-request-current-time (cl::<tws-client>)
   ::<void>
   (body "cl->requestCurrentTime();"))
+
+(define-cproc tws-client-request-positions (cl::<tws-client>)
+  ::<void>
+  (body "cl->requestPositions();"))
 
 ;;;;;;;;;;;;;;;;;
 

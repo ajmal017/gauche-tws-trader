@@ -119,6 +119,7 @@
          (date-str (date->string date "~Y~m~d ~T")))
     (call/cc
      (lambda (cont)
+       (tws-client-request-positions *tws*)
        (let ((handle (request-historical-data
                       "EUR" "CASH" "GBP" "IDEALPRO"
                       date-str "1 W" "4 hours" "MIDPOINT")))
