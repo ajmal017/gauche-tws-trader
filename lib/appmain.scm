@@ -169,7 +169,7 @@
   )
 
 (define (app-start!)
-  (set! *conn* (redis-open redis-host redis-port))
+  #;(set! *conn* (redis-open redis-host redis-port))
   (set! *tws* (make-tws-client))
   (set! *request-id* 4000)
   (tws-client-connect *tws* tws-host tws-port tws-client-id)
