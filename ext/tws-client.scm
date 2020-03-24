@@ -8,6 +8,7 @@
           tws-client-place-fx-market-order
           tws-client-request-current-time
           tws-client-request-positions
+          tws-client-cancel-positions
           tws-client-place-order
           make-tws-contract
           make-tws-order

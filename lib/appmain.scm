@@ -67,7 +67,6 @@
 (define *historical-data-handlers* (make-hash-table))
 (define *order-status-handlers* (make-hash-table))
 (define *position-handler* (make-mtqueue)) ; not linked to a request ID
-(define *position-end-handler* (make-mtqueue)) ; not linked to a request ID
 
 (define (make-event-handler hash label)
   (define (new-proc . args)
@@ -91,11 +90,11 @@
   new-proc)
 
 ;; Event handlers
-(define on-historical-data     (make-event-handler *historical-data-handlers*     'data))
+(define on-historical-data     (make-event-handler *historical-data-handlers* 'data))
 (define on-historical-data-end (make-event-handler *historical-data-handlers* 'end))
-(define on-order-status        (make-event-handler *order-status-handlers*        'status))
-(define on-position            (make-event-handler/no-id *position-handler*       'data))
-(define on-position-end        (make-event-handler/no-id *position-end-handler*   'end))
+(define on-order-status        (make-event-handler *order-status-handlers*    'status))
+(define on-position            (make-event-handler/no-id *position-handler*   'position))
+(define on-position-end        (make-event-handler/no-id *position-handler*   'end))
 
 ;;
 
@@ -128,7 +127,6 @@
   (lambda (yield)
     (call/cc (lambda (cont)
                (enqueue! *position-handler* cont)
-               (enqueue! *position-end-handler* cont)
                (yield)))))
 
 ;;; application
@@ -141,7 +139,9 @@
        (let ((handle (request-positions)))
          (let loop ((data (handle cont)))
            (if (eq? (car data) 'end)
-               (debug-log "positions end")
+               (begin
+                 (tws-client-cancel-positions *tws*)
+                 (debug-log "positions end"))
                (begin
                  (debug-log "positions" data)
                  (loop (handle cont))))))
@@ -196,7 +196,6 @@
   )
 
 (define (app-start!)
-  #;(set! *conn* (redis-open redis-host redis-port))
   (set! *tws* (make-tws-client))
   (set! *request-id* 4000)
   (tws-client-connect *tws* tws-host tws-port tws-client-id)
