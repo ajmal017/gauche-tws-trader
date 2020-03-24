@@ -4,6 +4,7 @@
 #include "StdAfx.h"
 
 #include "GaucheAdapter.h"
+#include "GaucheAdapter_glue.h"
 
 #include "EClientSocket.h"
 #include "EPosixClientSocketPlatform.h"
@@ -150,6 +151,10 @@ void GaucheAdapter::requestCurrentTime() {
 
 void GaucheAdapter::requestPositions() {
     m_pClient->reqPositions();
+}
+
+void GaucheAdapter::cancelPositions() {
+    m_pClient->cancelPositions();
 }
 
 static void scm_error(ScmObj c) {
@@ -571,12 +576,35 @@ void GaucheAdapter::commissionReport( const CommissionReport& commissionReport) 
 //! [position]
 void GaucheAdapter::position( const std::string& account, const Contract& contract, double position, double avgCost) {
 	Scm_Printf(SCM_CURERR, "Position. %s - Symbol: %s, SecType: %s, Currency: %s, Position: %g, Avg Cost: %g\n", account.c_str(), contract.symbol.c_str(), contract.secType.c_str(), contract.currency.c_str(), position, avgCost);
+
+    ScmObj proc = SCM_UNDEFINED;
+    SCM_BIND_PROC(proc, "on-position", Scm_CurrentModule());
+    ScmEvalPacket epak;
+    ScmObj arglist =
+        SCM_LIST4(SCM_MAKE_STR_COPYING(account.c_str()),
+                  TWS_CONTRACT_BOX(new Contract(contract)),
+                  Scm_MakeFlonum(position),
+                  Scm_MakeFlonum(avgCost));
+
+    if (Scm_Apply(proc, arglist, &epak) < 0) {
+        scm_error(epak.exception);
+    }
+
 }
 //! [position]
 
 //! [positionend]
 void GaucheAdapter::positionEnd() {
 	Scm_Printf(SCM_CURERR, "PositionEnd\n");
+
+    ScmObj proc = SCM_UNDEFINED;
+    SCM_BIND_PROC(proc, "on-position-end", Scm_CurrentModule());
+    ScmEvalPacket epak;
+    ScmObj arglist = SCM_NIL;
+
+    if (Scm_Apply(proc, arglist, &epak) < 0) {
+        scm_error(epak.exception);
+    }
 }
 //! [positionend]
 

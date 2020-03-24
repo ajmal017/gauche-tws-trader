@@ -1,6 +1,7 @@
 (define-module appmain
   (export app-start! on-next-valid-id on-historical-data on-order-status
-          on-historical-data-end on-current-time))
+          on-historical-data-end on-current-time
+          on-position on-position-end))
 
 (select-module appmain)
 
@@ -66,6 +67,8 @@
 (define *historical-data-handlers* (make-hash-table))
 (define *historical-data-end-handlers* (make-hash-table))
 (define *order-status-handlers* (make-hash-table))
+(define *position-handler* (make-mtqueue)) ; not linked to a request ID
+(define *position-end-handler* (make-mtqueue)) ; not linked to a request ID
 
 (define (make-event-handler hash label)
   (define (new-proc . args)
@@ -78,13 +81,23 @@
                       (apply new-proc args))))))
   new-proc)
 
+(define (make-event-handler/no-id queue label)
+  (define (new-proc . args)
+    (enqueue! *task-queue*
+              (lambda ()
+                (let ((task (dequeue! queue #f)))
+                  (if task
+                      (task (cons label args))
+                      (apply new-proc args))))))
+  new-proc)
+
 ;; Event handlers
-(define on-historical-data
-  (make-event-handler *historical-data-handlers* 'data))
-(define on-historical-data-end
-  (make-event-handler *historical-data-end-handlers* 'end))
-(define on-order-status
-  (make-event-handler *order-status-handlers* 'status))
+(define on-historical-data     (make-event-handler *historical-data-handlers*     'data))
+(define on-historical-data-end (make-event-handler *historical-data-end-handlers* 'end))
+(define on-order-status        (make-event-handler *order-status-handlers*        'status))
+(define on-position            (make-event-handler/no-id *position-handler*       'data))
+(define on-position-end        (make-event-handler/no-id *position-end-handler*   'end))
+
 ;;
 
 (define (request-historical-data . args)
@@ -112,6 +125,15 @@
                  (yield)
                  )))))
 
+(define (request-positions)
+  (tws-client-request-positions *tws*)
+
+  (lambda (yield)
+    (call/cc (lambda (cont)
+               (enqueue! *position-handler* cont)
+               (enqueue! *position-end-handler* cont)
+               (yield)))))
+
 ;;; application
 
 (define (do-stuff)
@@ -119,7 +141,14 @@
          (date-str (date->string date "~Y~m~d ~T")))
     (call/cc
      (lambda (cont)
-       (tws-client-request-positions *tws*)
+       (let ((handle (request-positions)))
+         (let loop ((data (handle cont)))
+           (if (eq? (car data) 'end)
+               (debug-log "positions end")
+               (begin
+                 (debug-log "positions" data)
+                 (loop (handle cont))))))
+
        (let ((handle (request-historical-data
                       "EUR" "CASH" "GBP" "IDEALPRO"
                       date-str "1 W" "4 hours" "MIDPOINT")))
@@ -155,6 +184,7 @@
                (loop (handle cont))))))
 
        (debug-log "DONE")
+       (enqueue! *task-queue* 'exit)
 
        ))))
 
@@ -181,7 +211,9 @@
         (let task-loop ()
           (let ((task (dequeue! *task-queue* #f)))
             (when task
-                  (task)
-                  (task-loop))))
+              (if (eq? task 'exit)
+                  (sys-exit 0)
+                  (task))
+              (task-loop))))
         (tws-client-process-messages *tws*)
         (loop))))))

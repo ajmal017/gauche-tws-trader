@@ -51,6 +51,10 @@
   ::<void>
   (body "cl->requestPositions();"))
 
+(define-cproc tws-client-cancel-positions (cl::<tws-client>)
+  ::<void>
+  (body "cl->cancelPositions();"))
+
 ;;;;;;;;;;;;;;;;;
 
 (define-type <tws-contract> "Contract*" "tws-contract"
