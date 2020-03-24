@@ -65,7 +65,6 @@
              )))
 
 (define *historical-data-handlers* (make-hash-table))
-(define *historical-data-end-handlers* (make-hash-table))
 (define *order-status-handlers* (make-hash-table))
 (define *position-handler* (make-mtqueue)) ; not linked to a request ID
 (define *position-end-handler* (make-mtqueue)) ; not linked to a request ID
@@ -93,7 +92,7 @@
 
 ;; Event handlers
 (define on-historical-data     (make-event-handler *historical-data-handlers*     'data))
-(define on-historical-data-end (make-event-handler *historical-data-end-handlers* 'end))
+(define on-historical-data-end (make-event-handler *historical-data-handlers* 'end))
 (define on-order-status        (make-event-handler *order-status-handlers*        'status))
 (define on-position            (make-event-handler/no-id *position-handler*       'data))
 (define on-position-end        (make-event-handler/no-id *position-end-handler*   'end))
@@ -103,14 +102,12 @@
 (define (request-historical-data . args)
   (let ((req-id (request-id!)))
     (hash-table-put! *historical-data-handlers* req-id (make-mtqueue))
-    (hash-table-put! *historical-data-end-handlers* req-id (make-mtqueue))
 
     (apply tws-client-historical-data-request *tws* req-id args)
 
     (lambda (yield)
       (call/cc (lambda (cont)
                  (enqueue! (hash-table-get *historical-data-handlers* req-id) cont)
-                 (enqueue! (hash-table-get *historical-data-end-handlers* req-id) cont)
                  (yield)
                  )))))
 
